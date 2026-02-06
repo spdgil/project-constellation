@@ -64,7 +64,7 @@ describe("DealsSearch", () => {
     localStorage.clear();
   });
 
-  it("renders search input and results list", () => {
+  it("renders search input, filter dropdowns, and results list", () => {
     render(
       <DealsSearch
         deals={mockDeals}
@@ -83,7 +83,12 @@ describe("DealsSearch", () => {
       /filter by deal name, opportunity type, or lga name/i
     );
     expect(screen.getByTestId("deals-results-list")).toBeInTheDocument();
-    expect(screen.getByText("2 deals")).toBeInTheDocument();
+    expect(screen.getByTestId("deals-count")).toHaveTextContent("2 deals");
+
+    // Filter dropdowns rendered
+    expect(screen.getByTestId("filter-opportunity-type")).toBeInTheDocument();
+    expect(screen.getByTestId("filter-stage")).toBeInTheDocument();
+    expect(screen.getByTestId("filter-lga")).toBeInTheDocument();
   });
 
   it("shows all deals when query is empty", () => {
@@ -111,7 +116,7 @@ describe("DealsSearch", () => {
     const input = screen.getByTestId("deals-search-input");
     fireEvent.change(input, { target: { value: "solar" } });
 
-    expect(screen.getByText("1 deal")).toBeInTheDocument();
+    expect(screen.getByTestId("deals-count")).toHaveTextContent("1 deal");
     expect(screen.getByText("Solar farm proposal")).toBeInTheDocument();
     expect(screen.queryByText("RCOE FlexiLab pilot")).not.toBeInTheDocument();
   });
@@ -128,7 +133,7 @@ describe("DealsSearch", () => {
     const input = screen.getByTestId("deals-search-input");
     fireEvent.change(input, { target: { value: "critical" } });
 
-    expect(screen.getByText("1 deal")).toBeInTheDocument();
+    expect(screen.getByTestId("deals-count")).toHaveTextContent("1 deal");
     expect(screen.getByText("RCOE FlexiLab pilot")).toBeInTheDocument();
     expect(screen.queryByText("Solar farm proposal")).not.toBeInTheDocument();
   });
@@ -145,7 +150,7 @@ describe("DealsSearch", () => {
     const input = screen.getByTestId("deals-search-input");
     fireEvent.change(input, { target: { value: "Isaac" } });
 
-    expect(screen.getByText("1 deal")).toBeInTheDocument();
+    expect(screen.getByTestId("deals-count")).toHaveTextContent("1 deal");
     expect(screen.getByText("Solar farm proposal")).toBeInTheDocument();
     expect(screen.queryByText("RCOE FlexiLab pilot")).not.toBeInTheDocument();
   });
@@ -162,7 +167,7 @@ describe("DealsSearch", () => {
     const input = screen.getByTestId("deals-search-input");
     fireEvent.change(input, { target: { value: "xyz-nonexistent" } });
 
-    expect(screen.getByText("No deals match your search.")).toBeInTheDocument();
+    expect(screen.getByText("No deals match your filters.")).toBeInTheDocument();
   });
 
   it("opening a deal from search opens the Deal drawer", () => {

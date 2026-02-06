@@ -13,6 +13,7 @@ import {
   STAGE_LABELS,
   CONSTRAINT_LABELS,
 } from "@/lib/labels";
+import { STAGE_COLOUR_CLASSES } from "@/lib/stage-colours";
 import { formatDate } from "@/lib/format";
 
 const READINESS_OPTIONS: ReadinessState[] = [
@@ -161,7 +162,7 @@ export function DealDrawer({
       role="dialog"
       aria-modal="true"
       aria-label="Deal details"
-      className="w-80 border-l border-[#E8E6E3] bg-[#FFFFFF] flex flex-col shrink-0"
+      className="border border-[#E8E6E3] bg-[#FFFFFF] flex flex-col"
     >
       <div className="flex items-center justify-between gap-2 p-4 border-b border-[#E8E6E3]">
         <h2 className="font-heading text-lg font-normal leading-[1.4] text-[#2C2C2C]">
@@ -177,10 +178,10 @@ export function DealDrawer({
         </button>
       </div>
 
-      <div className="flex-1 overflow-auto p-4 space-y-4">
+      <div className="flex-1 overflow-auto p-4">
         {isLocal && (
           <p
-            className="text-xs text-[#7A6B5A] py-2 px-3 border border-[#E8E6E3] bg-[#F5F3F0]"
+            className="text-xs text-[#7A6B5A] py-2 px-3 border border-[#E8E6E3] bg-[#F5F3F0] mb-4"
             role="status"
             aria-live="polite"
           >
@@ -188,136 +189,146 @@ export function DealDrawer({
           </p>
         )}
 
-        <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
-            Deal name
-          </p>
-          <p className="text-sm text-[#2C2C2C] leading-relaxed">{deal.name}</p>
+        {/* Identity group */}
+        <div className="space-y-3">
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
+              Deal name
+            </p>
+            <p className="text-sm text-[#2C2C2C] leading-relaxed">{deal.name}</p>
+          </div>
+
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
+              Opportunity type
+            </p>
+            <p className="text-sm text-[#2C2C2C] leading-relaxed">
+              {opportunityTypeName}
+            </p>
+          </div>
+
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
+              LGAs involved
+            </p>
+            <p className="text-sm text-[#2C2C2C] leading-relaxed">
+              {lgaNames || "—"}
+            </p>
+          </div>
         </div>
 
-        <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
-            Opportunity type
-          </p>
-          <p className="text-sm text-[#2C2C2C] leading-relaxed">
-            {opportunityTypeName}
-          </p>
+        {/* Classification group */}
+        <div className="border-t border-[#E8E6E3] pt-4 mt-4 space-y-3">
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
+              Stage
+            </p>
+            <span className={`inline-block text-[10px] uppercase tracking-wider px-1.5 py-0.5 ${STAGE_COLOUR_CLASSES[deal.stage]}`}>
+              {STAGE_LABELS[deal.stage]}
+            </span>
+          </div>
+
+          <div>
+            <label
+              htmlFor="deal-readiness"
+              className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1 block"
+            >
+              Readiness state
+            </label>
+            <select
+              id="deal-readiness"
+              value={deal.readinessState}
+              onChange={handleReadinessChange}
+              aria-label="Readiness state"
+              className="w-full h-9 px-3 border border-[#E8E6E3] bg-white text-[#2C2C2C] text-sm placeholder:text-[#9A9A9A] focus:border-[#7A6B5A] focus:ring-1 focus:ring-[#7A6B5A] focus:outline-none transition duration-300 ease-out"
+            >
+              {READINESS_OPTIONS.map((v) => (
+                <option key={v} value={v}>
+                  {READINESS_LABELS[v]}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label
+              htmlFor="deal-constraint"
+              className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1 block"
+            >
+              Dominant constraint
+            </label>
+            <select
+              id="deal-constraint"
+              value={deal.dominantConstraint}
+              onChange={handleConstraintChange}
+              aria-label="Dominant constraint"
+              className="w-full h-9 px-3 border border-[#E8E6E3] bg-white text-[#2C2C2C] text-sm placeholder:text-[#9A9A9A] focus:border-[#7A6B5A] focus:ring-1 focus:ring-[#7A6B5A] focus:outline-none transition duration-300 ease-out"
+            >
+              {CONSTRAINT_OPTIONS.map((v) => (
+                <option key={v} value={v}>
+                  {CONSTRAINT_LABELS[v]}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
 
-        <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
-            LGAs involved
-          </p>
-          <p className="text-sm text-[#2C2C2C] leading-relaxed">
-            {lgaNames || "—"}
-          </p>
-        </div>
-
-        <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
-            Stage
-          </p>
-          <p className="text-sm text-[#2C2C2C] leading-relaxed">
-            {STAGE_LABELS[deal.stage]}
-          </p>
-        </div>
-
-        <div>
-          <label
-            htmlFor="deal-readiness"
-            className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1 block"
-          >
-            Readiness state
-          </label>
-          <select
-            id="deal-readiness"
-            value={deal.readinessState}
-            onChange={handleReadinessChange}
-            aria-label="Readiness state"
-            className="w-full h-9 px-3 border border-[#E8E6E3] bg-white text-[#2C2C2C] text-sm placeholder:text-[#9A9A9A] focus:border-[#7A6B5A] focus:ring-1 focus:ring-[#7A6B5A] focus:outline-none transition duration-300 ease-out"
-          >
-            {READINESS_OPTIONS.map((v) => (
-              <option key={v} value={v}>
-                {READINESS_LABELS[v]}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label
-            htmlFor="deal-constraint"
-            className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1 block"
-          >
-            Dominant constraint
-          </label>
-          <select
-            id="deal-constraint"
-            value={deal.dominantConstraint}
-            onChange={handleConstraintChange}
-            aria-label="Dominant constraint"
-            className="w-full h-9 px-3 border border-[#E8E6E3] bg-white text-[#2C2C2C] text-sm placeholder:text-[#9A9A9A] focus:border-[#7A6B5A] focus:ring-1 focus:ring-[#7A6B5A] focus:outline-none transition duration-300 ease-out"
-          >
-            {CONSTRAINT_OPTIONS.map((v) => (
-              <option key={v} value={v}>
-                {CONSTRAINT_LABELS[v]}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div>
+        {/* Actions group */}
+        <div className="border-t border-[#E8E6E3] pt-4 mt-4">
           <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
             What would move this forward
           </p>
           <p className="text-sm text-[#2C2C2C] leading-relaxed">{deal.nextStep}</p>
         </div>
 
-        <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
-            Evidence references
-          </p>
-          {deal.evidence.length === 0 ? (
-            <p className="text-sm text-[#6B6B6B] leading-relaxed">None</p>
-          ) : (
-            <ul className="list-none p-0 m-0 space-y-1">
-              {deal.evidence.map((e, i) => (
-                <li key={i} className="text-sm text-[#2C2C2C] leading-relaxed">
-                  {e.label ?? e.pageRef ?? "—"}
-                  {e.pageRef && e.label ? ` (${e.pageRef})` : ""}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        {/* Reference group */}
+        <div className="border-t border-[#E8E6E3] pt-4 mt-4 space-y-3">
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
+              Evidence references
+            </p>
+            {deal.evidence.length === 0 ? (
+              <p className="text-xs text-[#9A9A9A] leading-relaxed">None</p>
+            ) : (
+              <ul className="list-none p-0 m-0 space-y-1">
+                {deal.evidence.map((e, i) => (
+                  <li key={i} className="text-xs text-[#2C2C2C] leading-relaxed">
+                    {e.label ?? e.pageRef ?? "—"}
+                    {e.pageRef && e.label ? ` (${e.pageRef})` : ""}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
-        <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
-            Notes
-          </p>
-          {deal.notes.length === 0 ? (
-            <p className="text-sm text-[#6B6B6B] leading-relaxed">None</p>
-          ) : (
-            <ul className="list-none p-0 m-0 space-y-2">
-              {deal.notes.map((n) => (
-                <li key={n.id} className="text-sm text-[#2C2C2C] leading-relaxed">
-                  <span className="text-xs text-[#9A9A9A] block">
-                    {formatDate(n.createdAt)}
-                  </span>
-                  {n.content}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
+              Notes
+            </p>
+            {deal.notes.length === 0 ? (
+              <p className="text-xs text-[#9A9A9A] leading-relaxed">None</p>
+            ) : (
+              <ul className="list-none p-0 m-0 space-y-2">
+                {deal.notes.map((n) => (
+                  <li key={n.id} className="text-xs text-[#2C2C2C] leading-relaxed">
+                    <span className="text-[10px] text-[#9A9A9A] block">
+                      {formatDate(n.createdAt)}
+                    </span>
+                    {n.content}
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
-        <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
-            Last updated
-          </p>
-          <p className="text-sm text-[#2C2C2C] leading-relaxed">
-            {formatDate(deal.updatedAt)}
-          </p>
+          <div>
+            <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
+              Last updated
+            </p>
+            <p className="text-xs text-[#9A9A9A] leading-relaxed">
+              {formatDate(deal.updatedAt)}
+            </p>
+          </div>
         </div>
       </div>
     </aside>

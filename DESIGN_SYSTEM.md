@@ -81,6 +81,50 @@ When using this application, users should feel:
 | Error   | `#B54A4A` | Error states (muted red) |
 | Success | `#4A7A5A` | Success states (muted green) |
 
+### Monochromatic Tinting
+
+Used for status badges, chips, and stepper nodes. Each colour family uses a light wash background with a darker text of the same hue, following the formula:
+
+```
+bg-{colour}-50  text-{colour}-700  border border-{colour}-200
+```
+
+#### Colour Families
+
+| Family   | Background   | Text         | Border       | Semantic meaning         |
+| -------- | ------------ | ------------ | ------------ | ------------------------ |
+| Amber    | `amber-50`   | `amber-700`  | `amber-200`  | Early stage, caution     |
+| Blue     | `blue-50`    | `blue-700`   | `blue-200`   | Mid stage, in progress   |
+| Violet   | `violet-50`  | `violet-700` | `violet-200` | Structuring, distinctive |
+| Emerald  | `emerald-50` | `emerald-700`| `emerald-200`| Advanced, positive       |
+
+#### Stage-to-Colour Mapping
+
+| Deal Stage          | Colour  |
+| ------------------- | ------- |
+| Definition          | Amber   |
+| Pre-feasibility     | Amber   |
+| Feasibility         | Blue    |
+| Structuring         | Violet  |
+| Transaction Close   | Emerald |
+
+#### Readiness-to-Colour Mapping
+
+| Readiness State                      | Colour         |
+| ------------------------------------ | -------------- |
+| No viable projects                   | Neutral (grey) |
+| Conceptual interest                  | Amber          |
+| Feasibility underway                 | Amber          |
+| Structurable but stalled             | Blue           |
+| Investable with minor intervention   | Emerald        |
+| Scaled and replicable                | Emerald (dark) |
+
+#### Usage Guidance
+
+- Use for **badges, chips, and stepper nodes only** — never for large background fills
+- All mappings are centralised in `lib/stage-colours.ts` — import from there
+- For stepper nodes, use the stronger `-100` / `-400` / `-800` variant for visibility at small sizes
+
 ### Sankey Diagram Colours
 
 | Layer         | Colour       | Hex       |

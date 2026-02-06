@@ -134,3 +134,66 @@ describe("filterDealsByQuery", () => {
     expect(ids).toContain("d4"); // in mackay + isaac
   });
 });
+
+/* ------------------------------------------------------------------ */
+/* Faceted filter params                                               */
+/* ------------------------------------------------------------------ */
+
+describe("filterDealsByQuery with filter params", () => {
+  it("filters by stage", () => {
+    const staged = [
+      makeDeal({ id: "s1", stage: "definition" }),
+      makeDeal({ id: "s2", stage: "feasibility" }),
+      makeDeal({ id: "s3", stage: "definition" }),
+    ];
+    const result = filterDealsByQuery(staged, "", opportunityTypes, lgas, { stage: "definition" });
+    expect(result).toHaveLength(2);
+    expect(result.map((d) => d.id).sort()).toEqual(["s1", "s3"]);
+  });
+
+  it("filters by opportunityTypeId", () => {
+    const result = filterDealsByQuery(deals, "", opportunityTypes, lgas, {
+      opportunityTypeId: "bioenergy",
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe("d3");
+  });
+
+  it("filters by lgaId", () => {
+    const result = filterDealsByQuery(deals, "", opportunityTypes, lgas, {
+      lgaId: "whitsunday",
+    });
+    expect(result).toHaveLength(2);
+    const ids = result.map((d) => d.id).sort();
+    expect(ids).toEqual(["d3", "d5"]);
+  });
+
+  it("combines filters with text query (AND logic)", () => {
+    const result = filterDealsByQuery(deals, "hydrogen", opportunityTypes, lgas, {
+      lgaId: "whitsunday",
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe("d5");
+  });
+
+  it("combines multiple filters", () => {
+    const result = filterDealsByQuery(deals, "", opportunityTypes, lgas, {
+      lgaId: "mackay",
+      opportunityTypeId: "renewable-energy",
+    });
+    expect(result).toHaveLength(1);
+    expect(result[0].id).toBe("d1");
+  });
+
+  it("returns empty when filters exclude everything", () => {
+    const result = filterDealsByQuery(deals, "", opportunityTypes, lgas, {
+      stage: "transaction-close",
+    });
+    expect(result).toHaveLength(0);
+  });
+
+  it("ignores undefined filter fields", () => {
+    const result = filterDealsByQuery(deals, "", opportunityTypes, lgas, {});
+    expect(result).toHaveLength(5);
+  });
+});

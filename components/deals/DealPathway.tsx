@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { PATHWAY_STAGES } from "@/lib/pathway-data";
 import type { PathwayStage } from "@/lib/pathway-data";
+import { STAGE_NODE_CLASSES } from "@/lib/stage-colours";
 
 /**
  * Deal Pathway — the top pipeline is the sole navigation control.
@@ -130,8 +131,8 @@ function StagePipeline({
                       border text-sm font-medium transition duration-200 ease-out
                       ${
                         isActive
-                          ? "bg-[#2C2C2C] border-[#2C2C2C] text-white"
-                          : "bg-[#FFFFFF] border-[#E8E6E3] text-[#6B6B6B] group-hover:border-[#2C2C2C] group-hover:text-[#2C2C2C]"
+                          ? STAGE_NODE_CLASSES[stage.id].active
+                          : STAGE_NODE_CLASSES[stage.id].inactive
                       }
                     `}
                   >
@@ -186,7 +187,7 @@ function StagePipeline({
                     transition duration-200 ease-out
                     ${
                       isActive
-                        ? "bg-[#2C2C2C] border-[#2C2C2C] text-white"
+                        ? STAGE_NODE_CLASSES[stage.id].active
                         : "bg-[#FFFFFF] border-[#E8E6E3] text-[#6B6B6B]"
                     }
                   `}
@@ -245,7 +246,7 @@ function StageDetail({ stage }: { stage: PathwayStage }) {
           <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
             Key Activities
           </p>
-          <ul className="list-none p-0 m-0 space-y-2">
+          <ul className="list-disc pl-5 m-0 space-y-1.5">
             {stage.activities.map((activity) => (
               <li key={activity.name} className="text-sm text-[#2C2C2C] leading-relaxed">
                 <span className="font-medium">{activity.name}:</span>{" "}
@@ -260,7 +261,7 @@ function StageDetail({ stage }: { stage: PathwayStage }) {
           <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
             Stage Gate Checklist
           </p>
-          <ul className="list-none p-0 m-0 space-y-2">
+          <ul className="list-disc pl-5 m-0 space-y-1.5">
             {stage.gateChecklist.map((item) => (
               <li key={item.question} className="text-sm text-[#2C2C2C] leading-relaxed">
                 <span className="font-medium">{item.question}:</span>{" "}
@@ -278,7 +279,7 @@ function StageDetail({ stage }: { stage: PathwayStage }) {
           <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
             Primary Risks Addressed
           </p>
-          <ul className="list-none p-0 m-0 space-y-2">
+          <ul className="list-disc pl-5 m-0 space-y-1.5">
             {stage.risksAddressed.map((risk) => (
               <li key={risk.name} className="text-sm text-[#2C2C2C] leading-relaxed">
                 <span className="font-medium">{risk.name}:</span>{" "}
@@ -293,7 +294,7 @@ function StageDetail({ stage }: { stage: PathwayStage }) {
           <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
             Typical Artefacts
           </p>
-          <ul className="list-none p-0 m-0 space-y-1">
+          <ul className="list-disc pl-5 m-0 space-y-1">
             {stage.artefacts.map((artefact) => (
               <li key={artefact} className="text-sm text-[#2C2C2C] leading-relaxed">
                 {artefact}

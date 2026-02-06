@@ -23,6 +23,28 @@ alwaysApply: false
 | Accent | `#7A6B5A` (warm taupe) | Interactive elements, focus rings |
 | Drag handle | `#C4BDB4` | Bottom sheet handle |
 
+## Monochromatic Tinting
+
+Four colour families for status badges, chips, and stepper nodes. Formula: `bg-{colour}-50 text-{colour}-700 border border-{colour}-200`.
+
+| Family | Semantic | Example stages |
+|--------|----------|----------------|
+| Amber | Early, caution | Definition, Pre-feasibility |
+| Blue | Mid, in progress | Feasibility |
+| Violet | Structuring | Structuring |
+| Emerald | Advanced, positive | Transaction Close |
+
+All mappings live in `lib/stage-colours.ts`. Import `STAGE_COLOUR_CLASSES`, `READINESS_COLOUR_CLASSES`, or `STAGE_NODE_CLASSES` — never hardcode tinting colours in components.
+
+```tsx
+// ❌ BAD — hardcoded colour
+<span className="bg-amber-50 text-amber-700 border border-amber-200">
+
+// ✅ GOOD — centralised mapping
+import { STAGE_COLOUR_CLASSES } from "@/lib/stage-colours";
+<span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 ${STAGE_COLOUR_CLASSES[deal.stage]}`}>
+```
+
 ## Typography
 
 - **Headings**: `font-heading` (serif, e.g. Newsreader)
