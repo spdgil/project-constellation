@@ -1,0 +1,66 @@
+---
+description: Relational Design Language rules for consistent UI
+globs: "**/*.tsx"
+alwaysApply: false
+---
+
+# Design System
+
+**Calm, Contemplative, Clarity.** The design should feel like a well-crafted journal.
+
+## Colours
+
+| Token | Value | Usage |
+|-------|-------|-------|
+| Background | `#FAF9F7` (warm cream) | Page background; never pure white |
+| Card/elevated | `#FFFFFF` | Cards, panels |
+| Hover/subtle | `#F5F3F0` | Hover states, selected items |
+| Text primary | `#2C2C2C` (soft black) | Body text; never pure black |
+| Text secondary | `#6B6B6B` | Supporting text |
+| Text tertiary | `#9A9A9A` | Disabled, meta labels |
+| Border primary | `#E8E6E3` | Barely visible borders |
+| Border subtle | `#F0EEEB` | Inner separators |
+| Accent | `#7A6B5A` (warm taupe) | Interactive elements, focus rings |
+| Drag handle | `#C4BDB4` | Bottom sheet handle |
+
+## Typography
+
+- **Headings**: `font-heading` (serif, e.g. Newsreader)
+- **Body/UI**: System sans-serif (default Tailwind stack)
+- Page heading: `text-2xl font-heading font-normal leading-[1.3]`
+- Section heading: `text-lg font-heading font-normal leading-[1.4]`
+- Body: `text-sm leading-relaxed`
+- Labels: `text-[10px] uppercase tracking-wider`
+
+## Visual Rules
+
+1. **NO border-radius** on cards, buttons, or inputs (square corners only)
+2. **NO shadows** except `shadow-[0_-4px_20px_rgba(0,0,0,0.08)]` on bottom sheet
+3. **NO gradients** in UI elements
+4. **Transitions**: Always `duration-300 ease-out`
+
+## Component Patterns
+
+```tsx
+// Buttons — secondary (default)
+className="border border-[#E8E6E3] bg-transparent text-[#2C2C2C]
+           hover:bg-[#F5F3F0] hover:border-[#E8E6E3]
+           transition duration-300 ease-out"
+
+// Links — accent
+className="text-[#7A6B5A] underline underline-offset-2
+           hover:text-[#5A4B3A]"
+
+// Focus rings
+className="focus:outline-none focus-visible:ring-2
+           focus-visible:ring-[#7A6B5A]
+           focus-visible:ring-offset-2
+           focus-visible:ring-offset-[#FAF9F7]"
+```
+
+## Accessibility
+
+- All interactive elements must have visible focus states
+- Semantic HTML structure (`nav`, `region`, `heading` levels)
+- Minimum 4.5:1 contrast for text
+- Keyboard navigable; `aria-label` on icon-only buttons

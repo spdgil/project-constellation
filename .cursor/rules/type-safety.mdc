@@ -1,0 +1,76 @@
+---
+description: Enforce type safety patterns and avoid unsafe casts
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# Type Safety Standards
+
+## Avoid Unsafe Type Assertions
+
+```typescript
+// ❌ BAD — Double assertion hides type errors
+const data = response as unknown as Deal[];
+
+// ❌ BAD — Casting to silence a mismatch
+const id = feature.properties?.id as string;
+
+// ✅ GOOD — Safe coercion with fallback
+const id = String(feature.properties?.id ?? "");
+
+// ✅ GOOD — Zod validation for external data
+import { dealSchema } from "@/lib/schemas";
+const result = dealSchema.array().safeParse(response);
+if (result.success) {
+  const deals = result.data;
+}
+```
+
+## Avoid `any` Type
+
+```typescript
+// ❌ BAD
+function process(data: any) { ... }
+
+// ✅ GOOD — Use generics or proper types
+function process<T extends Record<string, unknown>>(data: T) { ... }
+```
+
+## Safe Array Access
+
+```typescript
+// ❌ BAD — May crash on empty array
+const firstLga = deal.lgaIds[0].toUpperCase();
+
+// ✅ GOOD — Guard before access
+const firstLgaId = deal.lgaIds[0];
+if (!firstLgaId) continue;
+```
+
+## Null Checks
+
+```typescript
+// ❌ BAD — Assuming data exists
+const coords = feature.geometry.coordinates;
+
+// ✅ GOOD — Optional chaining with fallback
+const coords = feature?.geometry?.coordinates;
+if (!coords) return null;
+```
+
+## Canonical Types
+
+Use types from `@/lib/types` for all domain entities. Never define local interfaces that duplicate or narrow shared types.
+
+```typescript
+// ❌ BAD — Local interface that drifts from canonical type
+interface Deal {
+  id: string;
+  name: string;
+}
+
+// ✅ GOOD — Import from shared types
+import type { Deal, LGA, OpportunityType } from "@/lib/types";
+```
+
+When you need a subset of fields, use `Pick<>` or `Omit<>` from the canonical type.

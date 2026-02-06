@@ -1,0 +1,70 @@
+---
+description: Historical context for past issues, decisions, and pitfalls
+globs: "**/*.{ts,tsx}"
+alwaysApply: true
+---
+
+# Historical Context
+
+This file documents past issues and architectural decisions to prevent repeating mistakes.
+
+## 1. MapCanvas.test.tsx Pre-existing Type Errors
+
+**Issue:** `MapCanvas.test.tsx` has pre-existing TypeScript errors (`Cannot find name 'afterAll'`, `Cannot find name 'MapMouseEvent'`) that predate current work.
+
+**Workaround:** The pre-commit hook filters these out:
+```bash
+npx tsc --noEmit 2>&1 | grep -v "MapCanvas.test.tsx"
+```
+
+**Status:** Known; will be fixed when test is refactored.
+
+## 2. `next lint` Fails on Paths with Spaces
+
+**Issue:** `next lint` cannot parse project directories containing spaces in the path (e.g. `/Users/.../Project Constellation/`). It throws `Invalid project directory provided`.
+
+**Workaround:** Pre-commit hook uses `npx tsc --noEmit` and `npm run test:run` instead of `next lint`. Linting runs in CI via `npm run lint` where the checkout path has no spaces.
+
+**Status:** Known Next.js issue; no upstream fix available.
+
+## 3. ResizeObserver Not Available in jsdom
+
+**Issue:** Components using `ResizeObserver` (e.g. `LgaBottomSheet`) crash in Vitest/jsdom with `ReferenceError: ResizeObserver is not defined`.
+
+**Fix:** A polyfill is registered in `tests/setup.ts`:
+```typescript
+if (typeof globalThis.ResizeObserver === "undefined") {
+  globalThis.ResizeObserver = class ResizeObserver { ... };
+}
+```
+
+**Rule:** When adding new browser APIs to components, check jsdom support and add polyfills to `tests/setup.ts` as needed.
+
+## 4. Absolute-to-Flex Layout Bug (Map + Bottom Sheet)
+
+**Issue:** The `LgaBottomSheet` was initially implemented with `absolute bottom-0` positioning, which overlaid the map without resizing it. The map content was hidden behind the sheet.
+
+**Root cause:** Absolute-positioned children do not affect parent/sibling layout. The map kept its full height while the sheet covered the lower portion.
+
+**Fix:** Changed to a flex column layout where the map is `flex-1 min-h-0` and the bottom sheet is `shrink-0`. The map now resizes dynamically.
+
+**Rule:** See `layout-contracts.mdc` for the full checklist.
+
+## 5. GeoJSON Data Sources for QLD LGAs
+
+**Decision:** After testing QLD OpenDataSoft (incomplete), QLD ArcGIS REST (naming issues), and ABS ASGS 2021 (correct), we settled on the ABS ASGS LGA_GEN dataset for land-clipped, generalised LGA boundaries.
+
+**Key detail:** ABS uses simplified names (e.g. "Mackay" not "Mackay Regional"). The fetch script in `scripts/fetch-lga-boundaries.mjs` handles this mapping.
+
+## 6. Vitest Mock Typing
+
+**Issue:** `vi.fn()` returns `Mock<Procedure | Constructable>` which does not satisfy `() => void` prop types, causing `TS2322` errors.
+
+**Fix:** Type the mock variable explicitly:
+```typescript
+// ❌ BAD
+const onClose = vi.fn();
+
+// ✅ GOOD
+const onClose: () => void = vi.fn();
+```

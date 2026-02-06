@@ -13,3 +13,16 @@ vi.mock("next/link", () => ({
     href: string;
   }) => React.createElement("a", { href, ...rest }, children),
 }));
+
+// Polyfill ResizeObserver for jsdom (used by bottom sheet, etc.)
+if (typeof globalThis.ResizeObserver === "undefined") {
+  globalThis.ResizeObserver = class ResizeObserver {
+    private cb: ResizeObserverCallback;
+    constructor(cb: ResizeObserverCallback) {
+      this.cb = cb;
+    }
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  };
+}

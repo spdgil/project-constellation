@@ -7,6 +7,7 @@ import { MapCanvas } from "./MapCanvas";
 import type { DealGeoPosition } from "./MapCanvas";
 import { DealDrawer } from "./DealDrawer";
 import { LgaPanel } from "./LgaPanel";
+import { LgaBottomSheet } from "./LgaBottomSheet";
 import Link from "next/link";
 
 const EMPTY_BOUNDARIES: GeoJSONFeatureCollection = {
@@ -116,20 +117,33 @@ export function MapView({
       <div className="flex flex-1 min-h-0 border border-[#E8E6E3] bg-[#FAF9F7]">
         <LgaPanel
           lgas={lgas}
-          deals={deals}
           selectedLgaId={selectedLgaId}
           onSelectLga={setSelectedLgaId}
         />
+        {/* Map + bottom-sheet in a flex column — map shrinks as sheet grows */}
         <div className="flex-1 flex flex-col min-w-0 min-h-0">
-          <MapCanvas
-            boundaries={boundaries}
-            selectedLgaId={selectedLgaId}
-            onSelectLga={setSelectedLgaId}
-            deals={deals}
-            dealPositions={dealPositions}
-            selectedDealId={selectedDealId}
-            onSelectDeal={setSelectedDealId}
-          />
+          <div className="flex-1 min-h-0">
+            <MapCanvas
+              boundaries={boundaries}
+              selectedLgaId={selectedLgaId}
+              onSelectLga={setSelectedLgaId}
+              deals={deals}
+              dealPositions={dealPositions}
+              selectedDealId={selectedDealId}
+              onSelectDeal={setSelectedDealId}
+            />
+          </div>
+          {selectedLgaId && (() => {
+            const lga = lgas.find((l) => l.id === selectedLgaId);
+            if (!lga) return null;
+            return (
+              <LgaBottomSheet
+                lga={lga}
+                deals={deals}
+                onClose={() => setSelectedLgaId(null)}
+              />
+            );
+          })()}
         </div>
         {selectedDeal && (
           <DealDrawer

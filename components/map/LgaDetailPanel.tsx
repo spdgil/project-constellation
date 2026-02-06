@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useCallback, useId, useState } from "react";
+import { useCallback, useId, useState } from "react";
 import type { LGA, Deal } from "@/lib/types";
 import { CONSTRAINT_LABELS } from "@/lib/labels";
 import { AccordionSection } from "@/components/ui/AccordionSection";
@@ -19,7 +19,8 @@ export interface LgaDetailPanelProps {
   onClose: () => void;
 }
 
-export function LgaDetailPanel({ lga, deals, onClose }: LgaDetailPanelProps) {
+/** Headless detail content for an LGA. Rendered inside LgaBottomSheet. */
+export function LgaDetailPanel({ lga, deals }: LgaDetailPanelProps) {
   const panelId = useId();
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(["summary"]));
 
@@ -34,16 +35,6 @@ export function LgaDetailPanel({ lga, deals, onClose }: LgaDetailPanelProps) {
 
   const isExpanded = (id: string) => openSections.has(id);
 
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
-        onClose();
-      }
-    };
-    document.addEventListener("keydown", handleKeyDown);
-    return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [onClose]);
-
   const summary = lga.summary ?? `${lga.name} (LGA). Place context will appear here when connected.`;
   const hypotheses = lga.opportunityHypotheses ?? [];
   const activeDealIds = lga.activeDealIds ?? [];
@@ -55,25 +46,9 @@ export function LgaDetailPanel({ lga, deals, onClose }: LgaDetailPanelProps) {
   return (
     <div
       data-lga-panel={lga.id}
-      role="region"
-      aria-label={`${lga.name} LGA details`}
-      className="border-t border-[#E8E6E3] flex flex-col min-h-0"
+      className="flex flex-col min-h-0"
     >
-      <div className="flex items-center justify-between gap-2 p-3 border-b border-[#E8E6E3] bg-[#FFFFFF]">
-        <h2 className="font-heading text-lg font-normal leading-[1.4] text-[#2C2C2C]">
-          {lga.name}
-        </h2>
-        <button
-          type="button"
-          onClick={onClose}
-          aria-label="Close LGA panel"
-          className="text-sm text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-white transition duration-300 ease-out"
-        >
-          Close
-        </button>
-      </div>
-
-      <div className="flex-1 overflow-auto p-3 space-y-0 border-b border-[#E8E6E3]">
+      <div className="flex-1 overflow-auto p-3 space-y-0">
         <AccordionSection
           id="summary"
           heading="Summary"

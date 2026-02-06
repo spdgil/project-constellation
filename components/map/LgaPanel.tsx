@@ -1,23 +1,21 @@
 "use client";
 
-import type { LGA, Deal } from "@/lib/types";
-import { LgaDetailPanel } from "./LgaDetailPanel";
+import type { LGA } from "@/lib/types";
 
 export interface LgaPanelProps {
   lgas: LGA[];
-  deals: Deal[];
   selectedLgaId: string | null;
   onSelectLga: (id: string | null) => void;
 }
 
+/** Sidebar LGA list — pure navigation; detail is shown in the bottom sheet. */
 export function LgaPanel({
   lgas,
-  deals,
   selectedLgaId,
   onSelectLga,
 }: LgaPanelProps) {
   return (
-    <div className="w-64 border-r border-[#E8E6E3] bg-[#FAF9F7] flex flex-col min-h-0">
+    <div className="w-48 border-r border-[#E8E6E3] bg-[#FAF9F7] flex flex-col min-h-0">
       <div className="p-3 border-b border-[#E8E6E3]">
         <h2 className="font-heading text-lg font-normal leading-[1.4] text-[#2C2C2C]">
           LGAs
@@ -46,17 +44,6 @@ export function LgaPanel({
           })}
         </ul>
       </nav>
-      {selectedLgaId && (() => {
-        const selectedLga = lgas.find((l) => l.id === selectedLgaId);
-        if (!selectedLga) return null;
-        return (
-          <LgaDetailPanel
-            lga={selectedLga}
-            deals={deals}
-            onClose={() => onSelectLga(null)}
-          />
-        );
-      })()}
     </div>
   );
 }

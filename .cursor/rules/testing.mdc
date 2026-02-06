@@ -1,0 +1,69 @@
+---
+description: Testing standards and coverage requirements (Vitest)
+globs: "**/*.{test,spec}.{ts,tsx}"
+alwaysApply: false
+---
+
+# Testing Standards
+
+This project uses **Vitest** with **React Testing Library**. Configuration lives in `vitest.config.ts`; global setup in `tests/setup.ts`.
+
+## Coverage Requirements
+
+- New utilities and business logic must have unit tests
+- Test coverage should not decrease with new code
+- Critical paths (data loading, search, map interactions) require integration tests
+
+## Test Structure
+
+```typescript
+describe("ModuleName", () => {
+  describe("functionName", () => {
+    it("handles normal case", () => { ... });
+    it("handles edge case", () => { ... });
+    it("handles error case", () => { ... });
+  });
+});
+```
+
+## What to Test
+
+- **Utilities** (`lib/*.ts`): Business logic, data transformations, edge cases
+- **Hooks** (`lib/hooks/`): State changes, side effects, cleanup
+- **API Routes** (`app/api/`): Response status, error handling, caching headers
+- **Components** (`components/`): User interactions, conditional rendering, accessibility
+
+## Behaviour Over Implementation
+
+```typescript
+// ❌ BAD — Tests implementation details
+expect(component.state.isLoading).toBe(true);
+
+// ✅ GOOD — Tests observable behaviour
+expect(screen.getByRole("progressbar")).toBeInTheDocument();
+```
+
+## Mocking
+
+- Mock external services and browser APIs, not internal utilities
+- Use `vi.spyOn` for partial mocks, `vi.mock` for full module mocks
+- Reset mocks in `beforeEach` with `vi.clearAllMocks()`
+- Browser APIs not in jsdom (e.g. `ResizeObserver`, `IntersectionObserver`) are polyfilled in `tests/setup.ts`
+
+## Component Test Patterns
+
+```typescript
+// ❌ BAD — Untyped mock function fails tsc
+const onClose = vi.fn();
+render(<Panel onClose={onClose} />); // TS2322
+
+// ✅ GOOD — Type the mock to match the prop
+const onClose: () => void = vi.fn();
+render(<Panel onClose={onClose} />);
+```
+
+## Colocate Tests
+
+Test files live next to the code they test:
+- `components/map/MapCanvas.tsx` -> `components/map/MapCanvas.test.tsx`
+- `lib/opportunities.ts` -> `lib/opportunities.test.ts`

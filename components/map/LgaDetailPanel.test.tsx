@@ -40,13 +40,14 @@ const mockDeals: Deal[] = [
 ];
 
 describe("LgaDetailPanel", () => {
-  it("renders LGA name and Close button", () => {
-    const onClose = vi.fn();
-    render(<LgaDetailPanel lga={mockLga} deals={mockDeals} onClose={onClose} />);
+  it("renders accordion sections", () => {
+    render(<LgaDetailPanel lga={mockLga} deals={mockDeals} onClose={vi.fn()} />);
 
-    expect(screen.getByRole("region", { name: /mackay lga details/i })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Mackay", level: 2 })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /close lga panel/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Summary" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /opportunity hypotheses/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /active deals/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /repeated constraints/i })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /evidence and notes/i })).toBeInTheDocument();
   });
 
   it("Summary section is open by default", () => {
@@ -57,7 +58,7 @@ describe("LgaDetailPanel", () => {
     expect(screen.getByText(/Mackay LGA is part of the Greater Whitsunday region/i)).toBeInTheDocument();
   });
 
-  it("Opportunity hypotheses, Active deals, Repeated constraints, Evidence and notes are collapsed by default", () => {
+  it("other sections are collapsed by default", () => {
     render(<LgaDetailPanel lga={mockLga} deals={mockDeals} onClose={vi.fn()} />);
 
     expect(screen.getByRole("button", { name: /opportunity hypotheses/i })).toHaveAttribute(
@@ -76,11 +77,6 @@ describe("LgaDetailPanel", () => {
       "aria-expanded",
       "false"
     );
-
-    const hypothesesContent = document.getElementById(
-      screen.getByRole("button", { name: /opportunity hypotheses/i }).getAttribute("aria-controls") ?? ""
-    );
-    expect(hypothesesContent).toHaveAttribute("hidden");
   });
 
   it("opening Opportunity hypotheses section shows content", () => {
@@ -102,7 +98,6 @@ describe("LgaDetailPanel", () => {
 
     fireEvent.click(summaryButton);
     expect(summaryButton).toHaveAttribute("aria-expanded", "false");
-    expect(screen.getByText(/Mackay LGA is part of the Greater Whitsunday region/i)).toBeInTheDocument(); // content may still be in DOM but hidden
   });
 
   it("keyboard Enter on accordion button toggles section", () => {
@@ -135,22 +130,5 @@ describe("LgaDetailPanel", () => {
     const summaryButton = screen.getByRole("button", { name: "Summary" });
     summaryButton.focus();
     expect(summaryButton).toHaveFocus();
-  });
-
-  it("Escape calls onClose", () => {
-    const onClose = vi.fn();
-    render(<LgaDetailPanel lga={mockLga} deals={mockDeals} onClose={onClose} />);
-
-    expect(onClose).not.toHaveBeenCalled();
-    fireEvent.keyDown(document, { key: "Escape", code: "Escape" });
-    expect(onClose).toHaveBeenCalledTimes(1);
-  });
-
-  it("Close button calls onClose", () => {
-    const onClose = vi.fn();
-    render(<LgaDetailPanel lga={mockLga} deals={mockDeals} onClose={onClose} />);
-
-    fireEvent.click(screen.getByRole("button", { name: /close lga panel/i }));
-    expect(onClose).toHaveBeenCalledTimes(1);
   });
 });

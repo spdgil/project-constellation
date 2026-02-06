@@ -265,7 +265,7 @@ describe("MapView", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("selecting an LGA via list opens LGA detail panel", () => {
+  it("selecting an LGA via list opens bottom sheet with LGA details", () => {
     render(
       <MapView
         lgas={mockLgas}
@@ -287,6 +287,10 @@ describe("MapView", () => {
     ).toBeInTheDocument();
     expect(
       screen.getByRole("region", { name: /mackay lga details/i }),
+    ).toBeInTheDocument();
+    /* Bottom sheet drag handle is present */
+    expect(
+      screen.getByRole("separator", { name: /resize lga detail panel/i }),
     ).toBeInTheDocument();
   });
 

@@ -1,0 +1,83 @@
+---
+description: Error handling patterns for API routes, components, and services
+globs: "**/*.{ts,tsx}"
+alwaysApply: false
+---
+
+# Error Handling Standards
+
+## API Routes
+
+```typescript
+// ❌ BAD — Unhandled errors crash the route
+export async function GET() {
+  const data = await loadData();
+  return Response.json(data);
+}
+
+// ✅ GOOD — try/catch with proper status codes
+export async function GET() {
+  try {
+    const data = await loadData();
+    return Response.json(data, {
+      headers: { "Cache-Control": "public, max-age=3600" },
+    });
+  } catch (err) {
+    console.error("Failed to load data:", err);
+    return Response.json(
+      { error: "Internal server error" },
+      { status: 500 },
+    );
+  }
+}
+```
+
+## Server Components (Page Data Loading)
+
+Use the `loadPageData` helper from `lib/load-page-data.ts` for consistent error handling:
+
+```typescript
+// ❌ BAD — Silent failure or uncaught rejection
+const [lgas, deals] = await Promise.all([loadLgas(), loadDeals()]);
+
+// ✅ GOOD — Centralised with try/catch
+const { lgas, deals, opportunityTypes } = await loadPageData();
+```
+
+## Error Boundaries
+
+- Global error boundary: `app/error.tsx`
+- Route-specific boundaries: `app/<route>/error.tsx` (e.g. `app/map/error.tsx`)
+- Error boundaries must provide a "Try again" action and a link home
+
+## Client-Side Fetching
+
+```typescript
+// ❌ BAD — Silent catch
+fetch("/api/boundaries").then(r => r.json()).catch(() => {});
+
+// ✅ GOOD — Log error and surface to user
+fetch("/api/boundaries")
+  .then((r) => {
+    if (!r.ok) throw new Error(`HTTP ${r.status}`);
+    return r.json();
+  })
+  .catch((err) => {
+    console.error("Failed to fetch boundaries:", err);
+    setError("Could not load data. The map may be incomplete.");
+  });
+```
+
+## Local Storage
+
+```typescript
+// ❌ BAD — Crashes on QuotaExceededError
+localStorage.setItem(key, JSON.stringify(data));
+
+// ✅ GOOD — Graceful degradation
+try {
+  localStorage.setItem(key, JSON.stringify(data));
+} catch (err) {
+  console.warn("localStorage write failed:", err);
+}
+```
