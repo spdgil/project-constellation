@@ -35,6 +35,30 @@ export type Constraint =
   | "skills-and-workforce-constraint"
   | "common-user-infrastructure-gap";
 
+// --- Gate & Artefact tracking (pathway alignment) ---
+
+/** Gate checklist entry status */
+export type GateStatus = "pending" | "satisfied" | "not-applicable";
+
+/** Per-deal gate checklist entry — mirrors PathwayGateItem.question */
+export interface DealGateEntry {
+  question: string;
+  status: GateStatus;
+}
+
+/** Artefact/document status */
+export type ArtefactStatus = "not-started" | "in-progress" | "complete";
+
+/** Per-deal artefact tracking — mirrors PathwayStage.artefacts[i] */
+export interface DealArtefact {
+  name: string;
+  status: ArtefactStatus;
+  /** User's description of the document content */
+  summary?: string;
+  /** Link or reference to the actual document */
+  url?: string;
+}
+
 // --- Entities ---
 
 /** LGA-level opportunity hypothesis — PRD §6.3, §8.2 */
@@ -103,6 +127,10 @@ export interface Deal {
   evidence: EvidenceRef[];
   notes: Note[];
   updatedAt: string;
+  /** Gate checklist tracking per stage (populated up to current stage) */
+  gateChecklist: Partial<Record<DealStage, DealGateEntry[]>>;
+  /** Artefact/document tracking per stage (populated up to current stage) */
+  artefacts: Partial<Record<DealStage, DealArtefact[]>>;
 }
 
 /** Constraint change audit — PRD §7.1 */

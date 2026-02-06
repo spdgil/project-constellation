@@ -1,7 +1,17 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { Deal, LGA, OpportunityType, ReadinessState, Constraint } from "@/lib/types";
+import type {
+  Deal,
+  LGA,
+  OpportunityType,
+  ReadinessState,
+  Constraint,
+  GateStatus,
+  ArtefactStatus,
+  DealGateEntry,
+  DealArtefact,
+} from "@/lib/types";
 import {
   getDealWithLocalOverrides,
   hasLocalDealOverrides,
@@ -12,9 +22,14 @@ import {
   READINESS_LABELS,
   STAGE_LABELS,
   CONSTRAINT_LABELS,
+  ARTEFACT_STATUS_LABELS,
 } from "@/lib/labels";
-import { STAGE_COLOUR_CLASSES } from "@/lib/stage-colours";
+import { STAGE_COLOUR_CLASSES, ARTEFACT_STATUS_COLOUR_CLASSES } from "@/lib/stage-colours";
+import { getStageGateChecklist, getStageArtefacts } from "@/lib/deal-pathway-utils";
+import { PATHWAY_STAGES } from "@/lib/pathway-data";
 import { formatDate } from "@/lib/format";
+
+const ARTEFACT_STATUS_CYCLE: ArtefactStatus[] = ["not-started", "in-progress", "complete"];
 
 const READINESS_OPTIONS: ReadinessState[] = [
   "no-viable-projects",
@@ -139,6 +154,73 @@ export function DealDrawer({
     [deal]
   );
 
+  const handleGateToggle = useCallback(
+    (questionIndex: number) => {
+      if (!deal) return;
+      const stage = deal.stage;
+      const entries = getStageGateChecklist(deal.gateChecklist ?? {}, stage);
+      const entry = entries[questionIndex];
+      if (!entry) return;
+      const newStatus: GateStatus = entry.status === "satisfied" ? "pending" : "satisfied";
+      const updatedEntries = entries.map((e, i) =>
+        i === questionIndex ? { ...e, status: newStatus } : e,
+      );
+      const updated: Deal = {
+        ...deal,
+        gateChecklist: { ...deal.gateChecklist, [stage]: updatedEntries },
+        updatedAt: new Date().toISOString(),
+      };
+      setDeal(updated);
+      saveDealLocally(updated);
+      setIsLocal(true);
+    },
+    [deal],
+  );
+
+  const handleArtefactStatusCycle = useCallback(
+    (artefactIndex: number) => {
+      if (!deal) return;
+      const stage = deal.stage;
+      const entries = getStageArtefacts(deal.artefacts ?? {}, stage);
+      const entry = entries[artefactIndex];
+      if (!entry) return;
+      const currentIdx = ARTEFACT_STATUS_CYCLE.indexOf(entry.status);
+      const nextStatus = ARTEFACT_STATUS_CYCLE[(currentIdx + 1) % ARTEFACT_STATUS_CYCLE.length];
+      const updatedEntries = entries.map((e, i) =>
+        i === artefactIndex ? { ...e, status: nextStatus } : e,
+      );
+      const updated: Deal = {
+        ...deal,
+        artefacts: { ...deal.artefacts, [stage]: updatedEntries },
+        updatedAt: new Date().toISOString(),
+      };
+      setDeal(updated);
+      saveDealLocally(updated);
+      setIsLocal(true);
+    },
+    [deal],
+  );
+
+  const handleArtefactFieldChange = useCallback(
+    (artefactIndex: number, field: "summary" | "url", value: string) => {
+      if (!deal) return;
+      const stage = deal.stage;
+      const entries = getStageArtefacts(deal.artefacts ?? {}, stage);
+      const updatedEntries = entries.map((e, i) =>
+        i === artefactIndex ? { ...e, [field]: value || undefined } : e,
+      );
+      const updated: Deal = {
+        ...deal,
+        artefacts: { ...deal.artefacts, [stage]: updatedEntries },
+        updatedAt: new Date().toISOString(),
+      };
+      setDeal(updated);
+      saveDealLocally(updated);
+      setIsLocal(true);
+    },
+    [deal],
+  );
+
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -155,6 +237,15 @@ export function DealDrawer({
   const lgaNames = deal.lgaIds
     .map((id) => lgas.find((l) => l.id === id)?.name ?? id)
     .join(", ");
+
+  const gateEntries = getStageGateChecklist(deal.gateChecklist ?? {}, deal.stage);
+  const gateSatisfied = gateEntries.filter((e) => e.status === "satisfied").length;
+  const gateTotal = gateEntries.length;
+  const allGatesSatisfied = gateSatisfied === gateTotal && gateTotal > 0;
+
+  const artefactEntries = getStageArtefacts(deal.artefacts ?? {}, deal.stage);
+
+  const pathwayStage = PATHWAY_STAGES.find((s) => s.id === deal.stage);
 
   return (
     <aside
@@ -270,6 +361,131 @@ export function DealDrawer({
                 </option>
               ))}
             </select>
+          </div>
+        </div>
+
+        {/* Gate Checklist group */}
+        <div className="border-t border-[#E8E6E3] pt-4 mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
+              Stage gate checklist
+            </p>
+            <span
+              className={`text-[10px] tracking-wider px-1.5 py-0.5 ${
+                allGatesSatisfied
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  : "bg-[#F5F3F0] text-[#6B6B6B] border border-[#E8E6E3]"
+              }`}
+            >
+              {gateSatisfied} of {gateTotal} satisfied
+            </span>
+          </div>
+          <fieldset className="space-y-2">
+            <legend className="sr-only">
+              Gate checklist for {STAGE_LABELS[deal.stage]} stage
+            </legend>
+            {gateEntries.map((entry, idx) => {
+              const desc = pathwayStage?.gateChecklist.find(
+                (g) => g.question === entry.question,
+              )?.description;
+              return (
+                <label
+                  key={entry.question}
+                  className="flex items-start gap-2 cursor-pointer group"
+                >
+                  <input
+                    type="checkbox"
+                    checked={entry.status === "satisfied"}
+                    onChange={() => handleGateToggle(idx)}
+                    aria-label={`${entry.question}: ${entry.status}`}
+                    className="mt-0.5 h-4 w-4 accent-emerald-600 cursor-pointer"
+                    data-testid={`gate-checkbox-${idx}`}
+                  />
+                  <span className="flex-1 min-w-0">
+                    <span
+                      className={`text-sm leading-relaxed block ${
+                        entry.status === "satisfied"
+                          ? "text-emerald-700 line-through"
+                          : "text-[#2C2C2C]"
+                      }`}
+                    >
+                      {entry.question}
+                    </span>
+                    {desc && (
+                      <span className="text-[10px] text-[#9A9A9A] leading-snug block mt-0.5">
+                        {desc}
+                      </span>
+                    )}
+                  </span>
+                </label>
+              );
+            })}
+          </fieldset>
+        </div>
+
+        {/* Artefacts & Documents group */}
+        <div className="border-t border-[#E8E6E3] pt-4 mt-4">
+          <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-2">
+            Artefacts &amp; documents
+          </p>
+          <div className="space-y-3">
+            {artefactEntries.map((entry, idx) => (
+              <div
+                key={entry.name}
+                className="border border-[#E8E6E3] bg-[#FAF9F7] p-3 space-y-2"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <p className="text-sm text-[#2C2C2C] leading-relaxed flex-1 min-w-0">
+                    {entry.name}
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => handleArtefactStatusCycle(idx)}
+                    aria-label={`${entry.name} status: ${ARTEFACT_STATUS_LABELS[entry.status]}. Click to change.`}
+                    className={`shrink-0 text-[10px] uppercase tracking-wider px-1.5 py-0.5 cursor-pointer transition duration-300 ease-out hover:opacity-80 ${ARTEFACT_STATUS_COLOUR_CLASSES[entry.status]}`}
+                    data-testid={`artefact-status-${idx}`}
+                  >
+                    {ARTEFACT_STATUS_LABELS[entry.status]}
+                  </button>
+                </div>
+
+                <div>
+                  <label
+                    htmlFor={`artefact-summary-${idx}`}
+                    className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1 block"
+                  >
+                    Summary
+                  </label>
+                  <textarea
+                    id={`artefact-summary-${idx}`}
+                    value={entry.summary ?? ""}
+                    onChange={(e) => handleArtefactFieldChange(idx, "summary", e.target.value)}
+                    placeholder="Describe the document..."
+                    rows={2}
+                    className="w-full px-2 py-1.5 border border-[#E8E6E3] bg-white text-[#2C2C2C] text-xs placeholder:text-[#9A9A9A] focus:border-[#7A6B5A] focus:ring-1 focus:ring-[#7A6B5A] focus:outline-none transition duration-300 ease-out resize-y"
+                    data-testid={`artefact-summary-${idx}`}
+                  />
+                </div>
+
+                <div>
+                  <label
+                    htmlFor={`artefact-url-${idx}`}
+                    className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1 block"
+                  >
+                    Document link
+                  </label>
+                  <input
+                    type="url"
+                    id={`artefact-url-${idx}`}
+                    value={entry.url ?? ""}
+                    onChange={(e) => handleArtefactFieldChange(idx, "url", e.target.value)}
+                    placeholder="https://..."
+                    className="w-full h-8 px-2 border border-[#E8E6E3] bg-white text-[#2C2C2C] text-xs placeholder:text-[#9A9A9A] focus:border-[#7A6B5A] focus:ring-1 focus:ring-[#7A6B5A] focus:outline-none transition duration-300 ease-out"
+                    data-testid={`artefact-url-${idx}`}
+                  />
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 

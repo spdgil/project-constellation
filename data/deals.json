@@ -13,7 +13,31 @@
     "nextStep": "Finalise Stage 2 scope and common-user access model.",
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.20"}],
     "notes": [],
-    "updatedAt": "2026-02-06T00:00:00.000Z"
+    "updatedAt": "2026-02-06T00:00:00.000Z",
+    "gateChecklist": {
+      "definition": [
+        { "question": "Strategic Suitability", "status": "satisfied" },
+        { "question": "Legal Viability", "status": "satisfied" },
+        { "question": "Government Commitment", "status": "satisfied" }
+      ],
+      "pre-feasibility": [
+        { "question": "Preliminary Feasibility", "status": "pending" },
+        { "question": "Clearance in Principle", "status": "pending" },
+        { "question": "Additionality", "status": "pending" }
+      ]
+    },
+    "artefacts": {
+      "definition": [
+        { "name": "Project Concept Note (PCN)", "status": "complete" },
+        { "name": "Legal and Regulatory Assessment Report", "status": "complete" },
+        { "name": "Project Information Document", "status": "complete" }
+      ],
+      "pre-feasibility": [
+        { "name": "Pre-feasibility Study", "status": "not-started" },
+        { "name": "Integrated Safeguards Data Sheet", "status": "not-started" },
+        { "name": "\"Clearance in Principle\" Decision Note", "status": "not-started" }
+      ]
+    }
   },
   {
     "id": "demo-flexilab",
@@ -29,7 +53,31 @@
     "nextStep": "Secure offtake and finalise common-user access terms.",
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.37"}],
     "notes": [],
-    "updatedAt": "2026-02-06T00:00:00.000Z"
+    "updatedAt": "2026-02-06T00:00:00.000Z",
+    "gateChecklist": {
+      "definition": [
+        { "question": "Strategic Suitability", "status": "satisfied" },
+        { "question": "Legal Viability", "status": "satisfied" },
+        { "question": "Government Commitment", "status": "satisfied" }
+      ],
+      "pre-feasibility": [
+        { "question": "Preliminary Feasibility", "status": "pending" },
+        { "question": "Clearance in Principle", "status": "pending" },
+        { "question": "Additionality", "status": "pending" }
+      ]
+    },
+    "artefacts": {
+      "definition": [
+        { "name": "Project Concept Note (PCN)", "status": "complete" },
+        { "name": "Legal and Regulatory Assessment Report", "status": "complete" },
+        { "name": "Project Information Document", "status": "complete" }
+      ],
+      "pre-feasibility": [
+        { "name": "Pre-feasibility Study", "status": "not-started" },
+        { "name": "Integrated Safeguards Data Sheet", "status": "not-started" },
+        { "name": "\"Clearance in Principle\" Decision Note", "status": "not-started" }
+      ]
+    }
   },
   {
     "id": "capricornia-energy-hub",
@@ -43,7 +91,21 @@
     "nextStep": "Advance feasibility and planning pathway.",
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.41"}],
     "notes": [],
-    "updatedAt": "2026-02-06T00:00:00.000Z"
+    "updatedAt": "2026-02-06T00:00:00.000Z",
+    "gateChecklist": {
+      "definition": [
+        { "question": "Strategic Suitability", "status": "pending" },
+        { "question": "Legal Viability", "status": "pending" },
+        { "question": "Government Commitment", "status": "pending" }
+      ]
+    },
+    "artefacts": {
+      "definition": [
+        { "name": "Project Concept Note (PCN)", "status": "not-started" },
+        { "name": "Legal and Regulatory Assessment Report", "status": "not-started" },
+        { "name": "Project Information Document", "status": "not-started" }
+      ]
+    }
   },
   {
     "id": "pioneer-burdekin-hydro",
@@ -57,7 +119,21 @@
     "nextStep": "Scope regional participation and procurement opportunities.",
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.41"}],
     "notes": [],
-    "updatedAt": "2026-02-06T00:00:00.000Z"
+    "updatedAt": "2026-02-06T00:00:00.000Z",
+    "gateChecklist": {
+      "definition": [
+        { "question": "Strategic Suitability", "status": "pending" },
+        { "question": "Legal Viability", "status": "pending" },
+        { "question": "Government Commitment", "status": "pending" }
+      ]
+    },
+    "artefacts": {
+      "definition": [
+        { "name": "Project Concept Note (PCN)", "status": "not-started" },
+        { "name": "Legal and Regulatory Assessment Report", "status": "not-started" },
+        { "name": "Project Information Document", "status": "not-started" }
+      ]
+    }
   },
   {
     "id": "linked-group-solar",
@@ -73,7 +149,31 @@
     "nextStep": "Build construction-phase capability and procurement pathways.",
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.41"}],
     "notes": [],
-    "updatedAt": "2026-02-06T00:00:00.000Z"
+    "updatedAt": "2026-02-06T00:00:00.000Z",
+    "gateChecklist": {
+      "definition": [
+        { "question": "Strategic Suitability", "status": "satisfied" },
+        { "question": "Legal Viability", "status": "satisfied" },
+        { "question": "Government Commitment", "status": "satisfied" }
+      ],
+      "pre-feasibility": [
+        { "question": "Preliminary Feasibility", "status": "pending" },
+        { "question": "Clearance in Principle", "status": "pending" },
+        { "question": "Additionality", "status": "pending" }
+      ]
+    },
+    "artefacts": {
+      "definition": [
+        { "name": "Project Concept Note (PCN)", "status": "complete" },
+        { "name": "Legal and Regulatory Assessment Report", "status": "complete" },
+        { "name": "Project Information Document", "status": "complete" }
+      ],
+      "pre-feasibility": [
+        { "name": "Pre-feasibility Study", "status": "not-started" },
+        { "name": "Integrated Safeguards Data Sheet", "status": "not-started" },
+        { "name": "\"Clearance in Principle\" Decision Note", "status": "not-started" }
+      ]
+    }
   },
   {
     "id": "mackay-qut-biocommodities",
@@ -89,7 +189,31 @@
     "nextStep": "Clarify market drivers and offtake for sustainable aviation fuels pathway.",
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.45"}],
     "notes": [],
-    "updatedAt": "2026-02-06T00:00:00.000Z"
+    "updatedAt": "2026-02-06T00:00:00.000Z",
+    "gateChecklist": {
+      "definition": [
+        { "question": "Strategic Suitability", "status": "satisfied" },
+        { "question": "Legal Viability", "status": "satisfied" },
+        { "question": "Government Commitment", "status": "satisfied" }
+      ],
+      "pre-feasibility": [
+        { "question": "Preliminary Feasibility", "status": "pending" },
+        { "question": "Clearance in Principle", "status": "pending" },
+        { "question": "Additionality", "status": "pending" }
+      ]
+    },
+    "artefacts": {
+      "definition": [
+        { "name": "Project Concept Note (PCN)", "status": "complete" },
+        { "name": "Legal and Regulatory Assessment Report", "status": "complete" },
+        { "name": "Project Information Document", "status": "complete" }
+      ],
+      "pre-feasibility": [
+        { "name": "Pre-feasibility Study", "status": "not-started" },
+        { "name": "Integrated Safeguards Data Sheet", "status": "not-started" },
+        { "name": "\"Clearance in Principle\" Decision Note", "status": "not-started" }
+      ]
+    }
   },
   {
     "id": "wilmar-sarina-distillery",
@@ -105,7 +229,51 @@
     "nextStep": "Secure offtake and articulate value chain for newer biofuels.",
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.45"}],
     "notes": [],
-    "updatedAt": "2026-02-06T00:00:00.000Z"
+    "updatedAt": "2026-02-06T00:00:00.000Z",
+    "gateChecklist": {
+      "definition": [
+        { "question": "Strategic Suitability", "status": "satisfied" },
+        { "question": "Legal Viability", "status": "satisfied" },
+        { "question": "Government Commitment", "status": "satisfied" }
+      ],
+      "pre-feasibility": [
+        { "question": "Preliminary Feasibility", "status": "satisfied" },
+        { "question": "Clearance in Principle", "status": "satisfied" },
+        { "question": "Additionality", "status": "satisfied" }
+      ],
+      "feasibility": [
+        { "question": "Commercial Viability", "status": "satisfied" },
+        { "question": "ESG Compliance", "status": "satisfied" },
+        { "question": "Fiscal Affordability", "status": "satisfied" }
+      ],
+      "structuring": [
+        { "question": "Market Appetite", "status": "pending" },
+        { "question": "Creditworthiness", "status": "pending" },
+        { "question": "Endorsement", "status": "pending" }
+      ]
+    },
+    "artefacts": {
+      "definition": [
+        { "name": "Project Concept Note (PCN)", "status": "complete" },
+        { "name": "Legal and Regulatory Assessment Report", "status": "complete" },
+        { "name": "Project Information Document", "status": "complete" }
+      ],
+      "pre-feasibility": [
+        { "name": "Pre-feasibility Study", "status": "complete" },
+        { "name": "Integrated Safeguards Data Sheet", "status": "complete" },
+        { "name": "\"Clearance in Principle\" Decision Note", "status": "complete" }
+      ],
+      "feasibility": [
+        { "name": "Detailed Feasibility Report", "status": "complete" },
+        { "name": "Environmental and Social Impact Assessment (ESIA)", "status": "complete" },
+        { "name": "Financial Model and VfM Report", "status": "complete" }
+      ],
+      "structuring": [
+        { "name": "Risk Allocation Matrix", "status": "not-started" },
+        { "name": "Draft Concession/Project Agreements", "status": "not-started" },
+        { "name": "Bid/Tender Documents", "status": "not-started" }
+      ]
+    }
   },
   {
     "id": "future-foods-biohub",
@@ -119,7 +287,21 @@
     "nextStep": "Establish certification pathways and process capability building.",
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.49"}],
     "notes": [],
-    "updatedAt": "2026-02-06T00:00:00.000Z"
+    "updatedAt": "2026-02-06T00:00:00.000Z",
+    "gateChecklist": {
+      "definition": [
+        { "question": "Strategic Suitability", "status": "pending" },
+        { "question": "Legal Viability", "status": "pending" },
+        { "question": "Government Commitment", "status": "pending" }
+      ]
+    },
+    "artefacts": {
+      "definition": [
+        { "name": "Project Concept Note (PCN)", "status": "not-started" },
+        { "name": "Legal and Regulatory Assessment Report", "status": "not-started" },
+        { "name": "Project Information Document", "status": "not-started" }
+      ]
+    }
   },
   {
     "id": "rcoe-pit-to-port",
@@ -135,7 +317,31 @@
     "nextStep": "Align stakeholders and navigate regulatory and site-control barriers.",
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.53"}],
     "notes": [],
-    "updatedAt": "2026-02-06T00:00:00.000Z"
+    "updatedAt": "2026-02-06T00:00:00.000Z",
+    "gateChecklist": {
+      "definition": [
+        { "question": "Strategic Suitability", "status": "satisfied" },
+        { "question": "Legal Viability", "status": "satisfied" },
+        { "question": "Government Commitment", "status": "satisfied" }
+      ],
+      "pre-feasibility": [
+        { "question": "Preliminary Feasibility", "status": "pending" },
+        { "question": "Clearance in Principle", "status": "pending" },
+        { "question": "Additionality", "status": "pending" }
+      ]
+    },
+    "artefacts": {
+      "definition": [
+        { "name": "Project Concept Note (PCN)", "status": "complete" },
+        { "name": "Legal and Regulatory Assessment Report", "status": "complete" },
+        { "name": "Project Information Document", "status": "complete" }
+      ],
+      "pre-feasibility": [
+        { "name": "Pre-feasibility Study", "status": "not-started" },
+        { "name": "Integrated Safeguards Data Sheet", "status": "not-started" },
+        { "name": "\"Clearance in Principle\" Decision Note", "status": "not-started" }
+      ]
+    }
   },
   {
     "id": "valmar-gilmour-space",
@@ -151,7 +357,31 @@
     "nextStep": "Secure accreditation and procurement pathways.",
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.57"}],
     "notes": [],
-    "updatedAt": "2026-02-06T00:00:00.000Z"
+    "updatedAt": "2026-02-06T00:00:00.000Z",
+    "gateChecklist": {
+      "definition": [
+        { "question": "Strategic Suitability", "status": "satisfied" },
+        { "question": "Legal Viability", "status": "satisfied" },
+        { "question": "Government Commitment", "status": "satisfied" }
+      ],
+      "pre-feasibility": [
+        { "question": "Preliminary Feasibility", "status": "pending" },
+        { "question": "Clearance in Principle", "status": "pending" },
+        { "question": "Additionality", "status": "pending" }
+      ]
+    },
+    "artefacts": {
+      "definition": [
+        { "name": "Project Concept Note (PCN)", "status": "complete" },
+        { "name": "Legal and Regulatory Assessment Report", "status": "complete" },
+        { "name": "Project Information Document", "status": "complete" }
+      ],
+      "pre-feasibility": [
+        { "name": "Pre-feasibility Study", "status": "not-started" },
+        { "name": "Integrated Safeguards Data Sheet", "status": "not-started" },
+        { "name": "\"Clearance in Principle\" Decision Note", "status": "not-started" }
+      ]
+    }
   },
   {
     "id": "veolia-woodlawn",
@@ -165,6 +395,20 @@
     "nextStep": "Establish governance and risk allocation clarity.",
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.61"}],
     "notes": [],
-    "updatedAt": "2026-02-06T00:00:00.000Z"
+    "updatedAt": "2026-02-06T00:00:00.000Z",
+    "gateChecklist": {
+      "definition": [
+        { "question": "Strategic Suitability", "status": "pending" },
+        { "question": "Legal Viability", "status": "pending" },
+        { "question": "Government Commitment", "status": "pending" }
+      ]
+    },
+    "artefacts": {
+      "definition": [
+        { "name": "Project Concept Note (PCN)", "status": "not-started" },
+        { "name": "Legal and Regulatory Assessment Report", "status": "not-started" },
+        { "name": "Project Information Document", "status": "not-started" }
+      ]
+    }
   }
 ]

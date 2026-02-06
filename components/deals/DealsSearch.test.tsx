@@ -41,6 +41,14 @@ const mockDeals: Deal[] = [
     evidence: [],
     notes: [],
     updatedAt: "2026-02-06T00:00:00.000Z",
+    gateChecklist: {
+      "pre-feasibility": [
+        { question: "Preliminary Feasibility", status: "pending" },
+        { question: "Clearance in Principle", status: "pending" },
+        { question: "Additionality", status: "pending" },
+      ],
+    },
+    artefacts: {},
   },
   {
     id: "solar-project",
@@ -55,6 +63,14 @@ const mockDeals: Deal[] = [
     evidence: [],
     notes: [],
     updatedAt: "2026-02-06T00:00:00.000Z",
+    gateChecklist: {
+      definition: [
+        { question: "Strategic Suitability", status: "satisfied" },
+        { question: "Legal Viability", status: "pending" },
+        { question: "Government Commitment", status: "pending" },
+      ],
+    },
+    artefacts: {},
   },
 ];
 
@@ -225,5 +241,22 @@ describe("DealsSearch", () => {
     const drawer = screen.getByRole("dialog", { name: /deal details/i });
     expect(drawer).toBeInTheDocument();
     expect(within(drawer).getByText("Solar farm proposal")).toBeInTheDocument();
+  });
+
+  it("shows gate progress indicator in list items", () => {
+    render(
+      <DealsSearch
+        deals={mockDeals}
+        opportunityTypes={mockOpportunityTypes}
+        lgas={mockLgas}
+      />
+    );
+
+    const gateIndicators = screen.getAllByTestId("gate-progress");
+    expect(gateIndicators).toHaveLength(2);
+    // First deal: 0/3 (all pending)
+    expect(gateIndicators[0]).toHaveTextContent("0/3 gates");
+    // Second deal: 1/3 (Strategic Suitability satisfied)
+    expect(gateIndicators[1]).toHaveTextContent("1/3 gates");
   });
 });

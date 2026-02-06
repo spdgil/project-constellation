@@ -5,7 +5,7 @@
  * Formula: bg-{colour}-50  text-{colour}-700  border border-{colour}-200
  */
 
-import type { DealStage, ReadinessState } from "./types";
+import type { ArtefactStatus, DealStage, ReadinessState } from "./types";
 
 /** Badge/chip classes for deal stages. */
 export const STAGE_COLOUR_CLASSES: Record<DealStage, string> = {
@@ -24,6 +24,13 @@ export const READINESS_COLOUR_CLASSES: Record<ReadinessState, string> = {
   "structurable-but-stalled": "bg-blue-50 text-blue-700 border border-blue-200",
   "investable-with-minor-intervention": "bg-emerald-50 text-emerald-700 border border-emerald-200",
   "scaled-and-replicable": "bg-emerald-100 text-emerald-800 border border-emerald-300",
+};
+
+/** Badge/chip classes for artefact status. */
+export const ARTEFACT_STATUS_COLOUR_CLASSES: Record<ArtefactStatus, string> = {
+  "not-started": "bg-[#F5F3F0] text-[#6B6B6B] border border-[#E8E6E3]",
+  "in-progress": "bg-amber-50 text-amber-700 border border-amber-200",
+  complete: "bg-emerald-50 text-emerald-700 border border-emerald-200",
 };
 
 /** Pipeline stepper node classes — active uses stage colour, inactive stays neutral. */

@@ -2,7 +2,13 @@
  * Human-readable labels for enums — PRD §4.3, §4.4, §6.6
  */
 
-import type { ReadinessState, DealStage, Constraint } from "./types";
+import type {
+  ReadinessState,
+  DealStage,
+  Constraint,
+  GateStatus,
+  ArtefactStatus,
+} from "./types";
 
 export const READINESS_LABELS: Record<ReadinessState, string> = {
   "no-viable-projects": "No viable projects",
@@ -32,4 +38,16 @@ export const CONSTRAINT_LABELS: Record<Constraint, string> = {
   "coordination-failure": "Coordination failure",
   "skills-and-workforce-constraint": "Skills and workforce constraint",
   "common-user-infrastructure-gap": "Common-user infrastructure gap",
+};
+
+export const GATE_STATUS_LABELS: Record<GateStatus, string> = {
+  pending: "Pending",
+  satisfied: "Satisfied",
+  "not-applicable": "N/A",
+};
+
+export const ARTEFACT_STATUS_LABELS: Record<ArtefactStatus, string> = {
+  "not-started": "Not started",
+  "in-progress": "In progress",
+  complete: "Complete",
 };

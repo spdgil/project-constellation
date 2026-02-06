@@ -37,6 +37,19 @@ const mockDeal: Deal = {
     },
   ],
   updatedAt: "2026-02-06T00:00:00.000Z",
+  gateChecklist: {
+    "pre-feasibility": [
+      { question: "Preliminary Feasibility", status: "pending" },
+      { question: "Clearance in Principle", status: "pending" },
+      { question: "Additionality", status: "pending" },
+    ],
+  },
+  artefacts: {
+    "pre-feasibility": [
+      { name: "Pre-feasibility Study", status: "not-started" },
+      { name: "Integrated Safeguards Data Sheet", status: "not-started" },
+    ],
+  },
 };
 
 describe("DealDrawer", () => {
@@ -230,5 +243,115 @@ describe("DealDrawer", () => {
     );
 
     expect(container.firstChild).toBeNull();
+  });
+
+  it("renders gate checklist with checkboxes and progress", () => {
+    render(
+      <DealDrawer
+        deal={mockDeal}
+        opportunityTypes={mockOpportunityTypes}
+        lgas={mockLgas}
+        onClose={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText(/stage gate checklist/i)).toBeInTheDocument();
+    expect(screen.getByText("0 of 3 satisfied")).toBeInTheDocument();
+    expect(screen.getByText("Preliminary Feasibility")).toBeInTheDocument();
+    expect(screen.getByText("Clearance in Principle")).toBeInTheDocument();
+    expect(screen.getByText("Additionality")).toBeInTheDocument();
+
+    const checkboxes = screen.getAllByTestId(/^gate-checkbox-/);
+    expect(checkboxes).toHaveLength(3);
+    checkboxes.forEach((cb) => expect(cb).not.toBeChecked());
+  });
+
+  it("toggling a gate checkbox updates progress and persists locally", () => {
+    render(
+      <DealDrawer
+        deal={mockDeal}
+        opportunityTypes={mockOpportunityTypes}
+        lgas={mockLgas}
+        onClose={vi.fn()}
+      />
+    );
+
+    const firstCheckbox = screen.getByTestId("gate-checkbox-0");
+    expect(firstCheckbox).not.toBeChecked();
+
+    fireEvent.click(firstCheckbox);
+
+    expect(firstCheckbox).toBeChecked();
+    expect(screen.getByText("1 of 3 satisfied")).toBeInTheDocument();
+    expect(screen.getByText(/updated locally/i)).toBeInTheDocument();
+  });
+
+  it("renders artefacts with status badges", () => {
+    render(
+      <DealDrawer
+        deal={mockDeal}
+        opportunityTypes={mockOpportunityTypes}
+        lgas={mockLgas}
+        onClose={vi.fn()}
+      />
+    );
+
+    expect(screen.getByText(/artefacts & documents/i)).toBeInTheDocument();
+    expect(screen.getByText("Pre-feasibility Study")).toBeInTheDocument();
+    expect(screen.getByText("Integrated Safeguards Data Sheet")).toBeInTheDocument();
+
+    const statusButtons = screen.getAllByTestId(/^artefact-status-/);
+    expect(statusButtons).toHaveLength(2);
+    expect(statusButtons[0]).toHaveTextContent("Not started");
+  });
+
+  it("cycling artefact status advances through not-started → in-progress → complete", () => {
+    render(
+      <DealDrawer
+        deal={mockDeal}
+        opportunityTypes={mockOpportunityTypes}
+        lgas={mockLgas}
+        onClose={vi.fn()}
+      />
+    );
+
+    const statusBtn = screen.getByTestId("artefact-status-0");
+    expect(statusBtn).toHaveTextContent("Not started");
+
+    fireEvent.click(statusBtn);
+    expect(statusBtn).toHaveTextContent("In progress");
+
+    fireEvent.click(statusBtn);
+    expect(statusBtn).toHaveTextContent("Complete");
+
+    fireEvent.click(statusBtn);
+    expect(statusBtn).toHaveTextContent("Not started");
+
+    expect(screen.getByText(/updated locally/i)).toBeInTheDocument();
+  });
+
+  it("artefact summary and URL fields are editable", () => {
+    render(
+      <DealDrawer
+        deal={mockDeal}
+        opportunityTypes={mockOpportunityTypes}
+        lgas={mockLgas}
+        onClose={vi.fn()}
+      />
+    );
+
+    const summaryField = screen.getByTestId("artefact-summary-0") as HTMLTextAreaElement;
+    expect(summaryField.value).toBe("");
+
+    fireEvent.change(summaryField, { target: { value: "Initial draft complete" } });
+    expect(summaryField.value).toBe("Initial draft complete");
+
+    const urlField = screen.getByTestId("artefact-url-0") as HTMLInputElement;
+    expect(urlField.value).toBe("");
+
+    fireEvent.change(urlField, { target: { value: "https://example.com/doc.pdf" } });
+    expect(urlField.value).toBe("https://example.com/doc.pdf");
+
+    expect(screen.getByText(/updated locally/i)).toBeInTheDocument();
   });
 });

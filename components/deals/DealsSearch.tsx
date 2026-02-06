@@ -9,6 +9,7 @@ import type { DealFilterParams } from "@/lib/deals-search";
 import { dealLgaNames } from "@/lib/opportunities";
 import { STAGE_LABELS, READINESS_LABELS } from "@/lib/labels";
 import { STAGE_COLOUR_CLASSES, READINESS_COLOUR_CLASSES } from "@/lib/stage-colours";
+import { getStageGateChecklist } from "@/lib/deal-pathway-utils";
 import { DealDrawer } from "@/components/map/DealDrawer";
 
 const STAGE_OPTIONS: DealStage[] = [
@@ -253,6 +254,10 @@ export function DealsSearch({
                 const isSelected = deal.id === selectedDealId;
                 const lgaNames = dealLgaNames(deal, lgas).join(", ");
                 const otName = getOpportunityTypeName(deal);
+                const gateEntries = getStageGateChecklist(deal.gateChecklist ?? {}, deal.stage);
+                const gateSatisfied = gateEntries.filter((e) => e.status === "satisfied").length;
+                const gateTotal = gateEntries.length;
+                const allGates = gateSatisfied === gateTotal && gateTotal > 0;
                 return (
                   <li
                     key={deal.id}
@@ -284,13 +289,25 @@ export function DealsSearch({
                     <p className="text-xs text-[#6B6B6B] mt-1">
                       {otName} · {lgaNames || "—"}
                     </p>
-                    <div className="flex items-center gap-2 mt-1.5">
+                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                       <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 ${STAGE_COLOUR_CLASSES[deal.stage]}`}>
                         {STAGE_LABELS[deal.stage]}
                       </span>
                       <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 ${READINESS_COLOUR_CLASSES[deal.readinessState]}`}>
                         {READINESS_LABELS[deal.readinessState]}
                       </span>
+                      {gateTotal > 0 && (
+                        <span
+                          className={`text-[10px] tracking-wider px-1.5 py-0.5 ${
+                            allGates
+                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                              : "bg-[#F5F3F0] text-[#6B6B6B] border border-[#E8E6E3]"
+                          }`}
+                          data-testid="gate-progress"
+                        >
+                          {gateSatisfied}/{gateTotal} gates
+                        </span>
+                      )}
                     </div>
                   </li>
                 );

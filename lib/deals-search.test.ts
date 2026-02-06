@@ -23,6 +23,8 @@ const baseDeal: Deal = {
   evidence: [],
   notes: [],
   updatedAt: "2025-01-01T00:00:00Z",
+  gateChecklist: {},
+  artefacts: {},
 };
 
 function makeDeal(overrides: Partial<Deal> & { id: string }): Deal {
