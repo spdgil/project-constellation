@@ -14,13 +14,13 @@ export type ReadinessState =
   | "investable-with-minor-intervention"
   | "scaled-and-replicable";
 
-/** Deal stage — PRD §6.6 */
+/** Deal stage — 5-stage development pathway */
 export type DealStage =
-  | "concept"
-  | "feasibility"
-  | "structuring"
-  | "investment-ready"
-  | "operating";
+  | "definition"          // Stage 1: Enabling Environment and Project Definition
+  | "pre-feasibility"     // Stage 2: Pre-feasibility and Prioritisation
+  | "feasibility"         // Stage 3: Detailed Feasibility and Investment Appraisal
+  | "structuring"         // Stage 4: Project Structuring and Risk Allocation
+  | "transaction-close";  // Stage 5: Transaction Implementation and Financial Close
 
 /** Dominant binding constraint — PRD §4.4 */
 export type Constraint =

@@ -23,7 +23,7 @@ const mockDeal: Deal = {
   name: "RCOE FlexiLab pilot",
   opportunityTypeId: "critical-minerals",
   lgaIds: ["mackay"],
-  stage: "feasibility",
+  stage: "pre-feasibility",
   readinessState: "feasibility-underway",
   dominantConstraint: "common-user-infrastructure-gap",
   summary: "Pilot processing facility in Paget.",
@@ -59,7 +59,7 @@ describe("DealDrawer", () => {
     expect(screen.getByText("RCOE FlexiLab pilot")).toBeInTheDocument();
     expect(screen.getByText("Critical minerals")).toBeInTheDocument();
     expect(screen.getByText("Mackay")).toBeInTheDocument();
-    expect(screen.getByText("Feasibility")).toBeInTheDocument();
+    expect(screen.getByText("Pre-feasibility")).toBeInTheDocument();
     expect(screen.getByText("Feasibility underway")).toBeInTheDocument();
     expect(screen.getByText("Common-user infrastructure gap")).toBeInTheDocument();
     expect(screen.getByText("Secure offtake.")).toBeInTheDocument();

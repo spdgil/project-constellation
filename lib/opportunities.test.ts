@@ -25,7 +25,7 @@ const baseDeal: Deal = {
   name: "Deal 1",
   opportunityTypeId: "ot1",
   lgaIds: ["mackay"],
-  stage: "concept",
+  stage: "definition",
   readinessState: "conceptual-interest",
   dominantConstraint: "revenue-certainty",
   summary: "",

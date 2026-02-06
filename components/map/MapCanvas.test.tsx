@@ -79,7 +79,7 @@ const mockDeals: Deal[] = [
     lgaIds: ["mackay"],
     lat: -21.15,
     lng: 149.19,
-    stage: "feasibility",
+    stage: "pre-feasibility",
     readinessState: "feasibility-underway",
     dominantConstraint: "common-user-infrastructure-gap",
     summary: "Pilot processing facility.",

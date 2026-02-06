@@ -15,7 +15,7 @@ const baseDeal: Deal = {
   name: "Solar Farm Alpha",
   opportunityTypeId: "renewable-energy",
   lgaIds: ["mackay"],
-  stage: "concept",
+  stage: "definition",
   readinessState: "conceptual-interest",
   dominantConstraint: "revenue-certainty",
   summary: "",

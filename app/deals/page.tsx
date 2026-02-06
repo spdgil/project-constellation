@@ -1,14 +1,5 @@
-import { loadPageData } from "@/lib/load-page-data";
-import { DealsSearch } from "@/components/deals/DealsSearch";
+import { redirect } from "next/navigation";
 
-export default async function DealsPage() {
-  const { lgas, deals, opportunityTypes } = await loadPageData("deals page");
-
-  return (
-    <DealsSearch
-      deals={deals}
-      opportunityTypes={opportunityTypes}
-      lgas={lgas}
-    />
-  );
+export default function DealsPage() {
+  redirect("/deals/list");
 }

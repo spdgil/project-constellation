@@ -14,11 +14,11 @@ export const READINESS_LABELS: Record<ReadinessState, string> = {
 };
 
 export const STAGE_LABELS: Record<DealStage, string> = {
-  concept: "Concept",
+  definition: "Definition",
+  "pre-feasibility": "Pre-feasibility",
   feasibility: "Feasibility",
   structuring: "Structuring",
-  "investment-ready": "Investment ready",
-  operating: "Operating",
+  "transaction-close": "Transaction close",
 };
 
 export const CONSTRAINT_LABELS: Record<Constraint, string> = {

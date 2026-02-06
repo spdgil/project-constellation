@@ -30,7 +30,7 @@ const baseDeal: Deal = {
   name: "RCOE FlexiLab pilot",
   opportunityTypeId: "critical-minerals",
   lgaIds: ["mackay"],
-  stage: "feasibility",
+  stage: "pre-feasibility",
   readinessState: "feasibility-underway",
   dominantConstraint: "common-user-infrastructure-gap",
   summary: "Pilot.",
