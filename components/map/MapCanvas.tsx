@@ -51,7 +51,7 @@ export function MapCanvas({
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
 
   /* ------------------------------------------------------------------ */
-  /* Initial view: fit to boundary extent with padding                  */
+  /* Initial view: fit to the highlighted (focus) LGA extent             */
   /* ------------------------------------------------------------------ */
   const initialViewState = useMemo(() => {
     let minLng = Infinity;
@@ -59,7 +59,12 @@ export function MapCanvas({
     let minLat = Infinity;
     let maxLat = -Infinity;
 
-    for (const f of boundaries.features) {
+    const focusFeatures = boundaries.features.filter(
+      (f) => f.properties?.highlighted,
+    );
+    const target = focusFeatures.length > 0 ? focusFeatures : boundaries.features;
+
+    for (const f of target) {
       if (!f.geometry?.coordinates) continue;
       walkCoords(f.geometry.coordinates, (lng, lat) => {
         minLng = Math.min(minLng, lng);
@@ -80,7 +85,7 @@ export function MapCanvas({
         number,
         number,
       ],
-      fitBoundsOptions: { padding: 60 },
+      fitBoundsOptions: { padding: 40 },
     };
   }, [boundaries]);
 
@@ -155,6 +160,7 @@ export function MapCanvas({
         initialViewState={initialViewState}
         style={{ width: "100%", height: "100%", flex: 1 }}
         mapStyle={MAP_STYLE}
+        projection="mercator"
         interactiveLayerIds={["lga-fill"]}
         onClick={handleMapClick}
         cursor="pointer"
@@ -168,22 +174,42 @@ export function MapCanvas({
           type="geojson"
           data={boundaries as GeoJSON.FeatureCollection}
         >
-          {/* Transparent fill so clicks register on the whole polygon */}
+          {/* Fill: focus LGAs get a subtle tint, others are transparent */}
           <Layer
             id="lga-fill"
             type="fill"
             paint={{
-              "fill-color": "#E8E6E3",
-              "fill-opacity": 0.08,
+              "fill-color": [
+                "case",
+                ["==", ["get", "highlighted"], true],
+                "#E8E6E3",
+                "transparent",
+              ] as unknown as mapboxgl.Expression,
+              "fill-opacity": [
+                "case",
+                ["==", ["get", "highlighted"], true],
+                0.15,
+                0,
+              ] as unknown as mapboxgl.Expression,
             }}
           />
-          {/* Default boundary stroke */}
+          {/* Boundary stroke: focus LGAs bold, others light */}
           <Layer
             id="lga-line"
             type="line"
             paint={{
-              "line-color": "#2C2C2C",
-              "line-width": 1.5,
+              "line-color": [
+                "case",
+                ["==", ["get", "highlighted"], true],
+                "#2C2C2C",
+                "#C8C4BF",
+              ] as unknown as mapboxgl.Expression,
+              "line-width": [
+                "case",
+                ["==", ["get", "highlighted"], true],
+                1.8,
+                0.6,
+              ] as unknown as mapboxgl.Expression,
             }}
           />
           {/* Highlighted fill for selected LGA */}
@@ -193,7 +219,7 @@ export function MapCanvas({
             filter={selectedFilter}
             paint={{
               "fill-color": "#E8E6E3",
-              "fill-opacity": 0.3,
+              "fill-opacity": 0.35,
             }}
           />
           {/* Heavier stroke for selected LGA */}
@@ -204,22 +230,6 @@ export function MapCanvas({
             paint={{
               "line-color": "#2C2C2C",
               "line-width": 2.5,
-            }}
-          />
-          {/* LGA name labels at centroid */}
-          <Layer
-            id="lga-label"
-            type="symbol"
-            layout={{
-              "text-field": ["get", "name"],
-              "text-size": 12,
-              "text-anchor": "center",
-              "text-allow-overlap": true,
-            }}
-            paint={{
-              "text-color": "#2C2C2C",
-              "text-halo-color": "#FFFFFF",
-              "text-halo-width": 1.5,
             }}
           />
         </Source>

@@ -6,6 +6,10 @@ vi.mock("next/font/google", () => ({
   Newsreader: () => ({ variable: "--font-newsreader" }),
 }));
 
+vi.mock("next/navigation", () => ({
+  usePathname: () => "/",
+}));
+
 function getFocusableInOrder(container: HTMLElement): HTMLElement[] {
   const selector =
     'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';

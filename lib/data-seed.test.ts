@@ -69,10 +69,12 @@ describe("Greater Whitsunday seed data", () => {
     }
   });
 
-  it("boundaries include all 3 LGAs", async () => {
+  it("boundaries include all QLD LGAs with focus LGAs highlighted", async () => {
     const fc = await loadQldLgaBoundaries();
-    expect(fc.features).toHaveLength(3);
-    const ids = fc.features.map((f) => (f.properties?.id as string) ?? String(f.id)).sort();
-    expect(ids).toEqual(["isaac", "mackay", "whitsunday"]);
+    expect(fc.features.length).toBeGreaterThanOrEqual(70);
+
+    const focus = fc.features.filter((f) => f.properties?.highlighted);
+    const focusIds = focus.map((f) => (f.properties?.id as string)).sort();
+    expect(focusIds).toEqual(["isaac", "mackay", "whitsunday"]);
   });
 });

@@ -56,19 +56,14 @@ describe("HomePage", () => {
     ).toBeInTheDocument();
   });
 
-  it("renders entry links: map, opportunity types, deal search", async () => {
+  it("renders pipeline and LGA sections (entry links moved to header tabs)", async () => {
     const HomePage = (await import("./page")).default;
     const page = await HomePage();
     render(page);
+    expect(screen.getByText(/pipeline at a glance/i)).toBeInTheDocument();
     expect(
-      screen.getByRole("link", { name: /explore by map/i }),
-    ).toHaveAttribute("href", "/map");
-    expect(
-      screen.getByRole("link", { name: /explore by opportunity types/i }),
-    ).toHaveAttribute("href", "/opportunities");
-    expect(
-      screen.getByRole("link", { name: /search deals/i }),
-    ).toHaveAttribute("href", "/deals");
+      screen.getByRole("heading", { name: /greater whitsunday lgas/i }),
+    ).toBeInTheDocument();
   });
 
   it("renders key figures from data", async () => {

@@ -1,4 +1,3 @@
-import Link from "next/link";
 import {
   loadLgas,
   loadDeals,
@@ -54,37 +53,6 @@ export default async function HomePage() {
           <Stat value={String(lgas.length)} label="LGAs" />
           <Stat value={String(opportunityTypes.length)} label="Opportunity types" />
           <Stat value={String(deals.length)} label="Deal exemplars" />
-        </div>
-      </section>
-
-      {/* ------------------------------------------------------------ */}
-      {/* Entry points                                                  */}
-      {/* ------------------------------------------------------------ */}
-      <section className="mb-16">
-        <h2 className="font-heading text-lg font-normal leading-[1.4] text-[#2C2C2C] mb-6">
-          Explore
-        </h2>
-        <div className="grid sm:grid-cols-2 gap-4">
-          <EntryCard
-            href="/map"
-            title="Explore by map"
-            description="View LGA boundaries on a Mapbox basemap. Click a boundary or deal marker to open details, edit readiness, and track constraints."
-          />
-          <EntryCard
-            href="/opportunities"
-            title="Explore by opportunity types"
-            description="Browse the seven opportunity types — from renewable energy to space — with definitions, capital stack notes, and linked deals."
-          />
-          <EntryCard
-            href="/deals"
-            title="Search deals"
-            description="Filter and search across all deal exemplars by name, opportunity type, LGA, stage, or constraint."
-          />
-          <EntryCard
-            href="/state"
-            title="State view"
-            description="Pipeline summary by readiness, dominant constraints by opportunity type and by LGA. Aggregates update when local edits are applied."
-          />
         </div>
       </section>
 
@@ -197,24 +165,3 @@ function Stat({ value, label }: { value: string; label: string }) {
   );
 }
 
-function EntryCard({
-  href,
-  title,
-  description,
-}: {
-  href: string;
-  title: string;
-  description: string;
-}) {
-  return (
-    <Link
-      href={href}
-      className="group block bg-white border border-[#E8E6E3] p-5 hover:border-[#9A9A9A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7] transition duration-300 ease-out"
-    >
-      <h3 className="font-heading text-base font-normal leading-[1.4] text-[#2C2C2C] mb-1 group-hover:text-[#7A6B5A] transition duration-300 ease-out">
-        {title}
-      </h3>
-      <p className="text-xs text-[#6B6B6B] leading-relaxed">{description}</p>
-    </Link>
-  );
-}
