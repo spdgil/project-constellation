@@ -1,0 +1,75 @@
+---
+description: Page layout patterns — width, headers, two-column grids, sidebar cards
+globs: "**/*.tsx"
+alwaysApply: false
+---
+
+# Page Layout
+
+The root layout (`app/layout.tsx`) provides `max-w-screen-2xl` and horizontal padding. Page components must not add their own max-width constraints.
+
+## Width
+
+- **Never** add `max-w-4xl`, `max-w-5xl`, or similar on page containers.
+- The only exception is `max-w-prose` for long-form text pages (e.g. About).
+
+```tsx
+// ❌ BAD
+<div className="max-w-4xl">
+
+// ✅ GOOD — fills available width from root layout
+<div className="flex flex-col gap-4">
+```
+
+## Compact Headers
+
+Page headings use a single-line subtitle, not multi-line paragraphs.
+
+```tsx
+// ❌ BAD — verbose intro taking multiple lines
+<h1 className="font-heading text-2xl ...">Title</h1>
+<p className="mt-2 text-sm text-[#6B6B6B] leading-relaxed max-w-prose">
+  The project development pathway progresses from the establishment of an
+  enabling environment and initial concept definition through to detailed
+  feasibility, structuring, and final transaction execution...
+</p>
+
+// ✅ GOOD — compact single-line subtitle
+<h1 className="font-heading text-2xl ...">Title</h1>
+<p className="mt-1 text-sm text-[#6B6B6B]">
+  Five stages from enabling environment through to financial close.
+</p>
+```
+
+## Two-Column Layout
+
+Detail pages split content into primary (2/3) and secondary (1/3) columns on `md:` and above. Single-column on mobile.
+
+```tsx
+<div className="grid md:grid-cols-3 md:gap-8 gap-6">
+  <div className="md:col-span-2 space-y-3">
+    {/* Primary content */}
+  </div>
+  <div className="md:col-span-1 bg-[#FAF9F7] border border-[#E8E6E3] p-4 space-y-3 self-start">
+    {/* Secondary / reference content */}
+  </div>
+</div>
+```
+
+## Sidebar Card
+
+Secondary content lives in a sidebar card with the warm cream background:
+
+`bg-[#FAF9F7] border border-[#E8E6E3] p-4 self-start`
+
+Use `self-start` so the card does not stretch to match the primary column height.
+
+## Sticky Navigation
+
+When a page has navigation the user needs while scrolling (e.g. a stage stepper), make it sticky:
+
+`sticky top-0 z-10 bg-[#FAF9F7]`
+
+## Single Navigation Paradigm
+
+Never present two controls that navigate the same content. If a stepper selects a stage, do not also wrap each stage in an accordion.

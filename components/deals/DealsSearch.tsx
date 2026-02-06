@@ -91,7 +91,7 @@ export function DealsSearch({
     opportunityTypes.find((o) => o.id === deal.opportunityTypeId)?.name ?? deal.opportunityTypeId;
 
   return (
-    <div className="max-w-4xl flex flex-col gap-6" data-testid="deals-search">
+    <div className="flex flex-col gap-6" data-testid="deals-search">
       <div className="flex items-center justify-between gap-4">
         <h1 className="font-heading text-2xl font-normal leading-[1.3] text-[#2C2C2C]">
           Search deals

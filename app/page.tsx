@@ -23,20 +23,16 @@ export default async function HomePage() {
     .slice(0, 3);
 
   return (
-    <div className="max-w-5xl">
+    <div>
       {/* ------------------------------------------------------------ */}
       {/* Hero                                                          */}
       {/* ------------------------------------------------------------ */}
       <section className="mb-16">
-        <h1 className="font-heading text-3xl sm:text-4xl font-normal leading-[1.25] text-[#2C2C2C] mb-4">
+        <h1 className="font-heading text-3xl sm:text-4xl font-normal leading-[1.25] text-[#2C2C2C] mb-2">
           Project Constellation
         </h1>
-        <p className="text-sm text-[#6B6B6B] leading-relaxed max-w-2xl mb-8">
-          A place-and-project dashboard for Queensland&rsquo;s Greater
-          Whitsunday region. Mapping opportunity patterns across{" "}
-          {lgas.length} local government areas, {opportunityTypes.length}{" "}
-          opportunity types, and {deals.length} deal exemplars — from
-          critical minerals processing to orbital launch supply chains.
+        <p className="mt-1 text-sm text-[#6B6B6B] mb-8">
+          Place-and-project dashboard for the Greater Whitsunday region — {lgas.length} LGAs, {opportunityTypes.length} opportunity types, {deals.length} deal exemplars.
         </p>
 
         {/* Key figures */}

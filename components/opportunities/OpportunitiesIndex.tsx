@@ -36,7 +36,7 @@ export function OpportunitiesIndex({
   const dealsByOt = useMemo(() => indexDealsByOt(deals), [deals]);
 
   return (
-    <div className="max-w-4xl">
+    <div>
       <div className="flex items-center justify-between gap-4 mb-6">
         <h1 className="font-heading text-2xl font-normal leading-[1.3] text-[#2C2C2C]">
           Opportunity types
@@ -49,7 +49,7 @@ export function OpportunitiesIndex({
         </Link>
       </div>
 
-      <ul className="list-none p-0 m-0 space-y-4" data-testid="opportunity-types-list">
+      <ul className="list-none p-0 m-0 grid sm:grid-cols-2 gap-4" data-testid="opportunity-types-list">
         {opportunityTypes.map((ot) => {
           const typeDeals = dealsByOt.get(ot.id) ?? [];
           const readinessCounts = countByReadiness(typeDeals);

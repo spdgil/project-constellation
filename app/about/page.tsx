@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function AboutPage() {
   return (
-    <div className="max-w-4xl">
+    <div className="max-w-prose">
       <h1 className="font-heading text-2xl font-normal leading-[1.3] text-[#2C2C2C] mb-6">
         About Project Constellation
       </h1>

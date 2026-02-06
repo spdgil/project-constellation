@@ -46,7 +46,7 @@ export function StateView({
   const panelId = useId();
 
   return (
-    <div className="max-w-4xl" data-testid="state-view">
+    <div data-testid="state-view">
       <div className="flex items-center justify-between gap-4 mb-6">
         <h1 className="font-heading text-2xl font-normal leading-[1.3] text-[#2C2C2C]">
           State aggregation
@@ -59,7 +59,7 @@ export function StateView({
         </Link>
       </div>
 
-      <p className="text-sm text-[#6B6B6B] leading-relaxed mb-8">
+      <p className="text-sm text-[#6B6B6B] leading-relaxed mb-4">
         Aggregates are computed from deals and reflect local edits.
       </p>
 
