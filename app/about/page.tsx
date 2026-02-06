@@ -148,6 +148,20 @@ export default function AboutPage() {
         </p>
       </section>
 
+      <section className="mb-12" aria-labelledby="limitations-heading">
+        <h2
+          id="limitations-heading"
+          className="font-heading text-lg font-normal leading-[1.4] text-[#2C2C2C] mb-3"
+        >
+          Known limitations
+        </h2>
+        <p className="text-sm text-[#2C2C2C] leading-relaxed">
+          This prototype uses static data and optional local overrides. Map
+          boundaries are simplified. Deal and LGA content may be incomplete.
+          The dashboard is not a substitute for investment due diligence.
+        </p>
+      </section>
+
       <section aria-labelledby="contact-heading">
         <h2
           id="contact-heading"
