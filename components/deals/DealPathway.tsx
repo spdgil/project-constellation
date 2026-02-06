@@ -16,41 +16,37 @@ export function DealPathway() {
   const activeStage = PATHWAY_STAGES.find((s) => s.id === activeStageId)!;
 
   return (
-    <div className="max-w-4xl flex flex-col gap-8">
-      {/* Page heading */}
+    <div className="flex flex-col gap-4">
+      {/* Compact heading */}
       <div>
         <h1 className="font-heading text-2xl font-normal leading-[1.3] text-[#2C2C2C]">
           Deal Development Pathway
         </h1>
-        <p className="mt-2 text-sm text-[#6B6B6B] leading-relaxed max-w-prose">
-          The project development pathway progresses from the establishment of an
-          enabling environment and initial concept definition through to detailed
-          feasibility, structuring, and final transaction execution. Each stage
-          systematically resolves specific technical, commercial, legal, and
-          environmental uncertainties, transforming a preliminary concept into a
-          bankable asset capable of mobilising private capital and achieving
-          financial close.
+        <p className="mt-1 text-sm text-[#6B6B6B]">
+          Five stages from enabling environment through to financial close, each resolving key uncertainties to mobilise private capital.
         </p>
       </div>
 
-      {/* Stage pipeline (sole navigation) + detail panel */}
-      <div>
+      {/* Sticky pipeline stepper */}
+      <div className="sticky top-0 z-10 bg-[#FAF9F7] -mx-1 px-1 py-2">
         <StagePipeline
           stages={PATHWAY_STAGES}
           activeStageId={activeStageId}
           onStageClick={setActiveStageId}
         />
-        <div
-          className="border border-t-0 border-[#E8E6E3] bg-[#FFFFFF] p-5"
-          role="tabpanel"
-          id={`stage-panel-${activeStage.id}`}
-          aria-labelledby={`stage-tab-${activeStage.id}`}
-        >
-          <h2 className="font-heading text-lg font-normal leading-[1.4] text-[#2C2C2C] mb-4">
-            Stage {activeStage.number}: {activeStage.title}
-          </h2>
-          <StageDetail stage={activeStage} />
-        </div>
+      </div>
+
+      {/* Detail panel */}
+      <div
+        className="border border-[#E8E6E3] bg-[#FFFFFF] p-5 md:p-6"
+        role="tabpanel"
+        id={`stage-panel-${activeStage.id}`}
+        aria-labelledby={`stage-tab-${activeStage.id}`}
+      >
+        <h2 className="font-heading text-lg font-normal leading-[1.4] text-[#2C2C2C] mb-4">
+          Stage {activeStage.number}: {activeStage.title}
+        </h2>
+        <StageDetail stage={activeStage} />
       </div>
     </div>
   );
@@ -228,97 +224,103 @@ function StagePipeline({
   );
 }
 
-/** Detailed content for a single pathway stage, shown inside an accordion. */
+/** Detailed content for a single pathway stage — two-column layout on desktop. */
 function StageDetail({ stage }: { stage: PathwayStage }) {
   return (
-    <div className="space-y-4">
-      {/* Purpose */}
-      <div>
-        <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
-          Stage Purpose
-        </p>
-        <p className="text-sm text-[#2C2C2C] leading-relaxed">
-          {stage.purpose}
-        </p>
+    <div className="grid md:grid-cols-3 md:gap-8 gap-6">
+      {/* Primary column: what you do and prove */}
+      <div className="md:col-span-2 space-y-3">
+        {/* Purpose */}
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
+            Stage Purpose
+          </p>
+          <p className="text-sm text-[#2C2C2C] leading-relaxed">
+            {stage.purpose}
+          </p>
+        </div>
+
+        {/* Key Activities */}
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
+            Key Activities
+          </p>
+          <ul className="list-none p-0 m-0 space-y-2">
+            {stage.activities.map((activity) => (
+              <li key={activity.name} className="text-sm text-[#2C2C2C] leading-relaxed">
+                <span className="font-medium">{activity.name}:</span>{" "}
+                {activity.description}
+              </li>
+            ))}
+          </ul>
+        </div>
+
+        {/* Stage Gate Checklist */}
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
+            Stage Gate Checklist
+          </p>
+          <ul className="list-none p-0 m-0 space-y-2">
+            {stage.gateChecklist.map((item) => (
+              <li key={item.question} className="text-sm text-[#2C2C2C] leading-relaxed">
+                <span className="font-medium">{item.question}:</span>{" "}
+                {item.description}
+              </li>
+            ))}
+          </ul>
+        </div>
       </div>
 
-      {/* Key Activities */}
-      <div>
-        <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
-          Key Activities
-        </p>
-        <ul className="list-none p-0 m-0 space-y-2">
-          {stage.activities.map((activity) => (
-            <li key={activity.name} className="text-sm text-[#2C2C2C] leading-relaxed">
-              <span className="font-medium">{activity.name}:</span>{" "}
-              {activity.description}
-            </li>
-          ))}
-        </ul>
-      </div>
+      {/* Secondary column: supporting / reference content */}
+      <div className="md:col-span-1 bg-[#FAF9F7] border border-[#E8E6E3] p-4 space-y-3 self-start">
+        {/* Primary Risks Addressed */}
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
+            Primary Risks Addressed
+          </p>
+          <ul className="list-none p-0 m-0 space-y-2">
+            {stage.risksAddressed.map((risk) => (
+              <li key={risk.name} className="text-sm text-[#2C2C2C] leading-relaxed">
+                <span className="font-medium">{risk.name}:</span>{" "}
+                {risk.description}
+              </li>
+            ))}
+          </ul>
+        </div>
 
-      {/* Stage Gate Checklist */}
-      <div>
-        <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
-          Stage Gate Checklist
-        </p>
-        <ul className="list-none p-0 m-0 space-y-2">
-          {stage.gateChecklist.map((item) => (
-            <li key={item.question} className="text-sm text-[#2C2C2C] leading-relaxed">
-              <span className="font-medium">{item.question}:</span>{" "}
-              {item.description}
-            </li>
-          ))}
-        </ul>
-      </div>
+        {/* Typical Artefacts Produced */}
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
+            Typical Artefacts
+          </p>
+          <ul className="list-none p-0 m-0 space-y-1">
+            {stage.artefacts.map((artefact) => (
+              <li key={artefact} className="text-sm text-[#2C2C2C] leading-relaxed">
+                {artefact}
+              </li>
+            ))}
+          </ul>
+        </div>
 
-      {/* Primary Risks Addressed */}
-      <div>
-        <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
-          Primary Risks Addressed
-        </p>
-        <ul className="list-none p-0 m-0 space-y-2">
-          {stage.risksAddressed.map((risk) => (
-            <li key={risk.name} className="text-sm text-[#2C2C2C] leading-relaxed">
-              <span className="font-medium">{risk.name}:</span>{" "}
-              {risk.description}
-            </li>
-          ))}
-        </ul>
-      </div>
+        {/* Investor Readiness */}
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
+            Investor Readiness
+          </p>
+          <p className="text-sm text-[#2C2C2C] leading-relaxed">
+            {stage.investorAlignment}
+          </p>
+        </div>
 
-      {/* Typical Artefacts Produced */}
-      <div>
-        <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
-          Typical Artefacts Produced
-        </p>
-        <ul className="list-none p-0 m-0 space-y-1">
-          {stage.artefacts.map((artefact) => (
-            <li key={artefact} className="text-sm text-[#2C2C2C] leading-relaxed">
-              {artefact}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      {/* Investor Readiness */}
-      <div>
-        <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
-          Investor Readiness
-        </p>
-        <p className="text-sm text-[#2C2C2C] leading-relaxed">
-          {stage.investorAlignment}
-        </p>
-      </div>
-
-      {/* Evidence */}
-      <div>
-        <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
-          Evidence
-        </p>
-        <p className="text-sm text-[#2C2C2C] leading-relaxed">
-          {stage.evidenceNote}
-        </p>
+        {/* Evidence */}
+        <div>
+          <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
+            Evidence
+          </p>
+          <p className="text-sm text-[#2C2C2C] leading-relaxed">
+            {stage.evidenceNote}
+          </p>
+        </div>
       </div>
     </div>
   );
