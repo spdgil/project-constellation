@@ -70,9 +70,12 @@ h1, h2, h3, h4, h5, h6,
   box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-focus);
 }
 
-/* Focus rings: accent, offset (DESIGN_SYSTEM.md) */
+/* Focus rings: accent, offset (DESIGN_SYSTEM.md) — all interactive elements */
 a:focus-visible,
 button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
 [tabindex="0"]:focus-visible {
   outline: none;
   box-shadow: 0 0 0 2px var(--color-bg), 0 0 0 4px var(--color-focus);

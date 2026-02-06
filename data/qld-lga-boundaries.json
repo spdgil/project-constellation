@@ -18,6 +18,15 @@
         "type": "Polygon",
         "coordinates": [[[148.2, -22.5], [148.8, -22.5], [148.8, -21.8], [148.2, -21.8], [148.2, -22.5]]]
       }
+    },
+    {
+      "type": "Feature",
+      "id": "whitsunday",
+      "properties": { "id": "whitsunday", "name": "Whitsunday" },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [[[148.2, -20.2], [148.9, -20.2], [148.9, -19.5], [148.2, -19.5], [148.2, -20.2]]]
+      }
     }
   ]
 }

@@ -179,6 +179,31 @@ describe("DealDrawer", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
+  it("focus is trapped in drawer: Tab from last focusable moves to first", () => {
+    render(
+      <DealDrawer
+        deal={mockDeal}
+        opportunityTypes={mockOpportunityTypes}
+        lgas={mockLgas}
+        onClose={vi.fn()}
+      />
+    );
+
+    const dialog = screen.getByRole("dialog", { name: /deal details/i });
+    const focusable = dialog.querySelectorAll<HTMLElement>(
+      'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+    expect(focusable.length).toBeGreaterThanOrEqual(2);
+
+    const lastFocusable = focusable[focusable.length - 1];
+    lastFocusable.focus();
+    expect(document.activeElement).toBe(lastFocusable);
+
+    fireEvent.keyDown(document.activeElement!, { key: "Tab", code: "Tab" });
+
+    expect(document.activeElement).toBe(focusable[0]);
+  });
+
   it("Close button calls onClose", () => {
     const onClose = vi.fn();
     render(

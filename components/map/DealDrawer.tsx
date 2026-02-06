@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { Deal, LGA, OpportunityType, ReadinessState, Constraint } from "@/lib/types";
 import {
   getDealWithLocalOverrides,
@@ -58,6 +58,9 @@ export interface DealDrawerProps {
   onClose: () => void;
 }
 
+const FOCUSABLE =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export function DealDrawer({
   deal: initialDeal,
   opportunityTypes,
@@ -66,6 +69,7 @@ export function DealDrawer({
 }: DealDrawerProps) {
   const [deal, setDeal] = useState<Deal | null>(null);
   const [isLocal, setIsLocal] = useState(false);
+  const drawerRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (!initialDeal) {
@@ -77,6 +81,37 @@ export function DealDrawer({
     setDeal(merged);
     setIsLocal(hasLocalDealOverrides(initialDeal.id));
   }, [initialDeal]);
+
+  useEffect(() => {
+    if (!deal || !drawerRef.current) return;
+    const first = drawerRef.current.querySelector<HTMLElement>(FOCUSABLE);
+    first?.focus();
+  }, [deal]);
+
+  useEffect(() => {
+    if (!deal || !drawerRef.current) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== "Tab") return;
+      const root = drawerRef.current;
+      if (!root || !root.contains(document.activeElement)) return;
+      const focusable = Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE));
+      if (focusable.length === 0) return;
+      const i = focusable.indexOf(document.activeElement as HTMLElement);
+      if (e.shiftKey) {
+        if (i <= 0) {
+          e.preventDefault();
+          focusable[focusable.length - 1].focus();
+        }
+      } else {
+        if (i === -1 || i >= focusable.length - 1) {
+          e.preventDefault();
+          focusable[0].focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown, true);
+    return () => document.removeEventListener("keydown", handleKeyDown, true);
+  }, [deal]);
 
   const handleReadinessChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -136,7 +171,9 @@ export function DealDrawer({
 
   return (
     <aside
+      ref={drawerRef}
       role="dialog"
+      aria-modal="true"
       aria-label="Deal details"
       className="w-80 border-l border-[#E8E6E3] bg-[#FFFFFF] flex flex-col shrink-0"
     >

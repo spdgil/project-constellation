@@ -2,9 +2,57 @@
   {
     "id": "critical-minerals",
     "name": "Critical minerals",
-    "definition": "Value chain adjacency; common-user processing. Upstream exploration/extraction and longer-term downstream processing/manufacturing.",
+    "definition": "Value chain adjacency; common-user processing. Upstream exploration/extraction adjacency and longer-term downstream processing/manufacturing.",
     "economicFunction": "Diversification from METS base; regional processing.",
     "typicalCapitalStack": "Government and industry co-investment in pilot facilities; offtake agreements.",
     "typicalRisks": "Feedstock certainty; technology scale-up; common-user facility governance."
+  },
+  {
+    "id": "renewable-energy",
+    "name": "Renewable energy",
+    "definition": "Renewable transition requiring significant investment; Queensland pipeline; major projects including pumped hydro and energy hub concepts.",
+    "economicFunction": "Construction-phase and O&M participation; local capture of pipeline.",
+    "typicalCapitalStack": "Project finance; government underwriting; offtake.",
+    "typicalRisks": "Awareness of construction-phase opportunities; specialised electrical capabilities; procurement structure."
+  },
+  {
+    "id": "bioenergy",
+    "name": "Bioenergy",
+    "definition": "Established locally with biocommodities pilot plant and sugar-to-ethanol precinct; newer biofuels demand drivers including sustainable aviation fuels.",
+    "economicFunction": "Biofuels production; feedstock value chain.",
+    "typicalCapitalStack": "Pilot and demonstration; offtake; feedstock agreements.",
+    "typicalRisks": "Stakeholder perceptions on feedstock competition; market understanding; value chain targeting."
+  },
+  {
+    "id": "biomanufacturing",
+    "name": "Biomanufacturing",
+    "definition": "Future foods biohub business case; pilot plant upgrades enabling synthetic biology demonstration.",
+    "economicFunction": "Fabrication and maintenance adjacency; bankability via certification.",
+    "typicalCapitalStack": "Pilot facilities; certification pathways; process capability.",
+    "typicalRisks": "Food-grade certification; limited technical understanding of biomanufacturing processes."
+  },
+  {
+    "id": "circular-economy",
+    "name": "Circular economy",
+    "definition": "Queensland-scale benefits; regional relevance via mining value chains and programs associated with the Resources Centre of Excellence.",
+    "economicFunction": "Circular systems in mining value chain; lifecycle and regulation.",
+    "typicalCapitalStack": "Partnerships; pilot programs; regulatory navigation.",
+    "typicalRisks": "Limited circular systems thinking; mine site control practices; waste regulation."
+  },
+  {
+    "id": "space",
+    "name": "Space",
+    "definition": "Investment attraction; Bowen Orbital Spaceport; one of only three dedicated orbital launch sites globally; licensing noted.",
+    "economicFunction": "Initial manufacturing and services adjacency.",
+    "typicalCapitalStack": "Standards; procurement pathways; accreditation.",
+    "typicalRisks": "Accreditation and procurement pathways; ISO standards; near-term demand uncertainty."
+  },
+  {
+    "id": "post-mining-land-use",
+    "name": "Post-mining land use",
+    "definition": "Significant opportunity with expected mine closure periods and expenditure; proactive planning and progressive rehabilitation.",
+    "economicFunction": "Scalable project class; rehabilitation and repurposing.",
+    "typicalCapitalStack": "Governance; risk allocation; multi-stakeholder planning.",
+    "typicalRisks": "Clarity on who carries ongoing risk; regional strategic planning frameworks."
   }
 ]

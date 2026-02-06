@@ -4,25 +4,43 @@
     "name": "Mackay",
     "geometryRef": "mackay",
     "notes": [],
-    "summary": "Mackay LGA is part of the Greater Whitsunday region. Mining is a major driver; the region has a significant METS base with an estimated 700+ businesses. Gross regional product is close to $30bn (~6% of Queensland's economy).",
+    "summary": "Mining is a major driver; the region is heavily reliant on mining, creating cyclical employment patterns correlated with commodity cycles. Combined economy with Isaac and Whitsunday; gross regional product close to $30bn (~6% of Queensland's economy). Over two million visitors and over $2bn visitor expenditure in 2023; 10% of Queensland agricultural production and 28% of Australia's sugarcane production; unemployment rate 3.9%; largest metallurgical coal deposits in Australia; Paget Industrial Estate described as the largest mining services industrial precinct in the southern hemisphere. METS base: estimated 700+ businesses; Paget ~40% of METS businesses; Mackay City ~12% with high share of technical consulting. Resources Centre of Excellence in Paget: training, innovation, demonstration; Stage 2 Future Industries Hub supported with Queensland Government funding.",
     "opportunityHypotheses": [
-      {
-        "id": "h1-critical-minerals",
-        "name": "Critical minerals (value chain adjacency)",
-        "summary": "METS capabilities support servicing critical minerals opportunities; common-user processing infrastructure can be catalytic.",
-        "dominantConstraint": "common-user-infrastructure-gap"
-      },
-      {
-        "id": "h2-renewables",
-        "name": "Renewable energy (project pipeline)",
-        "summary": "Durable pipeline exists; local capture constrained by awareness, skills gaps, and procurement structure.",
-        "dominantConstraint": "skills-and-workforce-constraint"
-      }
+      {"id": "h1-critical-minerals", "name": "Critical minerals (value chain adjacency; common-user processing)", "summary": "METS capabilities support servicing critical minerals opportunities beyond the region; common-user processing infrastructure can be catalytic.", "dominantConstraint": "common-user-infrastructure-gap"},
+      {"id": "h2-renewables", "name": "Renewable energy (project pipeline; participation barriers)", "summary": "Durable pipeline exists; local capture constrained by awareness, skills gaps, and procurement structure.", "dominantConstraint": "skills-and-workforce-constraint"},
+      {"id": "h3-bioenergy", "name": "Bioenergy (existing biofuel history; knowledge and feedstock perceptions)", "summary": "Region can progress bioenergy opportunities, but needs clearer market understanding and value chain targeting.", "dominantConstraint": "offtake-demand-aggregation"},
+      {"id": "h4-biomanufacturing", "name": "Biomanufacturing (future foods; certification and process capability)", "summary": "Fabrication and maintenance adjacency exists; bankability depends on certification pathways and process capability building.", "dominantConstraint": "sponsor-capability"},
+      {"id": "h5-circular", "name": "Circular economy (mining value chain; lifecycle and regulation barriers)", "summary": "Circular opportunities exist, but require capability uplift and regulatory navigation to scale.", "dominantConstraint": "coordination-failure"}
     ],
-    "activeDealIds": ["demo-flexilab"],
-    "repeatedConstraints": ["common-user-infrastructure-gap", "skills-and-workforce-constraint"],
-    "evidence": [
-      { "label": "Greater Whitsunday METS Strategy", "pageRef": "p.15, p.17" }
-    ]
+    "activeDealIds": ["rcoe-future-industries-hub", "demo-flexilab", "pioneer-burdekin-hydro", "linked-group-solar", "mackay-qut-biocommodities", "wilmar-sarina-distillery", "future-foods-biohub", "rcoe-pit-to-port"],
+    "repeatedConstraints": ["common-user-infrastructure-gap", "skills-and-workforce-constraint", "offtake-demand-aggregation", "coordination-failure"],
+    "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.15, p.17"}, {"label": "Capability anchors", "pageRef": "p.7, p.18–21"}]
+  },
+  {
+    "id": "isaac",
+    "name": "Isaac",
+    "geometryRef": "isaac",
+    "notes": [],
+    "summary": "Part of Greater Whitsunday combined economy; gross regional product close to $30bn (~6% of Queensland's economy). Moranbah ~13% of METS businesses, emphasising proximity-dependent services (equipment hire and mine-site services). Mining-driven; cyclical employment; post-mining land use and circular economy relevance.",
+    "opportunityHypotheses": [
+      {"id": "h5-circular-isaac", "name": "Circular economy (mining value chain; lifecycle and regulation barriers)", "summary": "Circular opportunities exist, but require capability uplift and regulatory navigation to scale.", "dominantConstraint": "coordination-failure"},
+      {"id": "h7-post-mining", "name": "Post-mining land use (mine closure scale; risk allocation clarity)", "summary": "Scalable project class is possible, but requires governance, risk allocation, and multi-stakeholder planning.", "dominantConstraint": "coordination-failure"}
+    ],
+    "activeDealIds": ["capricornia-energy-hub", "pioneer-burdekin-hydro", "veolia-woodlawn"],
+    "repeatedConstraints": ["coordination-failure", "planning-and-approvals"],
+    "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.19"}, {"label": "Stakeholder insights", "pageRef": "p.64–69"}]
+  },
+  {
+    "id": "whitsunday",
+    "name": "Whitsunday",
+    "geometryRef": "whitsunday",
+    "notes": [],
+    "summary": "Part of Greater Whitsunday combined economy. Bowen Orbital Spaceport: licensing noted; one of only three dedicated orbital launch sites globally. Over two million visitors and over $2bn visitor expenditure in 2023.",
+    "opportunityHypotheses": [
+      {"id": "h6-space", "name": "Space (Bowen spaceport adjacency; standards and demand uncertainty)", "summary": "Initial manufacturing and services opportunities exist, but entry is constrained by standards and near-term demand uncertainty.", "dominantConstraint": "planning-and-approvals"}
+    ],
+    "activeDealIds": ["valmar-gilmour-space"],
+    "repeatedConstraints": ["planning-and-approvals"],
+    "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.54"}, {"label": "Space opportunity", "pageRef": "p.56"}]
   }
 ]

@@ -27,6 +27,7 @@ export default function RootLayout({
         <a
           href="#main-content"
           className="skip-link"
+          data-testid="skip-to-content"
         >
           Skip to main content
         </a>
