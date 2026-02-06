@@ -11,9 +11,11 @@
     "test:run": "vitest run"
   },
   "dependencies": {
+    "mapbox-gl": "^3.18.1",
     "next": "16.1.6",
     "react": "19.2.3",
-    "react-dom": "19.2.3"
+    "react-dom": "19.2.3",
+    "react-map-gl": "^8.1.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -23,14 +25,14 @@
     "@types/node": "^22.10.1",
     "@types/react": "^19.0.1",
     "@types/react-dom": "^19.0.1",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@vitest/ui": "^4.0.0",
     "eslint": "^9.16.0",
     "eslint-config-next": "16.1.6",
     "jsdom": "^25.0.1",
     "postcss": "^8.4.49",
     "tailwindcss": "^4.0.0",
     "typescript": "~5.7.2",
-    "vitest": "^4.0.0",
-    "@vitejs/plugin-react": "^4.3.4",
-    "@vitest/ui": "^4.0.0"
+    "vitest": "^4.0.0"
   }
 }

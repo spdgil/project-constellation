@@ -11,6 +11,18 @@
   - `qld-lga-boundaries.json` — GeoJSON FeatureCollection; each feature has `id` / `properties.id` matching LGA `geometryRef` for map rendering.
 - **Enums:** Readiness (6 states), DealStage (5), Constraint (10). Labels in `lib/labels.ts`.
 
+## Mapbox GL (map view)
+
+- **Library:** `react-map-gl` + `mapbox-gl` with Mapbox's `light-v11` monochrome style.
+- **Token:** A Mapbox access token is required. Create a free account at [mapbox.com](https://account.mapbox.com/auth/signup/), copy your default public token, and add it to `.env.local`:
+  ```
+  NEXT_PUBLIC_MAPBOX_TOKEN=pk.your_token_here
+  ```
+  Restart the dev server after setting the token. Without a token, the map displays a helpful setup message instead.
+- **LGA boundaries:** Rendered as a GeoJSON `Source` with `fill` and `line` layers. The existing `data/qld-lga-boundaries.json` is used; boundaries are simplified placeholders and should be replaced with accurate geometry for production.
+- **Deal markers:** Positioned at `lat`/`lng` from deal data, or at the centroid of the first matching LGA polygon when coordinates are absent.
+- **Styling:** Boundary stroke `#2C2C2C`, selected fill `#E8E6E3` at 30% opacity; LGA name labels with white halo. Matches the design system's calm, monochrome palette.
+
 ## Local overrides
 
 - **Scope:** Deals only. Stored in `localStorage` under `project-constellation:deals` as a JSON object `Record<dealId, Deal>`.

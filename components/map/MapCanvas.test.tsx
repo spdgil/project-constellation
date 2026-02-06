@@ -1,97 +1,259 @@
-import { describe, it, expect, vi } from "vitest";
+import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
-import { MapCanvas } from "./MapCanvas";
+import type { GeoJSONFeatureCollection } from "@/lib/types";
+import type { Deal } from "@/lib/types";
 
-const defaultLgaPaths = [
-  { id: "mackay", name: "Mackay", pathD: "M 0 0 L 100 0 L 100 100 L 0 100 Z" },
-];
+/* ---------------------------------------------------------------------- */
+/* Mock react-map-gl/mapbox so tests run in jsdom (no WebGL).             */
+/* We render marker children and fire clicks on the fill layer via        */
+/* the onClick prop captured from <Map>.                                  */
+/* ---------------------------------------------------------------------- */
 
-const defaultProps = {
-  lgaPaths: defaultLgaPaths,
-  mapWidth: 800,
-  mapHeight: 600,
-  selectedLgaId: null as string | null,
-  onSelectLga: vi.fn(),
-  zoom: 1,
-  onZoomIn: vi.fn(),
-  onZoomOut: vi.fn(),
-  onReset: vi.fn(),
+let capturedMapProps: Record<string, unknown> = {};
+
+vi.mock("react-map-gl/mapbox", () => {
+  const React = require("react"); // eslint-disable-line @typescript-eslint/no-require-imports
+  return {
+    __esModule: true,
+    default: React.forwardRef(function MockMap(
+      props: Record<string, unknown> & { children?: React.ReactNode },
+      _ref: unknown,
+    ) {
+      capturedMapProps = props;
+      return (
+        <div data-testid="mock-mapbox-map">
+          {props.children}
+        </div>
+      );
+    }),
+    Source: ({ children }: { children?: React.ReactNode }) => (
+      <div data-testid="mock-source">{children}</div>
+    ),
+    Layer: ({ id }: { id: string }) => <div data-testid={`mock-layer-${id}`} />,
+    Marker: ({
+      children,
+    }: {
+      children?: React.ReactNode;
+      longitude: number;
+      latitude: number;
+      anchor?: string;
+    }) => <div data-testid="mock-marker">{children}</div>,
+    NavigationControl: () => <div data-testid="mock-nav-control" />,
+  };
+});
+
+vi.mock("mapbox-gl/dist/mapbox-gl.css", () => ({}));
+
+/* ---------------------------------------------------------------------- */
+/* Test data                                                              */
+/* ---------------------------------------------------------------------- */
+
+const mockBoundaries: GeoJSONFeatureCollection = {
+  type: "FeatureCollection",
+  features: [
+    {
+      type: "Feature",
+      id: "mackay",
+      properties: { id: "mackay", name: "Mackay" },
+      geometry: {
+        type: "Polygon",
+        coordinates: [
+          [
+            [149, -21.3],
+            [149.5, -21.3],
+            [149.5, -21],
+            [149, -21],
+            [149, -21.3],
+          ],
+        ],
+      },
+    },
+  ],
 };
 
+const mockDeals: Deal[] = [
+  {
+    id: "demo-flexilab",
+    name: "RCOE FlexiLab pilot",
+    opportunityTypeId: "critical-minerals",
+    lgaIds: ["mackay"],
+    lat: -21.15,
+    lng: 149.19,
+    stage: "feasibility",
+    readinessState: "feasibility-underway",
+    dominantConstraint: "common-user-infrastructure-gap",
+    summary: "Pilot processing facility.",
+    nextStep: "Secure offtake.",
+    evidence: [],
+    notes: [],
+    updatedAt: "2026-02-06T00:00:00.000Z",
+  },
+];
+
+const mockDealPositions = {
+  "demo-flexilab": { lng: 149.19, lat: -21.15 },
+};
+
+/* ---------------------------------------------------------------------- */
+/* Tests                                                                  */
+/* ---------------------------------------------------------------------- */
+
 describe("MapCanvas", () => {
-  it("renders Map canvas label and zoom controls", () => {
-    render(
-      <MapCanvas {...defaultProps}>
-        <span>Marker</span>
-      </MapCanvas>
-    );
+  const originalEnv = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
 
-    expect(screen.getByText("Map canvas")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /zoom in/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /zoom out/i })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /reset zoom/i })).toBeInTheDocument();
-    expect(screen.getByText("Marker")).toBeInTheDocument();
+  beforeEach(() => {
+    vi.resetModules();
+    capturedMapProps = {};
   });
 
-  it("calls onZoomIn when Zoom in is clicked", () => {
-    const onZoomIn = vi.fn();
-    render(
-      <MapCanvas {...defaultProps} onZoomIn={onZoomIn}>
-        <span />
-      </MapCanvas>
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: /zoom in/i }));
-    expect(onZoomIn).toHaveBeenCalledTimes(1);
+  afterAll(() => {
+    process.env.NEXT_PUBLIC_MAPBOX_TOKEN = originalEnv;
   });
 
-  it("calls onZoomOut when Zoom out is clicked", () => {
-    const onZoomOut = vi.fn();
+  it("shows a helpful message when Mapbox token is not set", async () => {
+    /* Override the env at module level via dynamic import */
+    vi.stubEnv("NEXT_PUBLIC_MAPBOX_TOKEN", "");
+    vi.resetModules();
+    const { MapCanvas } = await import("./MapCanvas");
+
     render(
-      <MapCanvas {...defaultProps} onZoomOut={onZoomOut}>
-        <span />
-      </MapCanvas>
+      <MapCanvas
+        boundaries={mockBoundaries}
+        selectedLgaId={null}
+        onSelectLga={vi.fn()}
+        deals={mockDeals}
+        dealPositions={mockDealPositions}
+        selectedDealId={null}
+        onSelectDeal={vi.fn()}
+      />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /zoom out/i }));
-    expect(onZoomOut).toHaveBeenCalledTimes(1);
+    expect(screen.getByRole("alert")).toBeInTheDocument();
+    expect(screen.getByText(/mapbox token not configured/i)).toBeInTheDocument();
   });
 
-  it("calls onReset when Reset is clicked", () => {
-    const onReset = vi.fn();
+  it("renders the Mapbox map and layers when token is set", async () => {
+    vi.stubEnv("NEXT_PUBLIC_MAPBOX_TOKEN", "pk.test_token");
+    vi.resetModules();
+    const { MapCanvas } = await import("./MapCanvas");
+
     render(
-      <MapCanvas {...defaultProps} zoom={1.5} onReset={onReset}>
-        <span />
-      </MapCanvas>
+      <MapCanvas
+        boundaries={mockBoundaries}
+        selectedLgaId={null}
+        onSelectLga={vi.fn()}
+        deals={mockDeals}
+        dealPositions={mockDealPositions}
+        selectedDealId={null}
+        onSelectDeal={vi.fn()}
+      />,
     );
 
-    fireEvent.click(screen.getByRole("button", { name: /reset zoom/i }));
-    expect(onReset).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId("mock-mapbox-map")).toBeInTheDocument();
+    expect(screen.getByTestId("mock-layer-lga-fill")).toBeInTheDocument();
+    expect(screen.getByTestId("mock-layer-lga-line")).toBeInTheDocument();
+    expect(screen.getByTestId("mock-nav-control")).toBeInTheDocument();
   });
 
-  it("zoom controls are keyboard focusable", () => {
+  it("renders deal marker buttons inside Mapbox markers", async () => {
+    vi.stubEnv("NEXT_PUBLIC_MAPBOX_TOKEN", "pk.test_token");
+    vi.resetModules();
+    const { MapCanvas } = await import("./MapCanvas");
+
     render(
-      <MapCanvas {...defaultProps}>
-        <span />
-      </MapCanvas>
+      <MapCanvas
+        boundaries={mockBoundaries}
+        selectedLgaId={null}
+        onSelectLga={vi.fn()}
+        deals={mockDeals}
+        dealPositions={mockDealPositions}
+        selectedDealId={null}
+        onSelectDeal={vi.fn()}
+      />,
     );
 
-    const zoomIn = screen.getByRole("button", { name: /zoom in/i });
-    zoomIn.focus();
-    expect(zoomIn).toHaveFocus();
+    const markerButton = screen.getByRole("button", {
+      name: /deal: RCOE FlexiLab pilot\. select to view details\./i,
+    });
+    expect(markerButton).toBeInTheDocument();
   });
 
-  it("calls onSelectLga when LGA polygon is clicked", () => {
+  it("calls onSelectDeal when deal marker is clicked", async () => {
+    vi.stubEnv("NEXT_PUBLIC_MAPBOX_TOKEN", "pk.test_token");
+    vi.resetModules();
+    const { MapCanvas } = await import("./MapCanvas");
+    const onSelectDeal = vi.fn();
+
+    render(
+      <MapCanvas
+        boundaries={mockBoundaries}
+        selectedLgaId={null}
+        onSelectLga={vi.fn()}
+        deals={mockDeals}
+        dealPositions={mockDealPositions}
+        selectedDealId={null}
+        onSelectDeal={onSelectDeal}
+      />,
+    );
+
+    const markerButton = screen.getByRole("button", {
+      name: /deal: RCOE FlexiLab pilot\. select to view details\./i,
+    });
+    fireEvent.click(markerButton);
+    expect(onSelectDeal).toHaveBeenCalledWith("demo-flexilab");
+  });
+
+  it("calls onSelectLga when map click hits an LGA feature", async () => {
+    vi.stubEnv("NEXT_PUBLIC_MAPBOX_TOKEN", "pk.test_token");
+    vi.resetModules();
+    const { MapCanvas } = await import("./MapCanvas");
     const onSelectLga = vi.fn();
+
     render(
-      <MapCanvas {...defaultProps} onSelectLga={onSelectLga}>
-        <span />
-      </MapCanvas>
+      <MapCanvas
+        boundaries={mockBoundaries}
+        selectedLgaId={null}
+        onSelectLga={onSelectLga}
+        deals={[]}
+        dealPositions={{}}
+        selectedDealId={null}
+        onSelectDeal={vi.fn()}
+      />,
     );
 
-    const polygon = screen.getByTestId("lga-polygon-mackay");
-    fireEvent.click(polygon);
+    /* Simulate what Mapbox does: call onClick with features */
+    const onClick = capturedMapProps.onClick as (e: MapMouseEvent) => void;
+    expect(onClick).toBeDefined();
+    onClick({
+      features: [{ properties: { id: "mackay" } }],
+    } as unknown as MapMouseEvent);
 
     expect(onSelectLga).toHaveBeenCalledWith("mackay");
+  });
+
+  it("deselects LGA when clicking an already-selected LGA", async () => {
+    vi.stubEnv("NEXT_PUBLIC_MAPBOX_TOKEN", "pk.test_token");
+    vi.resetModules();
+    const { MapCanvas } = await import("./MapCanvas");
+    const onSelectLga = vi.fn();
+
+    render(
+      <MapCanvas
+        boundaries={mockBoundaries}
+        selectedLgaId="mackay"
+        onSelectLga={onSelectLga}
+        deals={[]}
+        dealPositions={{}}
+        selectedDealId={null}
+        onSelectDeal={vi.fn()}
+      />,
+    );
+
+    const onClick = capturedMapProps.onClick as (e: MapMouseEvent) => void;
+    onClick({
+      features: [{ properties: { id: "mackay" } }],
+    } as unknown as MapMouseEvent);
+
+    expect(onSelectLga).toHaveBeenCalledWith(null);
   });
 });
