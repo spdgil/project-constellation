@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import Map, {
   Source,
   Layer,
@@ -117,6 +117,41 @@ export function MapCanvas({
         : (["==", ["get", "id"], ""] as unknown as mapboxgl.Expression),
     [selectedLgaId],
   );
+
+  /* ------------------------------------------------------------------ */
+  /* Fly to the selected LGA's bounds when selection changes            */
+  /* ------------------------------------------------------------------ */
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map || !selectedLgaId) return;
+
+    const feature = boundaries.features.find(
+      (f) => String(f.properties?.id ?? "") === selectedLgaId,
+    );
+    if (!feature?.geometry?.coordinates) return;
+
+    let minLng = Infinity;
+    let maxLng = -Infinity;
+    let minLat = Infinity;
+    let maxLat = -Infinity;
+
+    walkCoords(feature.geometry.coordinates, (lng, lat) => {
+      minLng = Math.min(minLng, lng);
+      maxLng = Math.max(maxLng, lng);
+      minLat = Math.min(minLat, lat);
+      maxLat = Math.max(maxLat, lat);
+    });
+
+    if (!isFinite(minLng)) return;
+
+    map.fitBounds(
+      [
+        [minLng, minLat],
+        [maxLng, maxLat],
+      ],
+      { padding: 60, duration: 800, maxZoom: 11 },
+    );
+  }, [selectedLgaId, boundaries]);
 
   /* ------------------------------------------------------------------ */
   /* Missing-token fallback                                             */
