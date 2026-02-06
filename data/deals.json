@@ -1,0 +1,18 @@
+[
+  {
+    "id": "demo-flexilab",
+    "name": "RCOE FlexiLab critical minerals pilot processing plant",
+    "opportunityTypeId": "critical-minerals",
+    "lgaIds": ["mackay"],
+    "lat": -21.15,
+    "lng": 149.19,
+    "stage": "feasibility",
+    "readinessState": "feasibility-underway",
+    "dominantConstraint": "common-user-infrastructure-gap",
+    "summary": "Pilot processing facility in Paget supported with Queensland Government funding; interest from companies.",
+    "nextStep": "Secure offtake and finalise common-user access terms.",
+    "evidence": [{ "label": "Greater Whitsunday METS Strategy", "pageRef": "p.37" }],
+    "notes": [],
+    "updatedAt": "2026-02-06T00:00:00.000Z"
+  }
+]

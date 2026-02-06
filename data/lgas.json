@@ -1,0 +1,28 @@
+[
+  {
+    "id": "mackay",
+    "name": "Mackay",
+    "geometryRef": "mackay",
+    "notes": [],
+    "summary": "Mackay LGA is part of the Greater Whitsunday region. Mining is a major driver; the region has a significant METS base with an estimated 700+ businesses. Gross regional product is close to $30bn (~6% of Queensland's economy).",
+    "opportunityHypotheses": [
+      {
+        "id": "h1-critical-minerals",
+        "name": "Critical minerals (value chain adjacency)",
+        "summary": "METS capabilities support servicing critical minerals opportunities; common-user processing infrastructure can be catalytic.",
+        "dominantConstraint": "common-user-infrastructure-gap"
+      },
+      {
+        "id": "h2-renewables",
+        "name": "Renewable energy (project pipeline)",
+        "summary": "Durable pipeline exists; local capture constrained by awareness, skills gaps, and procurement structure.",
+        "dominantConstraint": "skills-and-workforce-constraint"
+      }
+    ],
+    "activeDealIds": ["demo-flexilab"],
+    "repeatedConstraints": ["common-user-infrastructure-gap", "skills-and-workforce-constraint"],
+    "evidence": [
+      { "label": "Greater Whitsunday METS Strategy", "pageRef": "p.15, p.17" }
+    ]
+  }
+]
