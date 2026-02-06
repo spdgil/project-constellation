@@ -1,17 +1,9 @@
-import {
-  loadLgas,
-  loadDeals,
-  loadOpportunityTypes,
-} from "@/lib/data";
+import { loadPageData } from "@/lib/load-page-data";
 import { READINESS_LABELS, CONSTRAINT_LABELS } from "@/lib/labels";
 import type { ReadinessState, Constraint } from "@/lib/types";
 
 export default async function HomePage() {
-  const [lgas, deals, opportunityTypes] = await Promise.all([
-    loadLgas(),
-    loadDeals(),
-    loadOpportunityTypes(),
-  ]);
+  const { lgas, deals, opportunityTypes } = await loadPageData("home page");
 
   /* Pipeline summary */
   const readinessCounts: Record<string, number> = {};

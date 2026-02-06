@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import type { Deal, LGA, OpportunityType } from "@/lib/types";
-import { getDealsWithLocalOverrides } from "@/lib/deal-storage";
+import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
 import {
   countByReadiness,
   countByConstraint,
@@ -24,22 +24,21 @@ export function OpportunityDetail({
   deals: baseDeals,
   lgas,
 }: OpportunityDetailProps) {
-  const [deals, setDeals] = useState<Deal[]>(baseDeals);
+  const deals = useDealsWithOverrides(baseDeals);
 
-  useEffect(() => {
-    setDeals(getDealsWithLocalOverrides(baseDeals));
-  }, [baseDeals]);
-
-  const typeDeals = deals.filter((d) => d.opportunityTypeId === ot.id);
-  const readinessDist = countByReadiness(typeDeals);
-  const constraintDist = countByConstraint(typeDeals);
-  const replicationConstraints = constraintsAcrossLgas(typeDeals);
-  const replicationStallPoints = stallPoints(typeDeals);
-  const totalDeals = typeDeals.length;
-  const maxReadinessCount = Math.max(
-    ...readinessDist.map((r) => r.count),
-    1
-  );
+  const { typeDeals, readinessDist, constraintDist, replicationConstraints, replicationStallPoints, totalDeals, maxReadinessCount } = useMemo(() => {
+    const td = deals.filter((d) => d.opportunityTypeId === ot.id);
+    const rd = countByReadiness(td);
+    return {
+      typeDeals: td,
+      readinessDist: rd,
+      constraintDist: countByConstraint(td),
+      replicationConstraints: constraintsAcrossLgas(td),
+      replicationStallPoints: stallPoints(td),
+      totalDeals: td.length,
+      maxReadinessCount: Math.max(...rd.map((r) => r.count), 1),
+    };
+  }, [deals, ot.id]);
 
   return (
     <div className="max-w-4xl" data-testid="opportunity-detail">

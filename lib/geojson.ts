@@ -3,7 +3,7 @@
  * No heavy GIS libs; linear projection from geographic bbox to view coords.
  */
 
-import type { GeoJSONFeature, GeoJSONFeatureCollection } from "./types";
+import type { GeoJSONFeature, GeoJSONFeatureCollection, GeoJSONGeometry } from "./types";
 
 export interface Bounds {
   minLng: number;
@@ -37,7 +37,7 @@ export function getBounds(fc: GeoJSONFeatureCollection): Bounds {
 }
 
 function walkCoords(
-  coords: number[] | number[][] | number[][][],
+  coords: GeoJSONGeometry["coordinates"],
   fn: (lng: number, lat: number) => void
 ): void {
   if (typeof coords[0] === "number") {
@@ -66,7 +66,7 @@ export function createProjector(
 
 /** Convert GeoJSON geometry to SVG path d string. */
 export function geometryToPathD(
-  coordinates: number[] | number[][] | number[][][] | number[][][][],
+  coordinates: GeoJSONGeometry["coordinates"],
   project: (lng: number, lat: number) => { x: number; y: number }
 ): string {
   const parts: string[] = [];
@@ -82,7 +82,7 @@ export function geometryToPathD(
 }
 
 function walkRings(
-  coords: number[] | number[][] | number[][][] | number[][][][],
+  coords: GeoJSONGeometry["coordinates"],
   project: (lng: number, lat: number) => { x: number; y: number },
   fn: (points: { x: number; y: number }[]) => void
 ): void {
@@ -133,7 +133,7 @@ export function getFeatureCentroid(
 }
 
 function firstRing(
-  coords: number[] | number[][] | number[][][] | number[][][][]
+  coords: GeoJSONGeometry["coordinates"],
 ): number[][] | null {
   if (typeof coords[0] === "number") return null;
   const first = coords[0];
@@ -161,7 +161,7 @@ export function featuresToPathData(
         (f.properties?.id as string) ??
         (typeof f.id === "string" ? f.id : String(f.id ?? ""));
       const name = (f.properties?.name as string) ?? id;
-      const pathD = geometryToPathD(f.geometry!.coordinates, project);
+      const pathD = geometryToPathD(f.geometry.coordinates, project);
       return { id, name, pathD };
     });
 }

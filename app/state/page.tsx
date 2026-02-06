@@ -1,12 +1,8 @@
-import { loadLgas, loadDeals, loadOpportunityTypes } from "@/lib/data";
+import { loadPageData } from "@/lib/load-page-data";
 import { StateView } from "@/components/state/StateView";
 
 export default async function StatePage() {
-  const [lgas, deals, opportunityTypes] = await Promise.all([
-    loadLgas(),
-    loadDeals(),
-    loadOpportunityTypes(),
-  ]);
+  const { lgas, deals, opportunityTypes } = await loadPageData("state page");
 
   return (
     <StateView

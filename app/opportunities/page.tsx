@@ -1,12 +1,8 @@
-import { loadLgas, loadDeals, loadOpportunityTypes } from "@/lib/data";
+import { loadPageData } from "@/lib/load-page-data";
 import { OpportunitiesIndex } from "@/components/opportunities/OpportunitiesIndex";
 
 export default async function OpportunitiesPage() {
-  const [lgas, deals, opportunityTypes] = await Promise.all([
-    loadLgas(),
-    loadDeals(),
-    loadOpportunityTypes(),
-  ]);
+  const { lgas, deals, opportunityTypes } = await loadPageData("opportunities page");
 
   return (
     <OpportunitiesIndex

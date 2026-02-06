@@ -7,7 +7,6 @@ import type {
   LGA,
   OpportunityType,
   Deal,
-  Cluster,
   GeoJSONFeatureCollection,
 } from "./types";
 
@@ -29,12 +28,6 @@ export async function loadOpportunityTypes(): Promise<OpportunityType[]> {
 export async function loadDeals(): Promise<Deal[]> {
   const data = await import("@/data/deals.json");
   return data.default as Deal[];
-}
-
-/** Load clusters from data/clusters.json */
-export async function loadClusters(): Promise<Cluster[]> {
-  const data = await import("@/data/clusters.json");
-  return data.default as Cluster[];
 }
 
 /** Load QLD LGA boundaries from data/qld-lga-boundaries.json (replace with .geojson when using real boundaries; add Turbopack/webpack rule then) */

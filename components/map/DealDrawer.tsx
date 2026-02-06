@@ -13,6 +13,7 @@ import {
   STAGE_LABELS,
   CONSTRAINT_LABELS,
 } from "@/lib/labels";
+import { formatDate } from "@/lib/format";
 
 const READINESS_OPTIONS: ReadinessState[] = [
   "no-viable-projects",
@@ -35,21 +36,6 @@ const CONSTRAINT_OPTIONS: Constraint[] = [
   "skills-and-workforce-constraint",
   "common-user-infrastructure-gap",
 ];
-
-function formatDate(iso: string): string {
-  try {
-    const d = new Date(iso);
-    return d.toLocaleDateString("en-AU", {
-      day: "numeric",
-      month: "short",
-      year: "numeric",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return iso;
-  }
-}
 
 export interface DealDrawerProps {
   deal: Deal | null;

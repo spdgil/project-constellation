@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useCallback, useId, useState } from "react";
-import type { LGA, Deal, Constraint } from "@/lib/types";
+import type { LGA, Deal } from "@/lib/types";
+import { CONSTRAINT_LABELS } from "@/lib/labels";
+import { AccordionSection } from "@/components/ui/AccordionSection";
 
 const SECTION_IDS = [
   "summary",
@@ -10,19 +12,6 @@ const SECTION_IDS = [
   "repeated-constraints",
   "evidence-notes",
 ] as const;
-
-const CONSTRAINT_LABELS: Record<Constraint, string> = {
-  "revenue-certainty": "Revenue certainty",
-  "offtake-demand-aggregation": "Offtake / demand aggregation",
-  "planning-and-approvals": "Planning and approvals",
-  "sponsor-capability": "Sponsor capability",
-  "early-risk-capital": "Early risk capital",
-  "balance-sheet-constraints": "Balance sheet constraints",
-  "technology-risk": "Technology risk",
-  "coordination-failure": "Coordination failure",
-  "skills-and-workforce-constraint": "Skills and workforce constraint",
-  "common-user-infrastructure-gap": "Common-user infrastructure gap",
-};
 
 export interface LgaDetailPanelProps {
   lga: LGA;
@@ -212,60 +201,3 @@ export function LgaDetailPanel({ lga, deals, onClose }: LgaDetailPanelProps) {
   );
 }
 
-interface AccordionSectionProps {
-  id: string;
-  heading: string;
-  expanded: boolean;
-  onToggle: () => void;
-  controlsId: string;
-  children: React.ReactNode;
-}
-
-function AccordionSection({
-  id,
-  heading,
-  expanded,
-  onToggle,
-  controlsId,
-  children,
-}: AccordionSectionProps) {
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      onToggle();
-    }
-  };
-
-  return (
-    <div
-      className="border-b border-[#F0EEEB] last:border-b-0"
-      data-accordion-section={id}
-    >
-      <h3 className="font-heading text-sm font-normal leading-[1.4] text-[#2C2C2C]">
-        <button
-          type="button"
-          id={controlsId}
-          aria-expanded={expanded}
-          aria-controls={`${controlsId}-content`}
-          onClick={onToggle}
-          onKeyDown={handleKeyDown}
-          className="w-full flex items-center justify-between gap-2 py-2 text-left border-0 bg-transparent text-sm text-[#2C2C2C] hover:bg-[#F5F3F0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7] transition duration-300 ease-out"
-        >
-          {heading}
-          <span className="text-[#6B6B6B] text-xs" aria-hidden>
-            {expanded ? "−" : "+"}
-          </span>
-        </button>
-      </h3>
-      <div
-        id={`${controlsId}-content`}
-        role="region"
-        aria-labelledby={controlsId}
-        hidden={!expanded}
-        className={expanded ? "pb-3" : "hidden"}
-      >
-        {children}
-      </div>
-    </div>
-  );
-}

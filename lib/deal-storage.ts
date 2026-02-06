@@ -67,7 +67,19 @@ export function saveDealLocally(deal: Deal, storage: Storage = getStorage()): vo
   const raw = storage.getItem(STORAGE_KEY_DEALS);
   const map = raw ? (JSON.parse(raw) as Record<string, Deal>) : {};
   map[deal.id] = deal;
-  storage.setItem(STORAGE_KEY_DEALS, JSON.stringify(map));
+  try {
+    storage.setItem(STORAGE_KEY_DEALS, JSON.stringify(map));
+  } catch (error) {
+    if (
+      error instanceof DOMException &&
+      (error.name === "QuotaExceededError" ||
+        error.code === DOMException.QUOTA_EXCEEDED_ERR)
+    ) {
+      console.warn("localStorage quota exceeded — deal override not saved.");
+      return;
+    }
+    throw error;
+  }
 }
 
 /** Load constraint events from localStorage. */
@@ -95,6 +107,18 @@ export function appendConstraintEvent(
   const full: ConstraintEvent = { ...event, id };
   const events = getConstraintEvents(storage);
   events.push(full);
-  storage.setItem(STORAGE_KEY_EVENTS, JSON.stringify(events));
+  try {
+    storage.setItem(STORAGE_KEY_EVENTS, JSON.stringify(events));
+  } catch (error) {
+    if (
+      error instanceof DOMException &&
+      (error.name === "QuotaExceededError" ||
+        error.code === DOMException.QUOTA_EXCEEDED_ERR)
+    ) {
+      console.warn("localStorage quota exceeded — constraint event not saved.");
+      return full;
+    }
+    throw error;
+  }
   return full;
 }

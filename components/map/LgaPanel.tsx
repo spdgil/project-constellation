@@ -46,13 +46,17 @@ export function LgaPanel({
           })}
         </ul>
       </nav>
-      {selectedLgaId && (
-        <LgaDetailPanel
-          lga={lgas.find((l) => l.id === selectedLgaId)!}
-          deals={deals}
-          onClose={() => onSelectLga(null)}
-        />
-      )}
+      {selectedLgaId && (() => {
+        const selectedLga = lgas.find((l) => l.id === selectedLgaId);
+        if (!selectedLga) return null;
+        return (
+          <LgaDetailPanel
+            lga={selectedLga}
+            deals={deals}
+            onClose={() => onSelectLga(null)}
+          />
+        );
+      })()}
     </div>
   );
 }

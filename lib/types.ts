@@ -87,18 +87,6 @@ export interface Note {
   createdAt: string;
 }
 
-/** Cluster — PRD §7.1 */
-export interface Cluster {
-  id: string;
-  name: string;
-  opportunityTypeId: string;
-  lgaIds: string[];
-  readinessState: ReadinessState;
-  dominantConstraint: Constraint;
-  rationale: string;
-  dealIds: string[];
-}
-
 /** Deal (project instance) — PRD §7.1 */
 export interface Deal {
   id: string;
@@ -127,16 +115,21 @@ export interface ConstraintEvent {
   changeReason: string;
 }
 
-// --- GeoJSON (placeholder) ---
+// --- GeoJSON ---
+
+/** GeoJSON geometry types used in LGA boundaries. */
+export type GeoJSONGeometryType = "Point" | "LineString" | "Polygon" | "MultiPolygon" | "MultiLineString" | "MultiPoint";
+
+export interface GeoJSONGeometry {
+  type: GeoJSONGeometryType;
+  coordinates: number[] | number[][] | number[][][] | number[][][][];
+}
 
 export interface GeoJSONFeature {
   type: "Feature";
   id?: string | number;
   properties?: Record<string, unknown>;
-  geometry: {
-    type: string;
-    coordinates: number[] | number[][] | number[][][];
-  };
+  geometry: GeoJSONGeometry;
 }
 
 export interface GeoJSONFeatureCollection {

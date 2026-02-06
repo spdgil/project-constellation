@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useMemo, useEffect, useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import type { Deal, LGA, OpportunityType } from "@/lib/types";
-import { getDealsWithLocalOverrides } from "@/lib/deal-storage";
+import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
 import { filterDealsByQuery } from "@/lib/deals-search";
 import { dealLgaNames } from "@/lib/opportunities";
 import { DealDrawer } from "@/components/map/DealDrawer";
@@ -19,18 +19,17 @@ export function DealsSearch({
   opportunityTypes,
   lgas,
 }: DealsSearchProps) {
-  const [deals, setDeals] = useState<Deal[]>(baseDeals);
+  const deals = useDealsWithOverrides(baseDeals);
   const [query, setQuery] = useState("");
   const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const listRef = useRef<HTMLUListElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  useEffect(() => {
-    setDeals(getDealsWithLocalOverrides(baseDeals));
-  }, [baseDeals]);
-
-  const filtered = filterDealsByQuery(deals, query, opportunityTypes, lgas);
+  const filtered = useMemo(
+    () => filterDealsByQuery(deals, query, opportunityTypes, lgas),
+    [deals, query, opportunityTypes, lgas],
+  );
   const selectedDeal = selectedDealId
     ? deals.find((d) => d.id === selectedDealId) ?? null
     : null;

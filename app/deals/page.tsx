@@ -1,12 +1,8 @@
-import { loadLgas, loadDeals, loadOpportunityTypes } from "@/lib/data";
+import { loadPageData } from "@/lib/load-page-data";
 import { DealsSearch } from "@/components/deals/DealsSearch";
 
 export default async function DealsPage() {
-  const [lgas, deals, opportunityTypes] = await Promise.all([
-    loadLgas(),
-    loadDeals(),
-    loadOpportunityTypes(),
-  ]);
+  const { lgas, deals, opportunityTypes } = await loadPageData("deals page");
 
   return (
     <DealsSearch

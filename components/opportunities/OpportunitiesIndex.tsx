@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 import Link from "next/link";
 import type { Deal, LGA, OpportunityType } from "@/lib/types";
-import { getDealsWithLocalOverrides } from "@/lib/deal-storage";
+import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
 import {
   countByReadiness,
   topConstraints,
@@ -16,16 +16,24 @@ export interface OpportunitiesIndexProps {
   lgas: LGA[];
 }
 
+/** Pre-index deals by opportunityTypeId to avoid repeated .filter() calls. */
+function indexDealsByOt(deals: Deal[]): Map<string, Deal[]> {
+  const map = new Map<string, Deal[]>();
+  for (const d of deals) {
+    const arr = map.get(d.opportunityTypeId);
+    if (arr) arr.push(d);
+    else map.set(d.opportunityTypeId, [d]);
+  }
+  return map;
+}
+
 export function OpportunitiesIndex({
   opportunityTypes,
   deals: baseDeals,
   lgas: _lgas,
 }: OpportunitiesIndexProps) {
-  const [deals, setDeals] = useState<Deal[]>(baseDeals);
-
-  useEffect(() => {
-    setDeals(getDealsWithLocalOverrides(baseDeals));
-  }, [baseDeals]);
+  const deals = useDealsWithOverrides(baseDeals);
+  const dealsByOt = useMemo(() => indexDealsByOt(deals), [deals]);
 
   return (
     <div className="max-w-4xl">
@@ -43,7 +51,7 @@ export function OpportunitiesIndex({
 
       <ul className="list-none p-0 m-0 space-y-4" data-testid="opportunity-types-list">
         {opportunityTypes.map((ot) => {
-          const typeDeals = deals.filter((d) => d.opportunityTypeId === ot.id);
+          const typeDeals = dealsByOt.get(ot.id) ?? [];
           const readinessCounts = countByReadiness(typeDeals);
           const top = topConstraints(typeDeals, 2);
           const readinessSummary =

@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { loadLgas, loadDeals, loadOpportunityTypes } from "@/lib/data";
+import { loadPageData } from "@/lib/load-page-data";
 import { OpportunityDetail } from "@/components/opportunities/OpportunityDetail";
 
 export default async function OpportunityDetailPage({
@@ -8,11 +8,7 @@ export default async function OpportunityDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [lgas, deals, opportunityTypes] = await Promise.all([
-    loadLgas(),
-    loadDeals(),
-    loadOpportunityTypes(),
-  ]);
+  const { lgas, deals, opportunityTypes } = await loadPageData("opportunity detail");
 
   const opportunityType = opportunityTypes.find((o) => o.id === id);
   if (!opportunityType) notFound();

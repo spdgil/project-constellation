@@ -37,15 +37,23 @@ export function MapView({
       ? boundariesProp
       : boundariesFetched ?? EMPTY_BOUNDARIES;
 
+  const [boundaryError, setBoundaryError] = useState<string | null>(null);
+
   /* Fetch boundaries client-side if not passed from server */
   useEffect(() => {
     if (boundariesProp?.features?.length) return;
     fetch("/api/boundaries")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
       .then((data: GeoJSONFeatureCollection) => {
         if (data?.features?.length) setBoundariesFetched(data);
       })
-      .catch(() => {});
+      .catch((err: unknown) => {
+        console.error("Failed to fetch LGA boundaries:", err);
+        setBoundaryError("Could not load LGA boundaries. The map may be incomplete.");
+      });
   }, [boundariesProp?.features?.length]);
 
   /* ------------------------------------------------------------------ */
@@ -60,9 +68,10 @@ export function MapView({
         positions[deal.id] = { lng: deal.lng, lat: deal.lat };
       } else {
         const firstLgaId = deal.lgaIds[0];
+        if (!firstLgaId) continue;
         const feature = boundaries.features.find(
           (f) =>
-            (f.properties?.id as string) === firstLgaId ||
+            String(f.properties?.id ?? "") === firstLgaId ||
             (typeof f.id === "string" ? f.id : String(f.id ?? "")) ===
               firstLgaId,
         );
@@ -97,6 +106,12 @@ export function MapView({
         Greater Whitsunday LGA boundaries on a Mapbox light basemap. Click a
         boundary or use the list to open LGA details.
       </p>
+
+      {boundaryError && (
+        <p className="text-sm text-red-700 bg-red-50 border border-red-200 px-3 py-2 mb-4" role="alert">
+          {boundaryError}
+        </p>
+      )}
 
       <div className="flex flex-1 min-h-0 border border-[#E8E6E3] bg-[#FAF9F7]">
         <LgaPanel

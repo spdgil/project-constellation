@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback, useId } from "react";
+import { useMemo, useState, useCallback, useId } from "react";
 import Link from "next/link";
 import type { Deal, LGA, OpportunityType } from "@/lib/types";
-import { getDealsWithLocalOverrides } from "@/lib/deal-storage";
+import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
 import {
   countByReadiness,
   countByConstraint,
@@ -11,6 +11,7 @@ import {
   constraintSummaryByLga,
 } from "@/lib/opportunities";
 import { READINESS_LABELS } from "@/lib/labels";
+import { AccordionSection } from "@/components/ui/AccordionSection";
 
 const SECTION_IDS = [
   "pipeline-by-ot",
@@ -29,12 +30,8 @@ export function StateView({
   deals: baseDeals,
   lgas,
 }: StateViewProps) {
-  const [deals, setDeals] = useState<Deal[]>(baseDeals);
+  const deals = useDealsWithOverrides(baseDeals);
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
-
-  useEffect(() => {
-    setDeals(getDealsWithLocalOverrides(baseDeals));
-  }, [baseDeals]);
 
   const toggleSection = useCallback((id: (typeof SECTION_IDS)[number]) => {
     setOpenSections((prev) => {
@@ -73,6 +70,8 @@ export function StateView({
           expanded={isExpanded("pipeline-by-ot")}
           onToggle={() => toggleSection("pipeline-by-ot")}
           controlsId={`${panelId}-pipeline`}
+          headingLevel="h2"
+          contentClassName="px-4 pb-4"
         >
           <PipelineByOt deals={deals} opportunityTypes={opportunityTypes} />
         </AccordionSection>
@@ -83,6 +82,8 @@ export function StateView({
           expanded={isExpanded("constraint-by-ot")}
           onToggle={() => toggleSection("constraint-by-ot")}
           controlsId={`${panelId}-constraint-ot`}
+          headingLevel="h2"
+          contentClassName="px-4 pb-4"
         >
           <ConstraintByOt deals={deals} opportunityTypes={opportunityTypes} />
         </AccordionSection>
@@ -93,65 +94,11 @@ export function StateView({
           expanded={isExpanded("constraint-by-lga")}
           onToggle={() => toggleSection("constraint-by-lga")}
           controlsId={`${panelId}-constraint-lga`}
+          headingLevel="h2"
+          contentClassName="px-4 pb-4"
         >
           <ConstraintByLga deals={deals} lgas={lgas} />
         </AccordionSection>
-      </div>
-    </div>
-  );
-}
-
-function AccordionSection({
-  id,
-  heading,
-  expanded,
-  onToggle,
-  controlsId,
-  children,
-}: {
-  id: string;
-  heading: string;
-  expanded: boolean;
-  onToggle: () => void;
-  controlsId: string;
-  children: React.ReactNode;
-}) {
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      onToggle();
-    }
-  };
-
-  return (
-    <div
-      className="border-b border-[#F0EEEB] last:border-b-0"
-      data-accordion-section={id}
-    >
-      <h2 className="font-heading text-lg font-normal leading-[1.4] text-[#2C2C2C]">
-        <button
-          type="button"
-          id={controlsId}
-          aria-expanded={expanded}
-          aria-controls={`${controlsId}-content`}
-          onClick={onToggle}
-          onKeyDown={handleKeyDown}
-          className="w-full flex items-center justify-between gap-2 py-4 px-4 text-left border-0 bg-transparent text-sm text-[#2C2C2C] hover:bg-[#F5F3F0] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7] transition duration-300 ease-out"
-        >
-          {heading}
-          <span className="text-[#6B6B6B] text-xs" aria-hidden>
-            {expanded ? "−" : "+"}
-          </span>
-        </button>
-      </h2>
-      <div
-        id={`${controlsId}-content`}
-        role="region"
-        aria-labelledby={controlsId}
-        hidden={!expanded}
-        className={expanded ? "px-4 pb-4" : "hidden"}
-      >
-        {children}
       </div>
     </div>
   );
@@ -164,10 +111,11 @@ function PipelineByOt({
   deals: Deal[];
   opportunityTypes: OpportunityType[];
 }) {
+  const dealsByOt = useMemo(() => indexDealsByOt(deals), [deals]);
   return (
     <div className="space-y-4" data-testid="pipeline-by-ot">
       {opportunityTypes.map((ot) => {
-        const typeDeals = deals.filter((d) => d.opportunityTypeId === ot.id);
+        const typeDeals = dealsByOt.get(ot.id) ?? [];
         const readinessCounts = countByReadiness(typeDeals);
         return (
           <div
@@ -205,10 +153,11 @@ function ConstraintByOt({
   deals: Deal[];
   opportunityTypes: OpportunityType[];
 }) {
+  const dealsByOt = useMemo(() => indexDealsByOt(deals), [deals]);
   return (
     <div className="space-y-4" data-testid="constraint-by-ot">
       {opportunityTypes.map((ot) => {
-        const typeDeals = deals.filter((d) => d.opportunityTypeId === ot.id);
+        const typeDeals = dealsByOt.get(ot.id) ?? [];
         const top = topConstraints(typeDeals, 5);
         return (
           <div
@@ -275,4 +224,15 @@ function ConstraintByLga({
       ))}
     </div>
   );
+}
+
+/** Pre-index deals by opportunityTypeId to avoid repeated .filter() calls. */
+function indexDealsByOt(deals: Deal[]): Map<string, Deal[]> {
+  const map = new Map<string, Deal[]>();
+  for (const d of deals) {
+    const arr = map.get(d.opportunityTypeId);
+    if (arr) arr.push(d);
+    else map.set(d.opportunityTypeId, [d]);
+  }
+  return map;
 }
