@@ -145,8 +145,8 @@ describe("InvestmentMemo", () => {
     ).not.toBeInTheDocument();
   });
 
-  it("shows empty state message", () => {
-    render(
+  it("shows empty state panel before upload", () => {
+    const { container } = render(
       <InvestmentMemo
         deals={[mockDeal]}
         opportunityTypes={mockOpportunityTypes}
@@ -154,9 +154,9 @@ describe("InvestmentMemo", () => {
       />
     );
 
-    expect(
-      screen.getByText(/upload a document to automatically/i)
-    ).toBeInTheDocument();
+    // Right panel shows an empty placeholder div before a document is uploaded
+    const emptyPanel = container.querySelector(".border-dashed");
+    expect(emptyPanel).toBeInTheDocument();
   });
 
   it("auto-analyses after uploading a file and shows results", async () => {

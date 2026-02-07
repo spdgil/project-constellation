@@ -1323,12 +1323,7 @@ export function InvestmentMemo({
 
           {/* Empty state */}
           {!result && !isProcessing && (
-            <div className="bg-[#FAF9F7] border border-dashed border-[#E8E6E3] p-8 flex items-center justify-center min-h-[300px]">
-              <p className="text-sm text-[#999] text-center max-w-[240px]">
-                Upload a document to automatically extract and analyse deal
-                information.
-              </p>
-            </div>
+            <div className="bg-[#FAF9F7] border border-dashed border-[#E8E6E3] p-8 flex items-center justify-center min-h-[300px]" />
           )}
         </div>
       </div>
