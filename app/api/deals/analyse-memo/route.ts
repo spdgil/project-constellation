@@ -26,6 +26,8 @@ export interface MemoAnalysisRequest {
   memoLabel?: string;
   /** Known opportunity type catalogue — passed so AI can match or propose new. */
   opportunityTypes?: { id: string; name: string; definition: string }[];
+  /** Known LGAs — passed so AI can assign at least one. */
+  lgas?: { id: string; name: string }[];
 }
 
 export interface MemoAnalysisResult {
@@ -47,6 +49,10 @@ export interface MemoAnalysisResult {
   governmentPrograms?: GovernmentProgram[];
   timeline?: TimelineMilestone[];
   memoReference: { label: string; pageRef?: string };
+  /** AI-suggested location text for geocoding (e.g. "Paget Industrial Estate, Mackay, QLD") */
+  suggestedLocationText: string | null;
+  /** AI-suggested LGA(s) — always at least one; AI guesses if not explicitly mentioned. */
+  suggestedLgaIds: string[];
   /** AI-suggested opportunity type: either an existing ID or a proposed new type. */
   suggestedOpportunityType: {
     existingId?: string;
@@ -115,7 +121,8 @@ const VALID_CONSTRAINTS: Constraint[] = [
 // =============================================================================
 
 function buildSystemPrompt(
-  opportunityTypes?: { id: string; name: string; definition: string }[]
+  opportunityTypes?: { id: string; name: string; definition: string }[],
+  lgas?: { id: string; name: string }[]
 ): string {
   const stageDescriptions = PATHWAY_STAGES.map(
     (s) =>
@@ -128,6 +135,11 @@ function buildSystemPrompt(
           .map((ot) => `- "${ot.id}" — ${ot.name}: ${ot.definition}`)
           .join("\n")
       : "(no existing types)";
+
+  const lgaCatalogue =
+    lgas && lgas.length > 0
+      ? lgas.map((l) => `- "${l.id}" — ${l.name}`).join("\n")
+      : "(no LGAs)";
 
   return `You are an expert infrastructure investment analyst. Your task is to analyse an investment memo and extract structured deal information.
 
@@ -167,10 +179,26 @@ For the suggestedOpportunityType field:
 - Set "confidence" to "high", "medium", or "low" based on how well the type matches.
 - Always provide "reasoning" explaining your choice.
 
+You must assign at least one LGA (Local Government Area) in Queensland. Here are the available LGAs:
+${lgaCatalogue}
+
+For the "suggestedLgaIds" field:
+- This is REQUIRED — you must always return at least one LGA ID.
+- If the document explicitly mentions a location, use the corresponding LGA.
+- If the document does NOT explicitly mention a location, make your BEST EDUCATED GUESS based on the project type, stakeholders, and other contextual clues. Default to "mackay" if truly uncertain.
+
+LOCATION TEXT FOR GEOCODING:
+- "suggestedLocationText": Return a specific place name or address suitable for geocoding to a map pin. Examples: "Paget Industrial Estate, Mackay, Queensland", "Eungella Dam, Queensland", "Collinsville, Whitsunday Region, Queensland".
+- Be as specific as possible — include suburb/locality, town, and state.
+- If the document mentions a specific site, address, or locality, use that.
+- If not, make your best guess based on the project context and LGA assignment.
+- This field is REQUIRED — always provide a value.
+
 IMPORTANT:
 - Use ONLY the exact enum values shown above for stage, readinessState, and dominantConstraint.
 - Extract as much structured information as possible from the memo.
-- If information is not available in the memo, omit the field (do not invent data).
+- suggestedLgaIds and suggestedLocationText are REQUIRED — always provide them even if you need to estimate.
+- For other fields, if information is not available in the memo, omit the field (do not invent data).
 - Respond ONLY with a valid JSON object, no markdown fences, no additional text.`;
 }
 
@@ -187,6 +215,8 @@ function buildUserPrompt(memoText: string): string {
   "nextStep": "<recommended next action>",
   "investmentValue": "<estimated investment amount if mentioned>",
   "economicImpact": "<economic impact summary if mentioned>",
+  "suggestedLocationText": "<specific place name for geocoding, e.g. 'Paget Industrial Estate, Mackay, Queensland' — REQUIRED>",
+  "suggestedLgaIds": ["<at least one LGA id — REQUIRED, guess if not explicitly mentioned>"],
   "keyStakeholders": ["<organisation or person names>"],
   "risks": ["<specific risks and challenges>"],
   "strategicActions": ["<recommended strategic actions>"],
@@ -358,7 +388,7 @@ export async function POST(request: Request) {
         ? body.memoText.slice(0, 30_000) + "\n\n[Memo truncated at 30,000 characters]"
         : body.memoText;
 
-    const systemPrompt = buildSystemPrompt(body.opportunityTypes);
+    const systemPrompt = buildSystemPrompt(body.opportunityTypes, body.lgas);
     const userPrompt = buildUserPrompt(memoText);
 
     const client = getOpenAIClient();
@@ -389,6 +419,25 @@ export async function POST(request: Request) {
 
     // Build validated result
     const memoLabel = body.memoLabel || "Investment Memo";
+
+    // Validate suggested LGA IDs — must reference known LGAs
+    const knownLgaIds = (body.lgas ?? []).map((l) => l.id);
+    let suggestedLgaIds: string[] = [];
+    if (Array.isArray(parsed.suggestedLgaIds)) {
+      suggestedLgaIds = (parsed.suggestedLgaIds as unknown[])
+        .filter((v): v is string => typeof v === "string" && knownLgaIds.includes(v));
+    }
+    // Ensure at least one LGA — default to "mackay" if none valid
+    if (suggestedLgaIds.length === 0) {
+      suggestedLgaIds = knownLgaIds.includes("mackay") ? ["mackay"] : knownLgaIds.slice(0, 1);
+    }
+
+    // Validate suggestedLocationText
+    const suggestedLocationText =
+      typeof parsed.suggestedLocationText === "string" && parsed.suggestedLocationText.trim()
+        ? parsed.suggestedLocationText.trim()
+        : null;
+
     const result: MemoAnalysisResult = {
       name:
         typeof parsed.name === "string" && parsed.name.trim()
@@ -411,6 +460,8 @@ export async function POST(request: Request) {
         typeof parsed.economicImpact === "string"
           ? parsed.economicImpact
           : undefined,
+      suggestedLocationText,
+      suggestedLgaIds,
       keyStakeholders: asStringArray(parsed.keyStakeholders),
       risks: asStringArray(parsed.risks),
       strategicActions: asStringArray(parsed.strategicActions),

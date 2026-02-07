@@ -51,20 +51,31 @@ export function MapCanvas({
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
 
   /* ------------------------------------------------------------------ */
-  /* Initial view: fit to the highlighted (focus) LGA extent             */
+  /* Initial view: centre on Greater Whitsunday region.                  */
+  /* We use an explicit centre + zoom instead of bounds to avoid         */
+  /* layout-timing issues where the container has no size yet.           */
+  /* On map load we refit to the actual boundary extent.                 */
   /* ------------------------------------------------------------------ */
-  const initialViewState = useMemo(() => {
+  const initialViewState = useMemo(
+    () => ({ longitude: 149.0, latitude: -21.1, zoom: 7 }),
+    [],
+  );
+
+  /** On load: resize (ensures container dimensions are correct), then
+   *  fit to the boundary extent if we have features. */
+  const handleLoad = useCallback(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    map.resize();
+
+    if (!boundaries.features.length) return;
+
     let minLng = Infinity;
     let maxLng = -Infinity;
     let minLat = Infinity;
     let maxLat = -Infinity;
 
-    const focusFeatures = boundaries.features.filter(
-      (f) => f.properties?.highlighted,
-    );
-    const target = focusFeatures.length > 0 ? focusFeatures : boundaries.features;
-
-    for (const f of target) {
+    for (const f of boundaries.features) {
       if (!f.geometry?.coordinates) continue;
       walkCoords(f.geometry.coordinates, (lng, lat) => {
         minLng = Math.min(minLng, lng);
@@ -74,19 +85,12 @@ export function MapCanvas({
       });
     }
 
-    if (!isFinite(minLng)) {
-      return { longitude: 149, latitude: -21, zoom: 7 };
-    }
+    if (!isFinite(minLng)) return;
 
-    return {
-      bounds: [minLng, minLat, maxLng, maxLat] as [
-        number,
-        number,
-        number,
-        number,
-      ],
-      fitBoundsOptions: { padding: 40 },
-    };
+    map.fitBounds(
+      [[minLng, minLat], [maxLng, maxLat]],
+      { padding: 48, duration: 0 },
+    );
   }, [boundaries]);
 
   /* ------------------------------------------------------------------ */
@@ -198,6 +202,7 @@ export function MapCanvas({
         projection="mercator"
         interactiveLayerIds={["lga-fill"]}
         onClick={handleMapClick}
+        onLoad={handleLoad}
         cursor="pointer"
         reuseMaps
       >

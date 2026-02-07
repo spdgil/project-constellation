@@ -7,16 +7,20 @@ import { describe, it, expect } from "vitest";
 import { loadLgas, loadDeals, loadOpportunityTypes, loadQldLgaBoundaries } from "./data";
 
 describe("Greater Whitsunday seed data", () => {
-  it("loads 3 LGAs (Mackay, Isaac, Whitsunday)", async () => {
+  it("loads 77 QLD LGAs including Mackay, Isaac, Whitsunday", async () => {
     const lgas = await loadLgas();
-    expect(lgas).toHaveLength(3);
-    const names = lgas.map((l) => l.name).sort();
-    expect(names).toEqual(["Isaac", "Mackay", "Whitsunday"]);
+    expect(lgas).toHaveLength(77);
+    const names = lgas.map((l) => l.name);
+    expect(names).toContain("Mackay");
+    expect(names).toContain("Isaac");
+    expect(names).toContain("Whitsunday");
   });
 
-  it("each LGA has opportunity hypotheses", async () => {
+  it("Greater Whitsunday LGAs have opportunity hypotheses", async () => {
     const lgas = await loadLgas();
-    for (const lga of lgas) {
+    const gwLgas = lgas.filter((l) => ["mackay", "isaac", "whitsunday"].includes(l.id));
+    expect(gwLgas).toHaveLength(3);
+    for (const lga of gwLgas) {
       expect(lga.opportunityHypotheses).toBeDefined();
       expect(Array.isArray(lga.opportunityHypotheses)).toBe(true);
       expect(lga.opportunityHypotheses!.length).toBeGreaterThan(0);

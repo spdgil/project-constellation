@@ -91,23 +91,36 @@ export function DealHero({ deal, opportunityTypes, lgas }: DealHeroProps) {
 
       {/* Dense field grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-4">
-        {deal.investmentValue && (
+        {(deal.investmentValueAmount > 0 || deal.investmentValueDescription) && (
           <div>
             <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
               Investment value
             </p>
             <p className="text-sm text-[#2C2C2C] leading-relaxed">
-              {deal.investmentValue}
+              {deal.investmentValueAmount > 0
+                ? `AUD $${(deal.investmentValueAmount / 1_000_000).toFixed(1)}M`
+                : ""}
+              {deal.investmentValueAmount > 0 && deal.investmentValueDescription ? " — " : ""}
+              {deal.investmentValueDescription}
             </p>
           </div>
         )}
-        {deal.economicImpact && (
+        {(deal.economicImpactAmount > 0 || deal.economicImpactDescription) && (
           <div>
             <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
               Economic impact
             </p>
             <p className="text-sm text-[#2C2C2C] leading-relaxed">
-              {deal.economicImpact}
+              {deal.economicImpactAmount > 0
+                ? `AUD $${(deal.economicImpactAmount / 1_000_000).toFixed(1)}M GDP`
+                : ""}
+              {deal.economicImpactAmount > 0 && deal.economicImpactDescription ? " — " : ""}
+              {deal.economicImpactDescription}
+              {deal.economicImpactJobs != null && deal.economicImpactJobs > 0 && (
+                <span className="ml-1 text-[#6B6B6B]">
+                  ({deal.economicImpactJobs.toLocaleString()} jobs)
+                </span>
+              )}
             </p>
           </div>
         )}

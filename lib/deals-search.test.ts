@@ -25,6 +25,10 @@ const baseDeal: Deal = {
   updatedAt: "2025-01-01T00:00:00Z",
   gateChecklist: {},
   artefacts: {},
+  investmentValueAmount: 0,
+  investmentValueDescription: "",
+  economicImpactAmount: 0,
+  economicImpactDescription: "",
 };
 
 function makeDeal(overrides: Partial<Deal> & { id: string }): Deal {

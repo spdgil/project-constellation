@@ -45,6 +45,10 @@ const baseDeal: Deal = {
   updatedAt: "2026-02-06T00:00:00.000Z",
   gateChecklist: {},
   artefacts: {},
+  investmentValueAmount: 0,
+  investmentValueDescription: "",
+  economicImpactAmount: 0,
+  economicImpactDescription: "",
 };
 
 describe("deal-storage", () => {

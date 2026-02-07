@@ -36,6 +36,7 @@ export interface InvestmentMemoProps {
 
 export function InvestmentMemo({
   opportunityTypes,
+  lgas,
 }: InvestmentMemoProps) {
   const router = useRouter();
 
@@ -73,6 +74,59 @@ export function InvestmentMemo({
   const [draftSkillsImplications, setDraftSkillsImplications] = useState("");
   const [draftMarketDrivers, setDraftMarketDrivers] = useState("");
 
+  // LGA selection (AI always suggests at least one)
+  const [draftLgaIds, setDraftLgaIds] = useState<string[]>([]);
+  const [lgaSearch, setLgaSearch] = useState("");
+  const [lgaDropdownOpen, setLgaDropdownOpen] = useState(false);
+
+  // Location / geocoding state
+  const [draftLocationText, setDraftLocationText] = useState("");
+  const [draftLat, setDraftLat] = useState<number | null>(null);
+  const [draftLng, setDraftLng] = useState<number | null>(null);
+  const [isGeocoding, setIsGeocoding] = useState(false);
+  const [geocodeStatus, setGeocodeStatus] = useState<
+    "idle" | "pending" | "success" | "failed"
+  >("idle");
+  const [geocodeMatchedPlace, setGeocodeMatchedPlace] = useState<string | null>(null);
+
+  /** Geocode a location string via the server-side API. */
+  const geocodeLocation = useCallback(async (query: string) => {
+    if (!query.trim()) {
+      setGeocodeStatus("idle");
+      return;
+    }
+    setIsGeocoding(true);
+    setGeocodeStatus("pending");
+    setDraftLat(null);
+    setDraftLng(null);
+    setGeocodeMatchedPlace(null);
+    try {
+      const res = await fetch("/api/geocode", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ query: query.trim() }),
+      });
+      const data = (await res.json()) as {
+        lat: number | null;
+        lng: number | null;
+        confidence: string | null;
+        matchedPlace: string | null;
+      };
+      if (data.lat !== null && data.lng !== null) {
+        setDraftLat(data.lat);
+        setDraftLng(data.lng);
+        setGeocodeMatchedPlace(data.matchedPlace);
+        setGeocodeStatus("success");
+      } else {
+        setGeocodeStatus("failed");
+      }
+    } catch {
+      setGeocodeStatus("failed");
+    } finally {
+      setIsGeocoding(false);
+    }
+  }, []);
+
   /** Populate draft fields from AI result. */
   const populateDraft = useCallback((r: MemoAnalysisResult) => {
     setDealName(r.name || "Untitled Deal");
@@ -81,13 +135,25 @@ export function InvestmentMemo({
     setDraftNextStep(r.nextStep || "");
     setDraftInvestmentValue(r.investmentValue || "");
     setDraftEconomicImpact(r.economicImpact || "");
+    setDraftLgaIds(r.suggestedLgaIds?.length ? r.suggestedLgaIds : ["mackay"]);
     setDraftKeyStakeholders(r.keyStakeholders?.join(", ") || "");
     setDraftRisks(r.risks?.join("\n") || "");
     setDraftStrategicActions(r.strategicActions?.join("\n") || "");
     setDraftInfrastructureNeeds(r.infrastructureNeeds?.join("\n") || "");
     setDraftSkillsImplications(r.skillsImplications || "");
     setDraftMarketDrivers(r.marketDrivers || "");
-  }, []);
+
+    // Location text — auto-geocode if AI provided it
+    const locationText = r.suggestedLocationText || "";
+    setDraftLocationText(locationText);
+    setDraftLat(null);
+    setDraftLng(null);
+    setGeocodeStatus("idle");
+    setGeocodeMatchedPlace(null);
+    if (locationText) {
+      geocodeLocation(locationText);
+    }
+  }, [geocodeLocation]);
 
   // Opportunity type state
   const [selectedOtId, setSelectedOtId] = useState<string>("");
@@ -105,6 +171,9 @@ export function InvestmentMemo({
     name: ot.name,
     definition: ot.definition,
   }));
+
+  /** LGA catalogue for the API request. */
+  const lgaCatalogue = lgas.map((l) => ({ id: l.id, name: l.name }));
 
   /** Apply the AI's opportunity type suggestion to local state. */
   const applyOtSuggestion = useCallback(
@@ -160,6 +229,7 @@ export function InvestmentMemo({
             memoText: text.trim(),
             memoLabel: fileName || undefined,
             opportunityTypes: otCatalogue,
+            lgas: lgaCatalogue,
           }),
         });
 
@@ -222,6 +292,7 @@ export function InvestmentMemo({
             memoText: text.trim(),
             memoLabel: f.name || undefined,
             opportunityTypes: otCatalogue,
+            lgas: lgaCatalogue,
           }),
         });
 
@@ -303,6 +374,15 @@ export function InvestmentMemo({
     setDraftNextStep("");
     setDraftInvestmentValue("");
     setDraftEconomicImpact("");
+    setDraftLgaIds([]);
+    setLgaSearch("");
+    setLgaDropdownOpen(false);
+    setDraftLocationText("");
+    setDraftLat(null);
+    setDraftLng(null);
+    setIsGeocoding(false);
+    setGeocodeStatus("idle");
+    setGeocodeMatchedPlace(null);
     setDraftKeyStakeholders("");
     setDraftRisks("");
     setDraftStrategicActions("");
@@ -362,9 +442,11 @@ export function InvestmentMemo({
         .filter(Boolean);
 
     // Create the deal via API
-    const dealBody = {
+    const dealBody: Record<string, unknown> = {
       name,
       opportunityTypeId: otId,
+      lgaIds: draftLgaIds.length > 0 ? draftLgaIds : result.suggestedLgaIds,
+      ...(draftLat !== null && draftLng !== null ? { lat: draftLat, lng: draftLng } : {}),
       stage: result.stage,
       readinessState: result.readinessState,
       dominantConstraint: result.dominantConstraint,
@@ -437,7 +519,8 @@ export function InvestmentMemo({
     result, file, dealName, selectedOtId, isCreatingNewOt, newOtName,
     newOtDefinition, allOpportunityTypes,
     draftSummary, draftDescription, draftNextStep, draftInvestmentValue,
-    draftEconomicImpact, draftKeyStakeholders, draftRisks,
+    draftEconomicImpact, draftLgaIds, draftLat, draftLng,
+    draftKeyStakeholders, draftRisks,
     draftStrategicActions, draftInfrastructureNeeds, draftSkillsImplications,
     draftMarketDrivers,
   ]);
@@ -888,6 +971,144 @@ export function InvestmentMemo({
 
               {/* --- Editable fields --- */}
 
+              {/* LGA assignment — searchable multi-select */}
+              <div className="p-5 space-y-2">
+                <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
+                  LGA <span className="text-red-600">*</span>
+                </label>
+
+                {/* Selected LGA chips */}
+                {draftLgaIds.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {draftLgaIds.map((id) => {
+                      const lgaName = lgas.find((l) => l.id === id)?.name ?? id;
+                      return (
+                        <span
+                          key={id}
+                          className="inline-flex items-center gap-1 text-xs px-2 py-0.5 bg-[#7A6B5A] text-white rounded"
+                        >
+                          {lgaName}
+                          {!applied && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                setDraftLgaIds((prev) => prev.filter((x) => x !== id))
+                              }
+                              className="hover:text-red-200 ml-0.5"
+                              aria-label={`Remove ${lgaName}`}
+                            >
+                              &times;
+                            </button>
+                          )}
+                        </span>
+                      );
+                    })}
+                  </div>
+                )}
+
+                {/* Searchable dropdown */}
+                {!applied && (
+                  <div className="relative">
+                    <input
+                      type="text"
+                      value={lgaSearch}
+                      onChange={(e) => {
+                        setLgaSearch(e.target.value);
+                        setLgaDropdownOpen(true);
+                      }}
+                      onFocus={() => setLgaDropdownOpen(true)}
+                      placeholder="Search LGAs…"
+                      className="w-full text-sm text-[#2C2C2C] border border-[#E8E6E3] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7A6B5A] focus:ring-offset-1"
+                    />
+                    {lgaDropdownOpen && (
+                      <div className="absolute z-20 mt-1 w-full max-h-48 overflow-y-auto bg-white border border-[#E8E6E3] shadow-lg rounded">
+                        {lgas
+                          .filter(
+                            (l) =>
+                              !draftLgaIds.includes(l.id) &&
+                              l.name
+                                .toLowerCase()
+                                .includes(lgaSearch.toLowerCase())
+                          )
+                          .map((l) => (
+                            <button
+                              key={l.id}
+                              type="button"
+                              onClick={() => {
+                                setDraftLgaIds((prev) => [...prev, l.id]);
+                                setLgaSearch("");
+                                setLgaDropdownOpen(false);
+                              }}
+                              className="w-full text-left px-3 py-1.5 text-sm text-[#2C2C2C] hover:bg-[#FAF9F7] transition-colors"
+                            >
+                              {l.name}
+                            </button>
+                          ))}
+                        {lgas.filter(
+                          (l) =>
+                            !draftLgaIds.includes(l.id) &&
+                            l.name.toLowerCase().includes(lgaSearch.toLowerCase())
+                        ).length === 0 && (
+                          <p className="px-3 py-2 text-xs text-[#999]">No matching LGAs</p>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {draftLgaIds.length === 0 && (
+                  <p className="text-xs text-red-600">At least one LGA is required</p>
+                )}
+              </div>
+
+              {/* Location (geocoding) */}
+              <div className="p-5 space-y-2">
+                <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
+                  Location
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={draftLocationText}
+                    onChange={(e) => setDraftLocationText(e.target.value)}
+                    disabled={applied}
+                    className="flex-1 text-sm text-[#2C2C2C] border border-[#E8E6E3] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7A6B5A] focus:ring-offset-1 disabled:opacity-70 disabled:cursor-not-allowed"
+                    placeholder="e.g. Paget Industrial Estate, Mackay, QLD"
+                  />
+                  {!applied && (
+                    <button
+                      type="button"
+                      disabled={isGeocoding || !draftLocationText.trim()}
+                      onClick={() => geocodeLocation(draftLocationText)}
+                      className="shrink-0 text-xs px-3 py-2 border border-[#E8E6E3] bg-[#FAF9F7] text-[#6B6B6B] hover:border-[#C8C4BF] hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                    >
+                      {isGeocoding ? "Geocoding…" : "Geocode"}
+                    </button>
+                  )}
+                </div>
+
+                {/* Status */}
+                {geocodeStatus === "pending" && (
+                  <p className="text-xs text-[#6B6B6B] flex items-center gap-1.5">
+                    <span className="inline-block h-3 w-3 border border-[#E8E6E3] border-t-[#2C2C2C] rounded-full animate-spin" />
+                    Geocoding location…
+                  </p>
+                )}
+                {geocodeStatus === "success" && draftLat !== null && draftLng !== null && (
+                  <p className="text-xs text-emerald-700">
+                    Geocoded to {draftLat.toFixed(4)}, {draftLng.toFixed(4)}
+                    {geocodeMatchedPlace && (
+                      <span className="text-[#6B6B6B]"> — {geocodeMatchedPlace}</span>
+                    )}
+                  </p>
+                )}
+                {geocodeStatus === "failed" && (
+                  <p className="text-xs text-amber-700">
+                    Could not geocode — the deal will use the LGA centroid as a fallback
+                  </p>
+                )}
+              </div>
+
               {/* Summary */}
               <div className="p-5 space-y-1.5">
                 <label htmlFor="draft-summary" className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
@@ -1095,7 +1316,8 @@ export function InvestmentMemo({
                     disabled={
                       !dealName.trim() ||
                       (!selectedOtId && !isCreatingNewOt) ||
-                      (isCreatingNewOt && !newOtName.trim())
+                      (isCreatingNewOt && !newOtName.trim()) ||
+                      draftLgaIds.length === 0
                     }
                     className="w-full text-sm font-medium py-2.5 px-4 bg-emerald-700 text-white hover:bg-emerald-800 disabled:opacity-40 disabled:cursor-not-allowed transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:ring-offset-2"
                   >

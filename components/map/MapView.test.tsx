@@ -51,7 +51,7 @@ vi.stubEnv("NEXT_PUBLIC_MAPBOX_TOKEN", "pk.test_token");
 /* ---------------------------------------------------------------------- */
 
 const mockLgas: LGA[] = [
-  { id: "mackay", name: "Mackay", geometryRef: "mackay", notes: [] },
+  { id: "mackay", name: "Mackay", geometryRef: "mackay", notes: [], summary: "Greater Whitsunday LGA" },
 ];
 
 const mockBoundaries: GeoJSONFeatureCollection = {
@@ -106,6 +106,10 @@ const mockDeals: Deal[] = [
     updatedAt: "2026-02-06T00:00:00.000Z",
     gateChecklist: {},
     artefacts: {},
+    investmentValueAmount: 0,
+    investmentValueDescription: "",
+    economicImpactAmount: 0,
+    economicImpactDescription: "",
   },
 ];
 
@@ -133,13 +137,13 @@ describe("MapView", () => {
       screen.getByRole("heading", { name: /explore by map/i }),
     ).toBeInTheDocument();
     expect(
-      screen.getByText(/greater whitsunday lga boundaries/i),
+      screen.getByText(/click a boundary or use the sidebar/i),
     ).toBeInTheDocument();
 
     const nav = screen.getByRole("navigation", { name: /lga list/i });
     expect(nav).toBeInTheDocument();
     expect(
-      within(nav).getByRole("button", { name: "Mackay" }),
+      within(nav).getByRole("button", { name: /Mackay/i }),
     ).toBeInTheDocument();
   });
 
@@ -281,7 +285,7 @@ describe("MapView", () => {
       screen.queryByRole("button", { name: /close lga panel/i }),
     ).not.toBeInTheDocument();
 
-    const mackayButton = screen.getByRole("button", { name: "Mackay" });
+    const mackayButton = screen.getByRole("button", { name: /Mackay/i });
     fireEvent.click(mackayButton);
 
     expect(
@@ -306,7 +310,7 @@ describe("MapView", () => {
       />,
     );
 
-    const mackayButton = screen.getByRole("button", { name: "Mackay" });
+    const mackayButton = screen.getByRole("button", { name: /Mackay/i });
     fireEvent.click(mackayButton);
     expect(
       screen.getByRole("button", { name: /close lga panel/i }),

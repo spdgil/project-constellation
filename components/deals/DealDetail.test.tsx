@@ -41,8 +41,6 @@ const mockDeal: Deal = {
   summary: "Pilot processing facility.",
   description: "A detailed description of the project.",
   nextStep: "Secure offtake.",
-  investmentValue: "$5.7m",
-  economicImpact: "Major impact",
   keyStakeholders: ["QLD Government", "Mining3"],
   risks: ["Risk one", "Risk two"],
   strategicActions: ["Action one"],
@@ -72,6 +70,10 @@ const mockDeal: Deal = {
       { name: "Safeguards Data Sheet", status: "complete" },
     ],
   },
+  investmentValueAmount: 0,
+  investmentValueDescription: "",
+  economicImpactAmount: 0,
+  economicImpactDescription: "",
 };
 
 describe("DealDetail", () => {

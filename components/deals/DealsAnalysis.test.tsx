@@ -49,6 +49,10 @@ const mockDeals: Deal[] = [
       ],
     },
     artefacts: {},
+    investmentValueAmount: 0,
+    investmentValueDescription: "",
+    economicImpactAmount: 0,
+    economicImpactDescription: "",
   },
   {
     id: "deal-2",
@@ -71,6 +75,10 @@ const mockDeals: Deal[] = [
       ],
     },
     artefacts: {},
+    investmentValueAmount: 0,
+    investmentValueDescription: "",
+    economicImpactAmount: 0,
+    economicImpactDescription: "",
   },
   {
     id: "deal-3",
@@ -93,6 +101,10 @@ const mockDeals: Deal[] = [
       ],
     },
     artefacts: {},
+    investmentValueAmount: 0,
+    investmentValueDescription: "",
+    economicImpactAmount: 0,
+    economicImpactDescription: "",
   },
 ];
 

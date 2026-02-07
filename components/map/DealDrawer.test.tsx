@@ -50,6 +50,10 @@ const mockDeal: Deal = {
       { name: "Integrated Safeguards Data Sheet", status: "not-started" },
     ],
   },
+  investmentValueAmount: 0,
+  investmentValueDescription: "",
+  economicImpactAmount: 0,
+  economicImpactDescription: "",
 };
 
 describe("DealDrawer", () => {

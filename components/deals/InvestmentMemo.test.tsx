@@ -69,6 +69,10 @@ const mockDeal: Deal = {
   updatedAt: "2026-02-06T00:00:00.000Z",
   gateChecklist: {},
   artefacts: {},
+  investmentValueAmount: 0,
+  investmentValueDescription: "",
+  economicImpactAmount: 0,
+  economicImpactDescription: "",
 };
 
 const mockResult: MemoAnalysisResult = {
@@ -92,6 +96,8 @@ const mockResult: MemoAnalysisResult = {
   ],
   timeline: [{ label: "Feasibility complete", date: "Q3 2026" }],
   memoReference: { label: "Investment Memo: strategy.pdf" },
+  suggestedLocationText: "Mackay, Queensland",
+  suggestedLgaIds: ["mackay"],
   suggestedOpportunityType: {
     existingId: "critical-minerals",
     confidence: "high" as const,
@@ -160,10 +166,15 @@ describe("InvestmentMemo", () => {
       "Full investment memo text content."
     );
 
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockResult,
-    });
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResult,
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ lat: -21.1, lng: 149.0, confidence: "high", matchedPlace: "Mackay QLD" }),
+      });
 
     render(
       <InvestmentMemo
@@ -194,7 +205,7 @@ describe("InvestmentMemo", () => {
       "A mining processing facility with strong regional support."
     );
 
-    // Verify fetch was called with opportunity types catalogue
+    // Verify fetch was called with opportunity types and LGA catalogues
     expect(global.fetch).toHaveBeenCalledWith("/api/deals/analyse-memo", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -204,6 +215,7 @@ describe("InvestmentMemo", () => {
         opportunityTypes: [
           { id: "critical-minerals", name: "Critical minerals", definition: "" },
         ],
+        lgas: [{ id: "mackay", name: "Mackay" }],
       }),
     });
   });
@@ -294,6 +306,12 @@ describe("InvestmentMemo", () => {
       json: async () => mockResult,
     });
 
+    // Third call: geocode triggered by populateDraft
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ lat: -21.1, lng: 149.0, confidence: "high", matchedPlace: "Mackay QLD" }),
+    });
+
     fireEvent.click(screen.getByRole("button", { name: /try again/i }));
 
     // Results appear — extraction was not called again
@@ -304,17 +322,22 @@ describe("InvestmentMemo", () => {
     // extractTextFromFile was only called once (on initial upload)
     expect(mockExtractTextFromFile).toHaveBeenCalledTimes(1);
 
-    // fetch was called twice (first failed, second succeeded on retry)
-    expect(global.fetch).toHaveBeenCalledTimes(2);
+    // fetch was called 3 times (first failed, second succeeded, third geocode)
+    expect(global.fetch).toHaveBeenCalledTimes(3);
   });
 
   it("clears file and results when remove button is clicked", async () => {
     mockExtractTextFromFile.mockResolvedValueOnce("Memo content.");
 
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockResult,
-    });
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResult,
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ lat: -21.1, lng: 149.0, confidence: "high", matchedPlace: "Mackay QLD" }),
+      });
 
     render(
       <InvestmentMemo
@@ -341,11 +364,16 @@ describe("InvestmentMemo", () => {
   it("allows editing the deal name before creating", async () => {
     mockExtractTextFromFile.mockResolvedValueOnce("Memo content.");
 
-    // First fetch: AI analysis
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockResult,
-    });
+    // First fetch: AI analysis; second: geocode
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResult,
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ lat: -21.1, lng: 149.0, confidence: "high", matchedPlace: "Mackay QLD" }),
+      });
 
     render(
       <InvestmentMemo
@@ -396,11 +424,16 @@ describe("InvestmentMemo", () => {
   it("creates a brand-new deal via API", async () => {
     mockExtractTextFromFile.mockResolvedValueOnce("Memo content.");
 
-    // First fetch: AI analysis
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockResult,
-    });
+    // First fetch: AI analysis; second: geocode
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResult,
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ lat: -21.1, lng: 149.0, confidence: "high", matchedPlace: "Mackay QLD" }),
+      });
 
     render(
       <InvestmentMemo
@@ -485,10 +518,15 @@ describe("InvestmentMemo", () => {
 
   it("shows file card with file info after upload", async () => {
     mockExtractTextFromFile.mockResolvedValueOnce("Text.");
-    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
-      ok: true,
-      json: async () => mockResult,
-    });
+    (global.fetch as ReturnType<typeof vi.fn>)
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => mockResult,
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        json: async () => ({ lat: -21.1, lng: 149.0, confidence: "high", matchedPlace: "Mackay QLD" }),
+      });
 
     render(
       <InvestmentMemo

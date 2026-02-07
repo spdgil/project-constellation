@@ -164,31 +164,36 @@ async function run() {
   // --- 3. Deals ---
   console.log(`  Deals: ${deals.length}`);
   for (const d of deals) {
+    const dealData = {
+      id: d.id as string,
+      name: d.name as string,
+      opportunityTypeId: d.opportunityTypeId as string,
+      lat: (d.lat as number) ?? null,
+      lng: (d.lng as number) ?? null,
+      stage: stageMap[d.stage as string]!,
+      readinessState: readinessMap[d.readinessState as string]!,
+      dominantConstraint: constraintMap[d.dominantConstraint as string]!,
+      summary: d.summary as string,
+      nextStep: (d.nextStep as string) ?? "",
+      description: (d.description as string) ?? null,
+      investmentValueAmount: (d.investmentValueAmount as number) ?? 0,
+      investmentValueDescription: (d.investmentValueDescription as string) ?? "",
+      economicImpactAmount: (d.economicImpactAmount as number) ?? 0,
+      economicImpactDescription: (d.economicImpactDescription as string) ?? "",
+      economicImpactJobs: (d.economicImpactJobs as number) ?? null,
+      keyStakeholders: (d.keyStakeholders as string[]) ?? [],
+      risks: (d.risks as string[]) ?? [],
+      strategicActions: (d.strategicActions as string[]) ?? [],
+      infrastructureNeeds: (d.infrastructureNeeds as string[]) ?? [],
+      skillsImplications: (d.skillsImplications as string) ?? null,
+      marketDrivers: (d.marketDrivers as string) ?? null,
+      updatedAt: new Date(d.updatedAt as string),
+    };
+
     await prisma.deal.upsert({
       where: { id: d.id as string },
-      update: {},
-      create: {
-        id: d.id as string,
-        name: d.name as string,
-        opportunityTypeId: d.opportunityTypeId as string,
-        lat: (d.lat as number) ?? null,
-        lng: (d.lng as number) ?? null,
-        stage: stageMap[d.stage as string]!,
-        readinessState: readinessMap[d.readinessState as string]!,
-        dominantConstraint: constraintMap[d.dominantConstraint as string]!,
-        summary: d.summary as string,
-        nextStep: (d.nextStep as string) ?? "",
-        description: (d.description as string) ?? null,
-        investmentValue: (d.investmentValue as string) ?? null,
-        economicImpact: (d.economicImpact as string) ?? null,
-        keyStakeholders: (d.keyStakeholders as string[]) ?? [],
-        risks: (d.risks as string[]) ?? [],
-        strategicActions: (d.strategicActions as string[]) ?? [],
-        infrastructureNeeds: (d.infrastructureNeeds as string[]) ?? [],
-        skillsImplications: (d.skillsImplications as string) ?? null,
-        marketDrivers: (d.marketDrivers as string) ?? null,
-        updatedAt: new Date(d.updatedAt as string),
-      },
+      update: dealData,
+      create: dealData,
     });
 
     // Deal ↔ LGA relations

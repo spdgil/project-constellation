@@ -45,8 +45,11 @@ interface PatchDealBody {
   summary?: string;
   nextStep?: string;
   description?: string;
-  investmentValue?: string;
-  economicImpact?: string;
+  investmentValueAmount?: number;
+  investmentValueDescription?: string;
+  economicImpactAmount?: number;
+  economicImpactDescription?: string;
+  economicImpactJobs?: number | null;
   keyStakeholders?: string[];
   risks?: string[];
   strategicActions?: string[];
@@ -80,8 +83,11 @@ export async function PATCH(request: Request, context: RouteContext) {
     if (body.summary !== undefined) updateData.summary = body.summary;
     if (body.nextStep !== undefined) updateData.nextStep = body.nextStep;
     if (body.description !== undefined) updateData.description = body.description || null;
-    if (body.investmentValue !== undefined) updateData.investmentValue = body.investmentValue || null;
-    if (body.economicImpact !== undefined) updateData.economicImpact = body.economicImpact || null;
+    if (body.investmentValueAmount !== undefined) updateData.investmentValueAmount = body.investmentValueAmount;
+    if (body.investmentValueDescription !== undefined) updateData.investmentValueDescription = body.investmentValueDescription;
+    if (body.economicImpactAmount !== undefined) updateData.economicImpactAmount = body.economicImpactAmount;
+    if (body.economicImpactDescription !== undefined) updateData.economicImpactDescription = body.economicImpactDescription;
+    if (body.economicImpactJobs !== undefined) updateData.economicImpactJobs = body.economicImpactJobs;
     if (body.keyStakeholders !== undefined) updateData.keyStakeholders = body.keyStakeholders;
     if (body.risks !== undefined) updateData.risks = body.risks;
     if (body.strategicActions !== undefined) updateData.strategicActions = body.strategicActions;

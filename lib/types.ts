@@ -165,10 +165,16 @@ export interface Deal {
 
   /** Long-form description (2-3 paragraphs) */
   description?: string;
-  /** Estimated investment amount or funding secured */
-  investmentValue?: string;
-  /** Economic impact summary */
-  economicImpact?: string;
+  /** Investment value — numeric amount in AUD */
+  investmentValueAmount: number;
+  /** Investment value — descriptive text */
+  investmentValueDescription: string;
+  /** Economic impact — numeric amount in AUD (e.g. GDP contribution) */
+  economicImpactAmount: number;
+  /** Economic impact — descriptive text */
+  economicImpactDescription: string;
+  /** Economic impact — number of jobs if known */
+  economicImpactJobs?: number;
   /** Named organisations involved */
   keyStakeholders?: string[];
   /** Specific risks and challenges */

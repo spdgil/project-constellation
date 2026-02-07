@@ -42,7 +42,12 @@ interface CreateDealBody {
   nextStep?: string;
   description?: string;
   investmentValue?: string;
+  investmentValueAmount?: number;
+  investmentValueDescription?: string;
   economicImpact?: string;
+  economicImpactAmount?: number;
+  economicImpactDescription?: string;
+  economicImpactJobs?: number;
   keyStakeholders?: string[];
   risks?: string[];
   strategicActions?: string[];
@@ -79,8 +84,11 @@ export async function POST(request: Request) {
         summary: body.summary,
         nextStep: body.nextStep ?? "",
         description: body.description ?? null,
-        investmentValue: body.investmentValue ?? null,
-        economicImpact: body.economicImpact ?? null,
+        investmentValueAmount: typeof body.investmentValueAmount === "number" ? body.investmentValueAmount : 0,
+        investmentValueDescription: body.investmentValueDescription ?? body.investmentValue ?? "",
+        economicImpactAmount: typeof body.economicImpactAmount === "number" ? body.economicImpactAmount : 0,
+        economicImpactDescription: body.economicImpactDescription ?? body.economicImpact ?? "",
+        economicImpactJobs: typeof body.economicImpactJobs === "number" ? body.economicImpactJobs : null,
         keyStakeholders: body.keyStakeholders ?? [],
         risks: body.risks ?? [],
         strategicActions: body.strategicActions ?? [],

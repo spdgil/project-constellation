@@ -30,14 +30,16 @@ const mockDeal: Deal = {
   summary: "Pilot processing facility.",
   description: "First paragraph.\n\nSecond paragraph.",
   nextStep: "Secure offtake.",
-  investmentValue: "$5.7m",
-  economicImpact: "Major impact",
   keyStakeholders: ["QLD Government", "Mining3"],
   evidence: [],
   notes: [],
   updatedAt: "2026-02-06T00:00:00.000Z",
   gateChecklist: {},
   artefacts: {},
+  investmentValueAmount: 5700000,
+  investmentValueDescription: "Queensland Government funding",
+  economicImpactAmount: 30000000000,
+  economicImpactDescription: "Part of critical minerals pipeline",
 };
 
 describe("DealHero", () => {
@@ -93,8 +95,9 @@ describe("DealHero", () => {
       <DealHero deal={mockDeal} opportunityTypes={mockOpportunityTypes} lgas={mockLgas} />
     );
 
-    expect(screen.getByText("$5.7m")).toBeInTheDocument();
-    expect(screen.getByText("Major impact")).toBeInTheDocument();
+    expect(screen.getByText(/AUD \$5\.7M/)).toBeInTheDocument();
+    expect(screen.getByText(/Queensland Government funding/)).toBeInTheDocument();
+    expect(screen.getByText(/AUD \$30000\.0M GDP/)).toBeInTheDocument();
   });
 
   it("renders key stakeholders", () => {

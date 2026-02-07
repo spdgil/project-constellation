@@ -142,8 +142,11 @@ model Deal {
 
   // Rich fields
   description         String?
-  investmentValue     String?         @map("investment_value")
-  economicImpact      String?         @map("economic_impact")
+  investmentValueAmount       Float           @default(0) @map("investment_value_amount")
+  investmentValueDescription  String          @default("") @map("investment_value_description")
+  economicImpactAmount        Float           @default(0) @map("economic_impact_amount")
+  economicImpactDescription   String          @default("") @map("economic_impact_description")
+  economicImpactJobs          Int?            @map("economic_impact_jobs")
   keyStakeholders     String[]        @default([]) @map("key_stakeholders")
   risks               String[]        @default([])
   strategicActions    String[]        @default([]) @map("strategic_actions")

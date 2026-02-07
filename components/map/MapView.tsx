@@ -104,8 +104,7 @@ export function MapView({
         </Link>
       </div>
       <p className="text-sm text-[#6B6B6B] leading-relaxed mb-4">
-        Greater Whitsunday LGA boundaries on a Mapbox light basemap. Click a
-        boundary or use the list to open LGA details.
+        Click a boundary or use the sidebar to explore LGA details and deals.
       </p>
 
       {boundaryError && (

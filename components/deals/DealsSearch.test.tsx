@@ -55,6 +55,10 @@ const mockDeals: Deal[] = [
       ],
     },
     artefacts: {},
+    investmentValueAmount: 0,
+    investmentValueDescription: "",
+    economicImpactAmount: 0,
+    economicImpactDescription: "",
   },
   {
     id: "solar-project",
@@ -77,6 +81,10 @@ const mockDeals: Deal[] = [
       ],
     },
     artefacts: {},
+    investmentValueAmount: 0,
+    investmentValueDescription: "",
+    economicImpactAmount: 0,
+    economicImpactDescription: "",
   },
 ];
 
