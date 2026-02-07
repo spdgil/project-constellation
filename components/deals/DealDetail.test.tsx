@@ -223,6 +223,64 @@ describe("DealDetail", () => {
     expect(screen.getByLabelText("Dominant constraint")).toBeInTheDocument();
   });
 
+  it("renders document directory accordion section", () => {
+    const dealWithDocs: Deal = {
+      ...mockDeal,
+      documents: [
+        {
+          id: "doc-1",
+          fileName: "investment-memo.pdf",
+          mimeType: "application/pdf",
+          sizeBytes: 245760,
+          dataUrl: "data:application/pdf;base64,abc",
+          addedAt: "2026-02-06T00:00:00.000Z",
+          label: "Investment Memo Q1 2026",
+        },
+      ],
+    };
+
+    render(
+      <DealDetail
+        deal={dealWithDocs}
+        dealId={dealWithDocs.id}
+        opportunityTypes={mockOpportunityTypes}
+        lgas={mockLgas}
+        allDeals={[dealWithDocs]}
+      />
+    );
+
+    // Accordion header visible with badge
+    expect(screen.getByText("Document directory")).toBeInTheDocument();
+    expect(screen.getByText("1")).toBeInTheDocument(); // badge
+
+    // Expand the accordion to see contents
+    fireEvent.click(screen.getByText("Document directory"));
+
+    expect(screen.getByText("Investment Memo Q1 2026")).toBeInTheDocument();
+    expect(screen.getByText(/240\.0 KB/)).toBeInTheDocument();
+    expect(screen.getByText("Download")).toBeInTheDocument();
+    expect(screen.getByText("+ Add document")).toBeInTheDocument();
+  });
+
+  it("shows empty document directory when no documents", () => {
+    render(
+      <DealDetail
+        deal={mockDeal}
+        dealId={mockDeal.id}
+        opportunityTypes={mockOpportunityTypes}
+        lgas={mockLgas}
+        allDeals={[mockDeal]}
+      />
+    );
+
+    expect(screen.getByText("Document directory")).toBeInTheDocument();
+
+    // Expand the accordion
+    fireEvent.click(screen.getByText("Document directory"));
+
+    expect(screen.getByText("No documents attached yet.")).toBeInTheDocument();
+  });
+
   it("editing readiness state shows Updated locally badge", () => {
     render(
       <DealDetail

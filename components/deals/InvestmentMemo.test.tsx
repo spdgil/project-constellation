@@ -197,12 +197,11 @@ describe("InvestmentMemo", () => {
     expect(screen.getByText("Feasibility")).toBeInTheDocument();
     expect(screen.getByText("Early risk capital")).toBeInTheDocument();
 
-    // Summary
-    expect(
-      screen.getByText(
-        "A mining processing facility with strong regional support."
-      )
-    ).toBeInTheDocument();
+    // Summary field populated in editable textarea
+    const summaryTextarea = screen.getByLabelText(/summary/i) as HTMLTextAreaElement;
+    expect(summaryTextarea.value).toBe(
+      "A mining processing facility with strong regional support."
+    );
 
     // Verify fetch was called with opportunity types catalogue
     expect(global.fetch).toHaveBeenCalledWith("/api/deals/analyse-memo", {
@@ -378,7 +377,9 @@ describe("InvestmentMemo", () => {
       screen.getByRole("button", { name: /create deal/i })
     );
 
-    expect(saveDealLocallyMock).toHaveBeenCalledTimes(1);
+    await waitFor(() => {
+      expect(saveDealLocallyMock).toHaveBeenCalledTimes(1);
+    });
     const savedDeal = saveDealLocallyMock.mock.calls[0][0] as Deal;
     expect(savedDeal.name).toBe("My Custom Deal Name");
   });
@@ -411,7 +412,10 @@ describe("InvestmentMemo", () => {
       screen.getByRole("button", { name: /create deal/i })
     );
 
-    expect(saveDealLocallyMock).toHaveBeenCalledTimes(1);
+    // handleCreateDeal is async (reads file as data URL), so wait for save
+    await waitFor(() => {
+      expect(saveDealLocallyMock).toHaveBeenCalledTimes(1);
+    });
     const savedDeal = saveDealLocallyMock.mock.calls[0][0] as Deal;
 
     expect(savedDeal.id).toBeTruthy();
@@ -424,8 +428,15 @@ describe("InvestmentMemo", () => {
     expect(savedDeal.evidence[0].label).toBe("Investment Memo: strategy.pdf");
     expect(savedDeal.opportunityTypeId).toBe("critical-minerals");
     expect(savedDeal.lgaIds).toEqual([]);
+    // Document directory: uploaded file should be attached
+    expect(savedDeal.documents).toBeDefined();
+    expect(savedDeal.documents!.length).toBe(1);
+    expect(savedDeal.documents![0].fileName).toBe("strategy.pdf");
 
     // "Open deal" link replaces the create button
+    await waitFor(() => {
+      expect(screen.getByRole("link", { name: /open deal/i })).toBeInTheDocument();
+    });
     const openLink = screen.getByRole("link", { name: /open deal/i });
     expect(openLink).toHaveAttribute(
       "href",

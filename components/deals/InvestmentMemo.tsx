@@ -4,7 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import type { Deal, LGA, OpportunityType } from "@/lib/types";
+import type { Deal, DealDocument, LGA, OpportunityType } from "@/lib/types";
 import {
   saveDealLocally,
   saveOpportunityTypeLocally,
@@ -64,6 +64,35 @@ export function InvestmentMemo({
   const [dealName, setDealName] = useState("");
   const [applied, setApplied] = useState(false);
   const [newDealId, setNewDealId] = useState<string | null>(null);
+
+  // Editable draft fields (initialized from AI result, user can modify)
+  const [draftSummary, setDraftSummary] = useState("");
+  const [draftDescription, setDraftDescription] = useState("");
+  const [draftNextStep, setDraftNextStep] = useState("");
+  const [draftInvestmentValue, setDraftInvestmentValue] = useState("");
+  const [draftEconomicImpact, setDraftEconomicImpact] = useState("");
+  const [draftKeyStakeholders, setDraftKeyStakeholders] = useState("");
+  const [draftRisks, setDraftRisks] = useState("");
+  const [draftStrategicActions, setDraftStrategicActions] = useState("");
+  const [draftInfrastructureNeeds, setDraftInfrastructureNeeds] = useState("");
+  const [draftSkillsImplications, setDraftSkillsImplications] = useState("");
+  const [draftMarketDrivers, setDraftMarketDrivers] = useState("");
+
+  /** Populate draft fields from AI result. */
+  const populateDraft = useCallback((r: MemoAnalysisResult) => {
+    setDealName(r.name || "Untitled Deal");
+    setDraftSummary(r.summary || "");
+    setDraftDescription(r.description || "");
+    setDraftNextStep(r.nextStep || "");
+    setDraftInvestmentValue(r.investmentValue || "");
+    setDraftEconomicImpact(r.economicImpact || "");
+    setDraftKeyStakeholders(r.keyStakeholders?.join(", ") || "");
+    setDraftRisks(r.risks?.join("\n") || "");
+    setDraftStrategicActions(r.strategicActions?.join("\n") || "");
+    setDraftInfrastructureNeeds(r.infrastructureNeeds?.join("\n") || "");
+    setDraftSkillsImplications(r.skillsImplications || "");
+    setDraftMarketDrivers(r.marketDrivers || "");
+  }, []);
 
   // Opportunity type state
   const [selectedOtId, setSelectedOtId] = useState<string>("");
@@ -149,7 +178,7 @@ export function InvestmentMemo({
 
         const data = (await res.json()) as MemoAnalysisResult;
         setResult(data);
-        setDealName(data.name || "Untitled Deal");
+        populateDraft(data);
         applyOtSuggestion(data.suggestedOpportunityType);
       } catch (err) {
         setError(
@@ -211,7 +240,7 @@ export function InvestmentMemo({
 
         const data = (await res.json()) as MemoAnalysisResult;
         setResult(data);
-        setDealName(data.name || "Untitled Deal");
+        populateDraft(data);
         applyOtSuggestion(data.suggestedOpportunityType);
       } catch (err) {
         setError(
@@ -274,6 +303,17 @@ export function InvestmentMemo({
     setApplied(false);
     setNewDealId(null);
     setDealName("");
+    setDraftSummary("");
+    setDraftDescription("");
+    setDraftNextStep("");
+    setDraftInvestmentValue("");
+    setDraftEconomicImpact("");
+    setDraftKeyStakeholders("");
+    setDraftRisks("");
+    setDraftStrategicActions("");
+    setDraftInfrastructureNeeds("");
+    setDraftSkillsImplications("");
+    setDraftMarketDrivers("");
     setSelectedOtId("");
     setIsOverridingOt(false);
     setIsCreatingNewOt(false);
@@ -284,8 +324,20 @@ export function InvestmentMemo({
     if (fileInputRef.current) fileInputRef.current.value = "";
   }, []);
 
+  /** Convert a File to a base64 data URL. */
+  const fileToDataUrl = useCallback(
+    (f: File): Promise<string> =>
+      new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.onerror = () => reject(new Error("Failed to read file"));
+        reader.readAsDataURL(f);
+      }),
+    []
+  );
+
   // --- Create deal handler ---
-  const handleCreateDeal = useCallback(() => {
+  const handleCreateDeal = useCallback(async () => {
     if (!result) return;
 
     const id =
@@ -317,6 +369,32 @@ export function InvestmentMemo({
       otId = selectedOtId || allOpportunityTypes[0]?.id || "unknown";
     }
 
+    // Parse list fields from draft (newline-separated)
+    const parseList = (s: string) =>
+      s
+        .split("\n")
+        .map((l) => l.trim())
+        .filter(Boolean);
+
+    // Build documents array — store uploaded file
+    const documents: DealDocument[] = [];
+    if (file) {
+      try {
+        const dataUrl = await fileToDataUrl(file);
+        documents.push({
+          id: crypto.randomUUID?.() ?? `doc-${Date.now()}`,
+          fileName: file.name,
+          mimeType: file.type || "application/octet-stream",
+          sizeBytes: file.size,
+          dataUrl,
+          addedAt: new Date().toISOString(),
+          label: result.memoReference?.label || file.name,
+        });
+      } catch {
+        // If file read fails, still create the deal without the document
+      }
+    }
+
     const newDeal: Deal = {
       id,
       name,
@@ -325,17 +403,24 @@ export function InvestmentMemo({
       stage: result.stage,
       readinessState: result.readinessState,
       dominantConstraint: result.dominantConstraint,
-      summary: result.summary,
-      description: result.description || undefined,
-      nextStep: result.nextStep || "",
-      investmentValue: result.investmentValue,
-      economicImpact: result.economicImpact,
-      keyStakeholders: result.keyStakeholders,
-      risks: result.risks,
-      strategicActions: result.strategicActions,
-      infrastructureNeeds: result.infrastructureNeeds,
-      skillsImplications: result.skillsImplications,
-      marketDrivers: result.marketDrivers,
+      summary: draftSummary.trim() || result.summary,
+      description: draftDescription.trim() || result.description || undefined,
+      nextStep: draftNextStep.trim() || result.nextStep || "",
+      investmentValue: draftInvestmentValue.trim() || result.investmentValue,
+      economicImpact: draftEconomicImpact.trim() || result.economicImpact,
+      keyStakeholders: draftKeyStakeholders.trim()
+        ? draftKeyStakeholders.split(",").map((s) => s.trim()).filter(Boolean)
+        : result.keyStakeholders,
+      risks: draftRisks.trim() ? parseList(draftRisks) : result.risks,
+      strategicActions: draftStrategicActions.trim()
+        ? parseList(draftStrategicActions)
+        : result.strategicActions,
+      infrastructureNeeds: draftInfrastructureNeeds.trim()
+        ? parseList(draftInfrastructureNeeds)
+        : result.infrastructureNeeds,
+      skillsImplications:
+        draftSkillsImplications.trim() || result.skillsImplications,
+      marketDrivers: draftMarketDrivers.trim() || result.marketDrivers,
       governmentPrograms: result.governmentPrograms,
       timeline: result.timeline,
       evidence: [
@@ -347,13 +432,21 @@ export function InvestmentMemo({
       notes: [],
       gateChecklist: {},
       artefacts: {},
+      documents,
       updatedAt: new Date().toISOString(),
     };
 
     saveDealLocally(newDeal);
     setNewDealId(id);
     setApplied(true);
-  }, [result, dealName, selectedOtId, isCreatingNewOt, newOtName, newOtDefinition, allOpportunityTypes]);
+  }, [
+    result, file, dealName, selectedOtId, isCreatingNewOt, newOtName,
+    newOtDefinition, allOpportunityTypes, fileToDataUrl,
+    draftSummary, draftDescription, draftNextStep, draftInvestmentValue,
+    draftEconomicImpact, draftKeyStakeholders, draftRisks,
+    draftStrategicActions, draftInfrastructureNeeds, draftSkillsImplications,
+    draftMarketDrivers,
+  ]);
 
   // --- Helpers ---
   const formatBytes = (bytes: number) => {
@@ -799,109 +892,159 @@ export function InvestmentMemo({
                 })()}
               </div>
 
+              {/* --- Editable fields --- */}
+
               {/* Summary */}
-              <div className="p-5 space-y-2">
-                <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
+              <div className="p-5 space-y-1.5">
+                <label htmlFor="draft-summary" className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
                   Summary
-                </p>
-                <p className="text-sm text-[#2C2C2C] leading-relaxed">
-                  {result.summary}
-                </p>
+                </label>
+                <textarea
+                  id="draft-summary"
+                  value={draftSummary}
+                  onChange={(e) => setDraftSummary(e.target.value)}
+                  rows={3}
+                  className="w-full text-sm text-[#2C2C2C] leading-relaxed border border-[#E8E6E3] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7A6B5A] focus:ring-offset-1 resize-y"
+                />
               </div>
 
               {/* Description */}
-              {result.description && (
-                <div className="p-5 space-y-2">
-                  <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
-                    Description
-                  </p>
-                  {result.description.split("\n\n").map((para, i) => (
-                    <p
-                      key={i}
-                      className="text-sm text-[#2C2C2C] leading-relaxed"
-                    >
-                      {para}
-                    </p>
-                  ))}
-                </div>
-              )}
+              <div className="p-5 space-y-1.5">
+                <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
+                  Description
+                </label>
+                <textarea
+                  value={draftDescription}
+                  onChange={(e) => setDraftDescription(e.target.value)}
+                  rows={5}
+                  className="w-full text-sm text-[#2C2C2C] leading-relaxed border border-[#E8E6E3] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7A6B5A] focus:ring-offset-1 resize-y"
+                />
+              </div>
 
               {/* Next step */}
-              {result.nextStep && (
-                <div className="p-5 space-y-2">
-                  <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
-                    Recommended next step
-                  </p>
-                  <p className="text-sm text-[#2C2C2C] leading-relaxed">
-                    {result.nextStep}
-                  </p>
-                </div>
-              )}
+              <div className="p-5 space-y-1.5">
+                <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
+                  Recommended next step
+                </label>
+                <input
+                  type="text"
+                  value={draftNextStep}
+                  onChange={(e) => setDraftNextStep(e.target.value)}
+                  className="w-full text-sm text-[#2C2C2C] border border-[#E8E6E3] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7A6B5A] focus:ring-offset-1"
+                />
+              </div>
 
               {/* Key fields grid */}
               <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
-                {result.investmentValue && (
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-0.5">
-                      Investment value
-                    </p>
-                    <p className="text-sm text-[#2C2C2C]">
-                      {result.investmentValue}
-                    </p>
-                  </div>
-                )}
-                {result.economicImpact && (
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-0.5">
-                      Economic impact
-                    </p>
-                    <p className="text-sm text-[#2C2C2C]">
-                      {result.economicImpact}
-                    </p>
-                  </div>
-                )}
-                {result.keyStakeholders && result.keyStakeholders.length > 0 && (
-                  <div className="sm:col-span-2">
-                    <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-0.5">
-                      Key stakeholders
-                    </p>
-                    <p className="text-sm text-[#2C2C2C]">
-                      {result.keyStakeholders.join(", ")}
-                    </p>
-                  </div>
-                )}
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-0.5 block">
+                    Investment value
+                  </label>
+                  <input
+                    type="text"
+                    value={draftInvestmentValue}
+                    onChange={(e) => setDraftInvestmentValue(e.target.value)}
+                    className="w-full text-sm text-[#2C2C2C] border border-[#E8E6E3] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7A6B5A] focus:ring-offset-1"
+                  />
+                </div>
+                <div>
+                  <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-0.5 block">
+                    Economic impact
+                  </label>
+                  <input
+                    type="text"
+                    value={draftEconomicImpact}
+                    onChange={(e) => setDraftEconomicImpact(e.target.value)}
+                    className="w-full text-sm text-[#2C2C2C] border border-[#E8E6E3] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7A6B5A] focus:ring-offset-1"
+                  />
+                </div>
+                <div className="sm:col-span-2">
+                  <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-0.5 block">
+                    Key stakeholders
+                    <span className="normal-case text-[#999] ml-1">(comma-separated)</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={draftKeyStakeholders}
+                    onChange={(e) => setDraftKeyStakeholders(e.target.value)}
+                    className="w-full text-sm text-[#2C2C2C] border border-[#E8E6E3] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7A6B5A] focus:ring-offset-1"
+                    placeholder="e.g. Department of Agriculture, Local Council"
+                  />
+                </div>
               </div>
 
               {/* Risks */}
-              {result.risks && result.risks.length > 0 && (
-                <div className="p-5 space-y-2">
-                  <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
-                    Risks
-                  </p>
-                  <ul className="text-sm text-[#2C2C2C] leading-relaxed space-y-1 list-disc list-inside">
-                    {result.risks.map((r, i) => (
-                      <li key={i}>{r}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
+              <div className="p-5 space-y-1.5">
+                <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
+                  Risks
+                  <span className="normal-case text-[#999] ml-1">(one per line)</span>
+                </label>
+                <textarea
+                  value={draftRisks}
+                  onChange={(e) => setDraftRisks(e.target.value)}
+                  rows={4}
+                  className="w-full text-sm text-[#2C2C2C] leading-relaxed border border-[#E8E6E3] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7A6B5A] focus:ring-offset-1 resize-y"
+                  placeholder="One risk per line"
+                />
+              </div>
 
               {/* Strategic actions */}
-              {result.strategicActions &&
-                result.strategicActions.length > 0 && (
-                  <div className="p-5 space-y-2">
-                    <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
-                      Strategic actions
-                    </p>
-                    <ul className="text-sm text-[#2C2C2C] leading-relaxed space-y-1 list-disc list-inside">
-                      {result.strategicActions.map((a, i) => (
-                        <li key={i}>{a}</li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
+              <div className="p-5 space-y-1.5">
+                <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
+                  Strategic actions
+                  <span className="normal-case text-[#999] ml-1">(one per line)</span>
+                </label>
+                <textarea
+                  value={draftStrategicActions}
+                  onChange={(e) => setDraftStrategicActions(e.target.value)}
+                  rows={4}
+                  className="w-full text-sm text-[#2C2C2C] leading-relaxed border border-[#E8E6E3] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7A6B5A] focus:ring-offset-1 resize-y"
+                  placeholder="One action per line"
+                />
+              </div>
 
-              {/* Government programs */}
+              {/* Infrastructure needs */}
+              <div className="p-5 space-y-1.5">
+                <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
+                  Infrastructure needs
+                  <span className="normal-case text-[#999] ml-1">(one per line)</span>
+                </label>
+                <textarea
+                  value={draftInfrastructureNeeds}
+                  onChange={(e) => setDraftInfrastructureNeeds(e.target.value)}
+                  rows={3}
+                  className="w-full text-sm text-[#2C2C2C] leading-relaxed border border-[#E8E6E3] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7A6B5A] focus:ring-offset-1 resize-y"
+                  placeholder="One need per line"
+                />
+              </div>
+
+              {/* Skills implications */}
+              <div className="p-5 space-y-1.5">
+                <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
+                  Skills &amp; workforce implications
+                </label>
+                <textarea
+                  value={draftSkillsImplications}
+                  onChange={(e) => setDraftSkillsImplications(e.target.value)}
+                  rows={3}
+                  className="w-full text-sm text-[#2C2C2C] leading-relaxed border border-[#E8E6E3] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7A6B5A] focus:ring-offset-1 resize-y"
+                />
+              </div>
+
+              {/* Market drivers */}
+              <div className="p-5 space-y-1.5">
+                <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
+                  Market drivers
+                </label>
+                <textarea
+                  value={draftMarketDrivers}
+                  onChange={(e) => setDraftMarketDrivers(e.target.value)}
+                  rows={3}
+                  className="w-full text-sm text-[#2C2C2C] leading-relaxed border border-[#E8E6E3] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7A6B5A] focus:ring-offset-1 resize-y"
+                />
+              </div>
+
+              {/* Government programs (read-only from AI) */}
               {result.governmentPrograms &&
                 result.governmentPrograms.length > 0 && (
                   <div className="p-5 space-y-2">
@@ -924,7 +1067,7 @@ export function InvestmentMemo({
                   </div>
                 )}
 
-              {/* Timeline */}
+              {/* Timeline (read-only from AI) */}
               {result.timeline && result.timeline.length > 0 && (
                 <div className="p-5 space-y-2">
                   <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">

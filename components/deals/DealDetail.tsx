@@ -1,10 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type {
   Deal,
+  DealDocument,
   LGA,
   OpportunityType,
   ReadinessState,
@@ -135,6 +136,65 @@ export function DealDetail({
     deleteDealLocally(dealId);
     router.push("/deals/list");
   }, [dealId, router]);
+
+  /* ---------- Document handlers ---------- */
+
+  const docInputRef = useRef<HTMLInputElement>(null);
+
+  const handleAddDocument = useCallback(
+    async (files: FileList | null) => {
+      if (!deal || !files || files.length === 0) return;
+      const newDocs: DealDocument[] = [...(deal.documents ?? [])];
+      for (const f of Array.from(files)) {
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(reader.result as string);
+          reader.onerror = () => reject(new Error("Read failed"));
+          reader.readAsDataURL(f);
+        });
+        newDocs.push({
+          id: crypto.randomUUID?.() ?? `doc-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
+          fileName: f.name,
+          mimeType: f.type || "application/octet-stream",
+          sizeBytes: f.size,
+          dataUrl,
+          addedAt: new Date().toISOString(),
+        });
+      }
+      const updated: Deal = { ...deal, documents: newDocs, updatedAt: new Date().toISOString() };
+      setDeal(updated);
+      saveDealLocally(updated);
+      setIsLocal(true);
+    },
+    [deal],
+  );
+
+  const handleRemoveDocument = useCallback(
+    (docId: string) => {
+      if (!deal) return;
+      const newDocs = (deal.documents ?? []).filter((d) => d.id !== docId);
+      const updated: Deal = { ...deal, documents: newDocs, updatedAt: new Date().toISOString() };
+      setDeal(updated);
+      saveDealLocally(updated);
+      setIsLocal(true);
+    },
+    [deal],
+  );
+
+  const handleDownloadDocument = useCallback((doc: DealDocument) => {
+    const a = document.createElement("a");
+    a.href = doc.dataUrl;
+    a.download = doc.fileName;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }, []);
+
+  const formatDocSize = (bytes: number) => {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+  };
 
   /* ---------- Field handlers ---------- */
 
@@ -711,6 +771,100 @@ export function DealDetail({
                     ))}
                   </ul>
                 )}
+              </div>
+            </AccordionSection>
+
+            {/* Document Directory */}
+            <AccordionSection
+              title="Document directory"
+              badge={
+                deal.documents && deal.documents.length > 0
+                  ? `${deal.documents.length}`
+                  : undefined
+              }
+            >
+              <div className="space-y-3">
+                {(!deal.documents || deal.documents.length === 0) ? (
+                  <p className="text-xs text-[#9A9A9A] leading-relaxed">
+                    No documents attached yet.
+                  </p>
+                ) : (
+                  <ul className="list-none p-0 m-0 space-y-2">
+                    {deal.documents.map((doc) => (
+                      <li
+                        key={doc.id}
+                        className="flex items-start gap-3 p-3 border border-[#E8E6E3] rounded bg-[#FAFAF9]"
+                      >
+                        {/* File icon */}
+                        <div className="flex-shrink-0 mt-0.5">
+                          <svg
+                            className="w-5 h-5 text-[#7A6B5A]"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={1.5}
+                              d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"
+                            />
+                          </svg>
+                        </div>
+                        {/* Info */}
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-[#2C2C2C] truncate">
+                            {doc.label || doc.fileName}
+                          </p>
+                          <p className="text-[10px] text-[#9A9A9A] mt-0.5">
+                            {formatDocSize(doc.sizeBytes)} &middot;{" "}
+                            {formatDate(doc.addedAt)}
+                          </p>
+                        </div>
+                        {/* Actions */}
+                        <div className="flex items-center gap-1.5 flex-shrink-0">
+                          <button
+                            onClick={() => handleDownloadDocument(doc)}
+                            className="text-[10px] text-[#7A6B5A] hover:text-[#2C2C2C] underline underline-offset-2 transition-colors"
+                            title="Download"
+                          >
+                            Download
+                          </button>
+                          {isEditing && (
+                            <button
+                              onClick={() => handleRemoveDocument(doc.id)}
+                              className="text-[10px] text-red-600 hover:text-red-800 underline underline-offset-2 transition-colors"
+                              title="Remove"
+                            >
+                              Remove
+                            </button>
+                          )}
+                        </div>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+
+                {/* Upload button */}
+                <div>
+                  <input
+                    ref={docInputRef}
+                    type="file"
+                    className="hidden"
+                    multiple
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.csv,.json,.png,.jpg,.jpeg,.gif,.webp"
+                    onChange={(e) => {
+                      handleAddDocument(e.target.files);
+                      if (docInputRef.current) docInputRef.current.value = "";
+                    }}
+                  />
+                  <button
+                    onClick={() => docInputRef.current?.click()}
+                    className="text-xs font-medium text-[#7A6B5A] hover:text-[#2C2C2C] border border-dashed border-[#D5D2CD] rounded px-3 py-2 w-full text-center transition-colors hover:border-[#7A6B5A]"
+                  >
+                    + Add document
+                  </button>
+                </div>
               </div>
             </AccordionSection>
 

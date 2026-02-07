@@ -123,6 +123,23 @@ export interface TimelineMilestone {
   date?: string;
 }
 
+/** Attached document stored with a deal */
+export interface DealDocument {
+  id: string;
+  /** Original file name */
+  fileName: string;
+  /** MIME type */
+  mimeType: string;
+  /** File size in bytes */
+  sizeBytes: number;
+  /** Base64-encoded file content (data URL) */
+  dataUrl: string;
+  /** When the document was attached */
+  addedAt: string;
+  /** Optional user-provided label */
+  label?: string;
+}
+
 /** Deal (project instance) — PRD §7.1 */
 export interface Deal {
   id: string;
@@ -168,6 +185,8 @@ export interface Deal {
   governmentPrograms?: GovernmentProgram[];
   /** Key milestones and timeline events */
   timeline?: TimelineMilestone[];
+  /** Attached documents (source memos, reports, etc.) */
+  documents?: DealDocument[];
 }
 
 /** Constraint change audit — PRD §7.1 */
