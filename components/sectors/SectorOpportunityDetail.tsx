@@ -33,13 +33,20 @@ export function SectorOpportunityDetail({
 }: SectorOpportunityDetailProps) {
   return (
     <div className="flex flex-col gap-6" data-testid="sector-detail">
-      {/* Back link */}
+      {/* Back link + edit button */}
       <div className="flex items-center justify-between gap-4">
         <Link
           href="/sectors"
           className="text-sm text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
         >
           ← All sector opportunities
+        </Link>
+        <Link
+          href={`/sectors/${so.id}/edit`}
+          className="px-3 py-1 text-sm font-medium text-[#7A6B5A] border border-[#7A6B5A] hover:bg-[#7A6B5A] hover:text-white transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
+          data-testid="edit-sector-link"
+        >
+          Edit sector
         </Link>
       </div>
 
@@ -80,7 +87,13 @@ export function SectorOpportunityDetail({
               <p className={labelClass}>
                 {SECTOR_OPPORTUNITY_SECTION_NAMES["1"]}
               </p>
-              <p className={`${bodyClass} mt-1`}>{so.sections["1"]}</p>
+              <div className="mt-1 space-y-2">
+                {so.sections["1"].split("\n\n").map((para, i) => (
+                  <p key={i} className={bodyClass}>
+                    {para}
+                  </p>
+                ))}
+              </div>
             </div>
           </section>
 
