@@ -51,31 +51,38 @@ vi.mock("@/lib/db/queries", () => ({
     ]),
 }));
 
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
+
+/* Mock MapCanvas — Mapbox GL not available in jsdom */
+vi.mock("@/components/map/MapCanvas", () => ({
+  MapCanvas: () => <div data-testid="map-canvas" />,
+}));
+
 describe("HomePage", () => {
-  it("renders the HomeView with overview content", async () => {
+  it("renders the HomeView with header and summary bar", async () => {
     const HomePage = (await import("./page")).default;
     const page = await HomePage();
     render(page);
     expect(screen.getByTestId("home-view")).toBeInTheDocument();
-    expect(screen.getByTestId("overview-tab")).toBeInTheDocument();
+    expect(screen.getByText(/coordinated investment pipeline/i)).toBeInTheDocument();
+    expect(screen.getByTestId("summary-bar")).toBeInTheDocument();
   });
 
-  it("renders dynamic metrics", async () => {
+  it("renders summary metrics", async () => {
     const HomePage = (await import("./page")).default;
     const page = await HomePage();
     render(page);
-    expect(screen.getByText("Deals")).toBeInTheDocument();
+    expect(screen.getByText("Total deals")).toBeInTheDocument();
     expect(screen.getByText("Investment")).toBeInTheDocument();
-    // $5.7M appears in both top metric and OT card
-    expect(screen.getAllByText("$5.7M").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText("Pipeline readiness")).toBeInTheDocument();
+    expect(screen.getByText("$5.7M")).toBeInTheDocument();
   });
 
-  it("renders GW LGA cards", async () => {
+  it("renders the embedded map", async () => {
     const HomePage = (await import("./page")).default;
     const page = await HomePage();
     render(page);
-    expect(screen.getByRole("heading", { name: "Mackay" })).toBeInTheDocument();
-    expect(screen.getByText(/1 hypothesis/i)).toBeInTheDocument();
+    expect(screen.getByTestId("map-container")).toBeInTheDocument();
   });
 });

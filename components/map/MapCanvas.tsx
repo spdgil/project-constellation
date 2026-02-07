@@ -36,6 +36,14 @@ export interface MapCanvasProps {
   dealPositions: Record<string, DealGeoPosition>;
   selectedDealId: string | null;
   onSelectDeal: (id: string | null) => void;
+  /** Optional bounds constraint [[sw_lng,sw_lat],[ne_lng,ne_lat]]. */
+  maxBounds?: [[number, number], [number, number]];
+  /** Override the default initial view (centre + zoom). */
+  initialView?: { longitude: number; latitude: number; zoom: number };
+  /** When false, skip the fitBounds-to-data-on-load behaviour. Default: true. */
+  fitBoundsOnLoad?: boolean;
+  /** If set, fit to these bounds on load instead of the LGA data extent. */
+  initialFitBounds?: [[number, number], [number, number]];
 }
 
 export function MapCanvas({
@@ -46,28 +54,37 @@ export function MapCanvas({
   dealPositions,
   selectedDealId,
   onSelectDeal,
+  maxBounds,
+  initialView,
+  fitBoundsOnLoad = true,
+  initialFitBounds,
 }: MapCanvasProps) {
   const mapRef = useRef<MapRef>(null);
   const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN ?? "";
 
   /* ------------------------------------------------------------------ */
   /* Initial view: centre on Greater Whitsunday region.                  */
-  /* We use an explicit centre + zoom instead of bounds to avoid         */
-  /* layout-timing issues where the container has no size yet.           */
-  /* On map load we refit to the actual boundary extent.                 */
+  /* Callers can override with the initialView prop.                     */
   /* ------------------------------------------------------------------ */
   const initialViewState = useMemo(
-    () => ({ longitude: 149.0, latitude: -21.1, zoom: 7 }),
-    [],
+    () => initialView ?? { longitude: 149.0, latitude: -21.1, zoom: 7 },
+    [initialView],
   );
 
   /** On load: resize (ensures container dimensions are correct), then
-   *  fit to the boundary extent if we have features. */
+   *  fit to explicit bounds, LGA data extent, or skip entirely. */
   const handleLoad = useCallback(() => {
     const map = mapRef.current;
     if (!map) return;
     map.resize();
 
+    /* Fit to caller-provided bounds (e.g. Queensland outline). */
+    if (initialFitBounds) {
+      map.fitBounds(initialFitBounds, { padding: 24, duration: 0 });
+      return;
+    }
+
+    if (!fitBoundsOnLoad) return;
     if (!boundaries.features.length) return;
 
     let minLng = Infinity;
@@ -91,7 +108,7 @@ export function MapCanvas({
       [[minLng, minLat], [maxLng, maxLat]],
       { padding: 48, duration: 0 },
     );
-  }, [boundaries]);
+  }, [boundaries, fitBoundsOnLoad, initialFitBounds]);
 
   /* ------------------------------------------------------------------ */
   /* Click handler: LGA fill layer → select; empty → deselect           */
@@ -205,6 +222,7 @@ export function MapCanvas({
         onLoad={handleLoad}
         cursor="pointer"
         reuseMaps
+        {...(maxBounds ? { maxBounds } : {})}
       >
         <NavigationControl position="top-right" showCompass={false} />
 

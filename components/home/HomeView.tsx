@@ -1,33 +1,39 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
-import type { Deal, LGA, OpportunityType, ReadinessState, Constraint } from "@/lib/types";
+import { useRouter } from "next/navigation";
+import type { Deal } from "@/lib/types";
+import type { GeoJSONFeatureCollection } from "@/lib/types";
+import type { DealGeoPosition } from "@/components/map/MapCanvas";
 import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
-import { READINESS_LABELS, CONSTRAINT_LABELS } from "@/lib/labels";
-import { formatAUD } from "@/lib/colour-system";
+import {
+  type ColourFamily,
+  COLOUR_CLASSES,
+  formatAUD,
+} from "@/lib/colour-system";
 
-/* ====================================================================== */
-/* Readiness colour palette — follows DESIGN_SYSTEM.md §Colour Families   */
-/* Neutral → Amber → Blue → Emerald for clear visual differentiation      */
-/* ====================================================================== */
+/* Lazy-load MapCanvas — avoids shipping Mapbox JS on first paint */
+const MapCanvas = dynamic(
+  () => import("@/components/map/MapCanvas").then((m) => m.MapCanvas),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="h-full w-full bg-[#FAF9F7] animate-pulse rounded" />
+    ),
+  },
+);
 
-const READINESS_COLOURS: Record<ReadinessState, string> = {
-  "no-viable-projects":                 "#A3A3A3", // neutral grey
-  "conceptual-interest":                "#D97706", // amber-600
-  "feasibility-underway":               "#F59E0B", // amber-500
-  "structurable-but-stalled":           "#3B82F6", // blue-500
-  "investable-with-minor-intervention": "#10B981", // emerald-500
-  "scaled-and-replicable":              "#059669", // emerald-600
+const EMPTY_BOUNDARIES: GeoJSONFeatureCollection = {
+  type: "FeatureCollection",
+  features: [],
 };
 
-const READINESS_ORDER: ReadinessState[] = [
-  "no-viable-projects",
-  "conceptual-interest",
-  "feasibility-underway",
-  "structurable-but-stalled",
-  "investable-with-minor-intervention",
-  "scaled-and-replicable",
+/** Queensland bounds — used for both the initial fit and pan constraint. */
+const QLD_BOUNDS: [[number, number], [number, number]] = [
+  [137, -30],   // SW corner (SA border / NSW border)
+  [155, -9.5],  // NE corner (Cape York / coast)
 ];
 
 /* ====================================================================== */
@@ -35,43 +41,18 @@ const READINESS_ORDER: ReadinessState[] = [
 /* ====================================================================== */
 
 export interface HomeViewProps {
-  opportunityTypes: OpportunityType[];
   deals: Deal[];
-  lgas: LGA[];
 }
 
 /* ====================================================================== */
 /* Root component                                                         */
 /* ====================================================================== */
 
-export function HomeView({
-  opportunityTypes,
-  deals: baseDeals,
-  lgas,
-}: HomeViewProps) {
+export function HomeView({ deals: baseDeals }: HomeViewProps) {
+  const router = useRouter();
   const deals = useDealsWithOverrides(baseDeals);
 
-  return (
-    <div data-testid="home-view">
-      <OverviewTab deals={deals} lgas={lgas} opportunityTypes={opportunityTypes} />
-    </div>
-  );
-}
-
-/* ====================================================================== */
-/* Overview tab                                                           */
-/* ====================================================================== */
-
-function OverviewTab({
-  deals,
-  lgas,
-  opportunityTypes,
-}: {
-  deals: Deal[];
-  lgas: LGA[];
-  opportunityTypes: OpportunityType[];
-}) {
-  /* ---- computed metrics ---- */
+  /* ---- Computed metrics ---- */
   const totalInvestment = useMemo(
     () => deals.reduce((s, d) => s + (d.investmentValueAmount ?? 0), 0),
     [deals],
@@ -84,258 +65,158 @@ function OverviewTab({
     () => deals.reduce((s, d) => s + (d.economicImpactJobs ?? 0), 0),
     [deals],
   );
-  const activeLgaCount = useMemo(() => {
-    const ids = new Set<string>();
-    for (const d of deals) for (const id of d.lgaIds) ids.add(id);
-    return ids.size;
-  }, [deals]);
 
-  /* ---- readiness distribution (global) ---- */
-  const readinessDist = useMemo(() => buildReadinessDist(deals), [deals]);
+  /* ---- Boundaries for embedded map ---- */
+  const [boundaries, setBoundaries] = useState<GeoJSONFeatureCollection>(EMPTY_BOUNDARIES);
 
-  /* ---- OT summaries ---- */
-  const otSummaries = useMemo(() => {
-    return opportunityTypes.map((ot) => {
-      const otDeals = deals.filter((d) => d.opportunityTypeId === ot.id);
-      const inv = otDeals.reduce((s, d) => s + (d.investmentValueAmount ?? 0), 0);
-      const dist = buildReadinessDist(otDeals);
-      const constraintMap = new Map<Constraint, number>();
-      for (const d of otDeals)
-        constraintMap.set(d.dominantConstraint, (constraintMap.get(d.dominantConstraint) ?? 0) + 1);
-      const topConstraint = [...constraintMap.entries()].sort((a, b) => b[1] - a[1])[0] ?? null;
-      return { ot, deals: otDeals, investment: inv, readinessDist: dist, topConstraint };
-    });
-  }, [deals, opportunityTypes]);
+  useEffect(() => {
+    fetch("/api/boundaries")
+      .then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((data: GeoJSONFeatureCollection) => {
+        if (data?.features?.length) setBoundaries(data);
+      })
+      .catch(() => {
+        /* silently degrade — map still renders without LGA outlines */
+      });
+  }, []);
 
-  /* ---- GW LGAs (those with rich data) ---- */
-  const focusLgas = useMemo(() => lgas.filter((l) => l.summary), [lgas]);
+  /* ---- Deal positions (same logic as MapView) ---- */
+  const dealPositions = useMemo(() => {
+    const positions: Record<string, DealGeoPosition> = {};
+    for (const deal of deals) {
+      if (deal.lat != null && deal.lng != null) {
+        positions[deal.id] = { lng: deal.lng, lat: deal.lat };
+      } else {
+        const firstLgaId = deal.lgaIds[0];
+        if (!firstLgaId) continue;
+        const feature = boundaries.features.find(
+          (f) =>
+            String(f.properties?.id ?? "") === firstLgaId ||
+            (typeof f.id === "string" ? f.id : String(f.id ?? "")) === firstLgaId,
+        );
+        const centroid = feature ? geoCentroid(feature.geometry) : null;
+        if (centroid) {
+          positions[deal.id] = centroid;
+        }
+      }
+    }
+    return positions;
+  }, [boundaries, deals]);
+
+  /* Navigate to deal on marker click */
+  const handleSelectDeal = useCallback(
+    (id: string | null) => {
+      if (id) router.push(`/deals/${id}`);
+    },
+    [router],
+  );
+  const noop = useCallback(() => {}, []);
 
   return (
-    <div data-testid="overview-tab" className="space-y-12">
-      {/* ── Key metrics ────────────────────────────────────── */}
-      <div className="grid grid-cols-2 lg:grid-cols-5 gap-px bg-[#E8E6E3] border border-[#E8E6E3]">
-        <MetricCard value={String(deals.length)} label="Deals" />
-        <MetricCard value={formatAUD(totalInvestment)} label="Investment" />
-        <MetricCard value={formatAUD(totalImpact)} label="Economic impact" />
-        <MetricCard
-          value={totalJobs > 0 ? totalJobs.toLocaleString() : "—"}
-          label="Jobs"
-        />
-        <MetricCard
-          value={String(activeLgaCount)}
-          label={`Active LGA${activeLgaCount !== 1 ? "s" : ""}`}
-        />
-      </div>
+    <div className="flex flex-col gap-8" data-testid="home-view">
+      {/* ── Hero: text + stats (left) | map (right) ────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 lg:h-[780px]">
+        {/* Left column — intro, summary cards, nav links */}
+        <div
+          className="flex flex-col justify-center gap-4"
+          data-testid="summary-bar"
+        >
+          {/* Introduction */}
+          <p className="text-sm text-[#6B6B6B] leading-relaxed max-w-lg">
+            Developing a coordinated investment pipeline for Queensland,
+            connecting sectors, local government areas, and deal-ready
+            opportunities to accelerate economic development and build
+            resilience.
+          </p>
+          <SummaryCard
+            label="Total deals"
+            value={String(deals.length)}
+            sub="across all sectors"
+            colour="blue"
+          />
+          <SummaryCard
+            label="Investment"
+            value={totalInvestment > 0 ? formatAUD(totalInvestment) : "—"}
+            sub="total deal value"
+            colour="amber"
+          />
+          <SummaryCard
+            label="Economic impact"
+            value={totalImpact > 0 ? formatAUD(totalImpact) : "—"}
+            sub="projected GDP contribution"
+            colour="emerald"
+          />
+          <SummaryCard
+            label="Jobs identified"
+            value={totalJobs > 0 ? totalJobs.toLocaleString() : "—"}
+            sub="across active deals"
+            colour="emerald"
+          />
 
-      {/* ── Pipeline readiness ─────────────────────────────── */}
-      <section data-testid="pipeline-section">
-        <SectionHeading>Pipeline readiness</SectionHeading>
-        <ReadinessBar distribution={readinessDist} total={deals.length} />
-        <ReadinessLegend distribution={readinessDist} />
-      </section>
-
-      {/* ── Opportunity types ──────────────────────────────── */}
-      <section data-testid="ot-section">
-        <SectionHeading>By opportunity type</SectionHeading>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {otSummaries.map(({ ot, deals: otDeals, investment, readinessDist: dist, topConstraint }) => (
-            <div
-              key={ot.id}
-              className="bg-white border border-[#E8E6E3] p-5"
-            >
-              <p className="text-sm font-medium text-[#2C2C2C] mb-3">
-                {ot.name}
-              </p>
-
-              {/* Mini readiness bar */}
-              {otDeals.length > 0 ? (
-                <ReadinessBar distribution={dist} total={otDeals.length} height="h-1.5" />
-              ) : (
-                <div className="h-1.5 bg-[#F0EEEB] rounded-full" />
-              )}
-
-              {/* Stats row */}
-              <div className="mt-3 flex items-baseline gap-3 text-xs text-[#6B6B6B]">
-                <span className="tabular-nums">
-                  {otDeals.length} deal{otDeals.length !== 1 ? "s" : ""}
-                </span>
-                {investment > 0 && (
-                  <>
-                    <Dot />
-                    <span className="tabular-nums">{formatAUD(investment)}</span>
-                  </>
-                )}
-              </div>
-
-              {/* Top constraint chip */}
-              {topConstraint && (
-                <span className="mt-3 inline-block text-[10px] uppercase tracking-wider
-                                 text-[#8A7560] bg-[#FAF9F7] border border-[#E8E6E3]
-                                 px-2 py-0.5 rounded-full">
-                  {CONSTRAINT_LABELS[topConstraint[0]]}
-                </span>
-              )}
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ── Greater Whitsunday LGAs ────────────────────────── */}
-      {focusLgas.length > 0 && (
-        <section data-testid="lga-section">
-          <SectionHeading>Greater Whitsunday</SectionHeading>
-          <div className="grid gap-4 sm:grid-cols-3">
-            {focusLgas.map((lga) => {
-              const lgaDeals = deals.filter((d) => d.lgaIds.includes(lga.id));
-              const lgaInv = lgaDeals.reduce((s, d) => s + (d.investmentValueAmount ?? 0), 0);
-              const hypotheses = lga.opportunityHypotheses?.length ?? 0;
-              const constraintMap = new Map<Constraint, number>();
-              for (const d of lgaDeals)
-                constraintMap.set(d.dominantConstraint, (constraintMap.get(d.dominantConstraint) ?? 0) + 1);
-              const topC = [...constraintMap.entries()].sort((a, b) => b[1] - a[1])[0] ?? null;
-
-              return (
-                <div
-                  key={lga.id}
-                  className="bg-white border border-[#E8E6E3] p-5
-                             hover:border-[#C8C4BF] transition-colors duration-200"
-                >
-                  <h3 className="font-heading text-base font-normal text-[#2C2C2C] mb-1">
-                    {lga.name}
-                  </h3>
-                  <p className="text-xs text-[#6B6B6B] leading-relaxed mb-4 line-clamp-2">
-                    {lga.summary?.split(". ").slice(0, 2).join(". ")}.
-                  </p>
-
-                  <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1 text-xs text-[#6B6B6B] mb-2">
-                    <span className="tabular-nums">
-                      {lgaDeals.length} deal{lgaDeals.length !== 1 ? "s" : ""}
-                    </span>
-                    {lgaInv > 0 && (
-                      <>
-                        <Dot />
-                        <span className="tabular-nums">{formatAUD(lgaInv)}</span>
-                      </>
-                    )}
-                    <Dot />
-                    <span>
-                      {hypotheses} hypothes{hypotheses !== 1 ? "es" : "is"}
-                    </span>
-                  </div>
-
-                  {topC && (
-                    <span className="inline-block text-[10px] uppercase tracking-wider
-                                     text-[#8A7560] bg-[#FAF9F7] border border-[#E8E6E3]
-                                     px-2 py-0.5 rounded-full">
-                      {CONSTRAINT_LABELS[topC[0]]}
-                    </span>
-                  )}
-                </div>
-              );
-            })}
+          {/* Quick links */}
+          <div className="flex flex-wrap gap-3 pt-2" data-testid="nav-links">
+            <NavLink href="/deals/list">Deals</NavLink>
+            <NavLink href="/sectors">Sectors</NavLink>
+            <NavLink href="/lga">LGA</NavLink>
           </div>
-        </section>
-      )}
+        </div>
 
-      {/* ── Quick actions ──────────────────────────────────── */}
-      <div className="flex flex-wrap gap-3 pt-2">
-        <ActionLink href="/deals">View all deals</ActionLink>
-        <ActionLink href="/deals/memo">New deal from document</ActionLink>
+        {/* Right column — map */}
+        <div
+          className="h-[500px] lg:h-full rounded-lg overflow-hidden bg-[#FAF9F7]"
+          data-testid="map-container"
+        >
+          <MapCanvas
+            boundaries={boundaries}
+            selectedLgaId={null}
+            onSelectLga={noop}
+            deals={deals}
+            dealPositions={dealPositions}
+            selectedDealId={null}
+            onSelectDeal={handleSelectDeal}
+            initialFitBounds={QLD_BOUNDS}
+            maxBounds={QLD_BOUNDS}
+          />
+        </div>
       </div>
+
     </div>
   );
 }
 
 /* ====================================================================== */
-/* Readiness bar — proportional stacked bar                               */
+/* Sub-components                                                         */
 /* ====================================================================== */
 
-interface ReadinessDistEntry {
-  state: ReadinessState;
-  count: number;
-}
-
-function ReadinessBar({
-  distribution,
-  total,
-  height = "h-2.5",
+function SummaryCard({
+  label,
+  value,
+  sub,
+  colour,
 }: {
-  distribution: ReadinessDistEntry[];
-  total: number;
-  height?: string;
+  label: string;
+  value: string;
+  sub: string;
+  colour: ColourFamily;
 }) {
-  if (total === 0) return <div className={`${height} bg-[#F0EEEB] rounded-full`} />;
-
+  const c = COLOUR_CLASSES[colour];
   return (
     <div
-      className={`${height} rounded-full overflow-hidden flex`}
-      role="img"
-      aria-label="Readiness distribution"
+      className={`bg-white border border-[#E8E6E3] border-l-[3px] ${c.borderLeft} px-4 py-3 space-y-0.5`}
     >
-      {distribution.map(({ state, count }) => {
-        const pct = (count / total) * 100;
-        if (pct === 0) return null;
-        return (
-          <div
-            key={state}
-            className="h-full transition-all duration-500 ease-out first:rounded-l-full last:rounded-r-full"
-            style={{ width: `${pct}%`, backgroundColor: READINESS_COLOURS[state] }}
-            title={`${READINESS_LABELS[state]}: ${count}`}
-          />
-        );
-      })}
-    </div>
-  );
-}
-
-function ReadinessLegend({ distribution }: { distribution: ReadinessDistEntry[] }) {
-  const active = distribution.filter((d) => d.count > 0);
-  if (active.length === 0) return null;
-
-  return (
-    <div className="mt-3 flex flex-wrap gap-x-6 gap-y-2">
-      {active.map(({ state, count }) => (
-        <span key={state} className="flex items-center gap-2 text-xs text-[#6B6B6B]">
-          <span
-            className="inline-block w-3 h-3 shrink-0"
-            style={{ backgroundColor: READINESS_COLOURS[state] }}
-          />
-          <span>{READINESS_LABELS[state]}</span>
-          <span className="tabular-nums font-medium text-[#2C2C2C]">{count}</span>
-        </span>
-      ))}
-    </div>
-  );
-}
-
-/* ====================================================================== */
-/* Shared UI primitives                                                   */
-/* ====================================================================== */
-
-function MetricCard({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="bg-white p-4 sm:p-5">
-      <p className="font-heading text-xl sm:text-2xl font-normal text-[#2C2C2C] mb-1">
-        {value}
+      <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] font-medium">
+        {label}
       </p>
-      <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">{label}</p>
+      <p className={`text-xl font-heading font-normal ${c.text}`}>{value}</p>
+      <p className="text-[11px] text-[#9A9A9A]">{sub}</p>
     </div>
   );
 }
 
-function SectionHeading({ children }: { children: React.ReactNode }) {
-  return (
-    <h2 className="font-heading text-lg font-normal leading-[1.4] text-[#2C2C2C] mb-4">
-      {children}
-    </h2>
-  );
-}
-
-function Dot() {
-  return <span className="text-[#D4CFC9]" aria-hidden="true">·</span>;
-}
-
-function ActionLink({ href, children }: { href: string; children: React.ReactNode }) {
+function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
     <Link
       href={href}
@@ -350,12 +231,32 @@ function ActionLink({ href, children }: { href: string; children: React.ReactNod
 }
 
 /* ====================================================================== */
-/* Helpers                                                                */
+/* Geo helpers (extracted from MapView)                                    */
 /* ====================================================================== */
 
-function buildReadinessDist(deals: Deal[]): ReadinessDistEntry[] {
-  const map = new Map<ReadinessState, number>();
-  for (const d of deals) map.set(d.readinessState, (map.get(d.readinessState) ?? 0) + 1);
-  return READINESS_ORDER.map((state) => ({ state, count: map.get(state) ?? 0 }));
+function geoCentroid(
+  geometry: { type: string; coordinates: unknown } | null | undefined,
+): DealGeoPosition | null {
+  if (!geometry?.coordinates) return null;
+  const ring = firstRing(geometry.coordinates);
+  if (!ring || ring.length === 0) return null;
+  let sumLng = 0;
+  let sumLat = 0;
+  for (const [lng, lat] of ring) {
+    sumLng += lng;
+    sumLat += lat;
+  }
+  return { lng: sumLng / ring.length, lat: sumLat / ring.length };
 }
 
+function firstRing(coords: unknown): number[][] | null {
+  if (!Array.isArray(coords) || coords.length === 0) return null;
+  if (typeof coords[0] === "number") return null;
+  const first = coords[0];
+  if (!Array.isArray(first) || first.length === 0) return null;
+  if (typeof first[0] === "number") return coords as number[][];
+  if (Array.isArray(first[0]) && typeof first[0][0] === "number")
+    return first as number[][];
+  const poly = (coords as number[][][][])[0];
+  return poly?.[0] ?? null;
+}

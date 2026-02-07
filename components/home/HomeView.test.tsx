@@ -1,40 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, within } from "@testing-library/react";
 import { HomeView } from "./HomeView";
-import type { Deal, LGA, OpportunityType } from "@/lib/types";
+import type { Deal } from "@/lib/types";
 
-const mockLgas: LGA[] = [
-  {
-    id: "mackay",
-    name: "Mackay",
-    geometryRef: "mackay",
-    notes: [],
-    summary: "Mining hub.",
-    opportunityHypotheses: [
-      { id: "h1", name: "Critical minerals", summary: "", dominantConstraint: "common-user-infrastructure-gap" },
-    ],
-  },
-  { id: "isaac", name: "Isaac", geometryRef: "isaac", notes: [] },
-];
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn() }),
+}));
 
-const mockOpportunityTypes: OpportunityType[] = [
-  {
-    id: "critical-minerals",
-    name: "Critical minerals",
-    definition: "",
-    economicFunction: "",
-    typicalCapitalStack: "",
-    typicalRisks: "",
-  },
-  {
-    id: "renewables",
-    name: "Renewable energy",
-    definition: "",
-    economicFunction: "",
-    typicalCapitalStack: "",
-    typicalRisks: "",
-  },
-];
+/* ---- Mock MapCanvas (Mapbox GL not available in jsdom) ---- */
+vi.mock("@/components/map/MapCanvas", () => ({
+  MapCanvas: () => <div data-testid="map-canvas" />,
+}));
 
 const mockDeals: Deal[] = [
   {
@@ -84,145 +60,79 @@ const mockDeals: Deal[] = [
 describe("HomeView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: () => Promise.resolve({ type: "FeatureCollection", features: [] }),
+    });
   });
 
-  it("renders the home view with overview content", () => {
+  it("renders the home view with header and summary bar", () => {
     render(
-      <HomeView
-        opportunityTypes={mockOpportunityTypes}
-        deals={mockDeals}
-        lgas={mockLgas}
-      />,
+      <HomeView deals={mockDeals} />,
     );
 
     expect(screen.getByTestId("home-view")).toBeInTheDocument();
-    expect(screen.getByTestId("overview-tab")).toBeInTheDocument();
+    expect(screen.getByText(/coordinated investment pipeline/i)).toBeInTheDocument();
+    expect(screen.getByTestId("summary-bar")).toBeInTheDocument();
   });
 
-  it("renders dynamic key metrics computed from deals", () => {
+  it("renders navigation links to Deals, Sectors, and LGA", () => {
     render(
-      <HomeView
-        opportunityTypes={mockOpportunityTypes}
-        deals={mockDeals}
-        lgas={mockLgas}
-      />,
+      <HomeView deals={mockDeals} />,
     );
 
-    expect(screen.getByText("Deals")).toBeInTheDocument();
-    expect(screen.getByText("Investment")).toBeInTheDocument();
-    expect(screen.getByText("Economic impact")).toBeInTheDocument();
-    expect(screen.getByText("Jobs")).toBeInTheDocument();
-    expect(screen.getByText(/Active LGAs/)).toBeInTheDocument();
-    // $5M + $3M = $8M investment, $10M + $7M = $17M impact, 120 + 80 = 200 jobs
-    expect(screen.getByText("$8M")).toBeInTheDocument();
-    expect(screen.getByText("$17M")).toBeInTheDocument();
-    expect(screen.getByText("200")).toBeInTheDocument();
+    const navLinks = screen.getByTestId("nav-links");
+    expect(within(navLinks).getByRole("link", { name: /deals/i })).toHaveAttribute("href", "/deals/list");
+    expect(within(navLinks).getByRole("link", { name: /sectors/i })).toHaveAttribute("href", "/sectors");
+    expect(within(navLinks).getByRole("link", { name: /lga/i })).toHaveAttribute("href", "/lga");
   });
 
-  it("renders the pipeline readiness section with legend", () => {
+  it("renders summary card metrics computed from deals", () => {
     render(
-      <HomeView
-        opportunityTypes={mockOpportunityTypes}
-        deals={mockDeals}
-        lgas={mockLgas}
-      />,
+      <HomeView deals={mockDeals} />,
     );
 
-    const pipeline = screen.getByTestId("pipeline-section");
-    expect(within(pipeline).getByText("Pipeline readiness")).toBeInTheDocument();
-    expect(within(pipeline).getByRole("img", { name: /readiness distribution/i })).toBeInTheDocument();
-    // Legend shows states that have deals
-    expect(within(pipeline).getByText("Feasibility underway")).toBeInTheDocument();
-    expect(within(pipeline).getByText("Conceptual interest")).toBeInTheDocument();
+    const bar = screen.getByTestId("summary-bar");
+    expect(within(bar).getByText("Total deals")).toBeInTheDocument();
+    expect(within(bar).getByText("2")).toBeInTheDocument();
+    expect(within(bar).getByText("Investment")).toBeInTheDocument();
+    expect(within(bar).getByText("$8M")).toBeInTheDocument();
+    expect(within(bar).getByText("Economic impact")).toBeInTheDocument();
+    expect(within(bar).getByText("$17M")).toBeInTheDocument();
+    expect(within(bar).getByText("Jobs identified")).toBeInTheDocument();
+    expect(within(bar).getByText("200")).toBeInTheDocument();
   });
 
-  it("renders opportunity type cards with deal counts and investment", () => {
+  it("renders the embedded map container", () => {
     render(
-      <HomeView
-        opportunityTypes={mockOpportunityTypes}
-        deals={mockDeals}
-        lgas={mockLgas}
-      />,
+      <HomeView deals={mockDeals} />,
     );
 
-    const otSection = screen.getByTestId("ot-section");
-    expect(within(otSection).getByText("Critical minerals")).toBeInTheDocument();
-    expect(within(otSection).getByText("Renewable energy")).toBeInTheDocument();
-    // Each OT card shows "1 deal"
-    expect(within(otSection).getAllByText(/1 deal\b/).length).toBe(2);
-  });
-
-  it("renders OT cards with top constraint chips", () => {
-    render(
-      <HomeView
-        opportunityTypes={mockOpportunityTypes}
-        deals={mockDeals}
-        lgas={mockLgas}
-      />,
-    );
-
-    const otSection = screen.getByTestId("ot-section");
-    expect(within(otSection).getByText("Common-user infrastructure gap")).toBeInTheDocument();
-    expect(within(otSection).getByText("Planning and approvals")).toBeInTheDocument();
-  });
-
-  it("renders GW LGA cards only for LGAs with summaries", () => {
-    render(
-      <HomeView
-        opportunityTypes={mockOpportunityTypes}
-        deals={mockDeals}
-        lgas={mockLgas}
-      />,
-    );
-
-    const lgaSection = screen.getByTestId("lga-section");
-    expect(within(lgaSection).getByText("Greater Whitsunday")).toBeInTheDocument();
-    expect(within(lgaSection).getByRole("heading", { name: "Mackay" })).toBeInTheDocument();
-    expect(within(lgaSection).getByText(/1 hypothesis/i)).toBeInTheDocument();
-    // Isaac has no summary → not shown
-    expect(screen.queryByRole("heading", { name: "Isaac" })).not.toBeInTheDocument();
+    expect(screen.getByTestId("map-container")).toBeInTheDocument();
   });
 
   it("stats recompute when deals change", () => {
     const singleDeal = [mockDeals[0]];
 
     const { rerender } = render(
-      <HomeView
-        opportunityTypes={mockOpportunityTypes}
-        deals={singleDeal}
-        lgas={mockLgas}
-      />,
+      <HomeView deals={singleDeal} />,
     );
 
-    // Single deal: total investment $5M appears in both top metric and OT card.
-    // Check the top metric card label is present.
-    expect(screen.getByText("Investment")).toBeInTheDocument();
-    // The value $5M will appear twice (top metric + OT card), so use getAllByText
-    expect(screen.getAllByText("$5M").length).toBeGreaterThanOrEqual(1);
+    const bar = screen.getByTestId("summary-bar");
+    expect(within(bar).getByText("$5M")).toBeInTheDocument();
 
-    // Re-render with both deals → top investment becomes $8M
     rerender(
-      <HomeView
-        opportunityTypes={mockOpportunityTypes}
-        deals={mockDeals}
-        lgas={mockLgas}
-      />,
+      <HomeView deals={mockDeals} />,
     );
 
-    expect(screen.getByText("$8M")).toBeInTheDocument();
+    expect(within(bar).getByText("$8M")).toBeInTheDocument();
   });
 
-  it("renders quick action links", () => {
+  it("renders the static intro text", () => {
     render(
-      <HomeView
-        opportunityTypes={mockOpportunityTypes}
-        deals={mockDeals}
-        lgas={mockLgas}
-      />,
+      <HomeView deals={mockDeals} />,
     );
 
-    expect(screen.getByRole("link", { name: /view all deals/i })).toHaveAttribute("href", "/deals");
-    expect(screen.getByRole("link", { name: /new deal from document/i })).toHaveAttribute("href", "/deals/memo");
+    expect(screen.getByText(/coordinated investment pipeline/i)).toBeInTheDocument();
   });
-
 });
