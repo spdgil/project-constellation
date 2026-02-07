@@ -1,0 +1,58 @@
+[
+  {
+    "id": "strategy_gw3_mets_diversification",
+    "title": "Greater Whitsunday METS Sector, Revenue Diversification Strategy",
+    "type": "sector_development_strategy",
+    "sourceDocument": "GW3MetsDiversificationStrategy_DigitalFinal04.09.24.pdf",
+    "summary": "A sector development strategy focused on diversifying METS capability into adjacent and growth sectors under decarbonisation drivers. It uses multi criteria analysis to prioritise sectors and then identifies gaps, challenges, and enabling actions.",
+    "prioritySectorIds": [
+      "sector_opportunity_critical_minerals_value_chain",
+      "sector_opportunity_renewable_energy_services",
+      "sector_opportunity_bioenergy_biofuels",
+      "sector_opportunity_biomanufacturing",
+      "sector_opportunity_circular_economy_mining_industrial",
+      "sector_opportunity_space_industrial_support",
+      "sector_opportunity_post_mining_land_use"
+    ],
+    "selectionLogic": {
+      "adjacentDefinition": "A sector where there is significant potential for existing businesses to service future demand given similarity in required skills and nature of work already being undertaken.",
+      "growthDefinition": "A sector with significant investment by government and industry to realise sectoral growth, providing a sustainable pipeline of work to a business and greater certainty that servicing the industry will realise future growth.",
+      "criteria": [
+        "government_priority",
+        "size_scale_of_opportunity",
+        "sector_maturity_and_recent_growth",
+        "alignment_with_existing_skills_and_capability",
+        "stakeholder_interest_and_understanding"
+      ]
+    },
+    "crossCuttingThemes": [
+      "supporting_skills_development_and_transferability",
+      "facilitating_partnerships_across_stakeholder_groups",
+      "providing_insights_information_and_raising_awareness",
+      "advocating_for_regulatory_and_policy_change"
+    ],
+    "stakeholderCategories": [
+      "state_and_local_government",
+      "sector_businesses",
+      "adjacent_sector_organisations",
+      "resources_companies",
+      "industry_bodies",
+      "advisory_firms",
+      "educational_institutions"
+    ],
+    "grading": {
+      "gradeLetter": "A_minus",
+      "gradeRationaleShort": "Strong diagnostics, clear economic geography, coherent value chain framing, and robust skills alignment. Enabling environment is identified but not operationalised as a reform program. Culture is addressed implicitly.",
+      "evidenceNotesByComponent": {
+        "1": "Strong empirical baseline and adjacency based justification for sector focus.",
+        "2": "Clear identification of places of production and enabling infrastructure.",
+        "3": "Constraints and policy barriers identified and grouped, limited process roadmap.",
+        "4": "Value chain positioning and demand drivers are clear, non transactional by scope.",
+        "5": "Skills alignment and gaps are detailed across sectors.",
+        "6": "Culture and norms are signalled through narrative and case studies."
+      },
+      "missingElements": [],
+      "scopeDisciplineNotes": "Does not overclaim delivery or capital allocation, positions actions as enabling themes."
+    }
+  }
+]

@@ -1,0 +1,186 @@
+[
+  {
+    "id": "sector_opportunity_renewable_energy_services",
+    "name": "Renewable Energy Services and Infrastructure",
+    "version": "2026_02_07",
+    "tags": [
+      "energy_transition",
+      "infrastructure",
+      "operations_maintenance",
+      "construction",
+      "manufacturing"
+    ],
+    "sections": {
+      "1": "This sector encompasses the design, construction, commissioning, operations, maintenance, and component manufacturing associated with large scale renewable energy assets, including generation, storage, and transmission infrastructure. It excludes retailing and asset ownership, focusing on industrial services and asset lifecycle support.",
+      "2": "Structural drivers include legislated decarbonisation targets, falling technology costs, grid modernisation needs, and growth in energy storage and long duration firming to support variable renewable generation.",
+      "3": "The sector is an enabling productivity sector. It generates durable demand for engineering, fabrication, construction, and technical services, often anchoring long term employment through operations and maintenance.",
+      "4": "Typical value chain spans project development and approvals, construction and commissioning, component fabrication and logistics, then long run operations, maintenance, refurbishment, and repowering. Value often concentrates in construction and O and M, with higher barriers in specialised electrical works and manufacturing scale.",
+      "5": "Capability requirements commonly include civil and electrical engineering, mechanical and fabrication trades, heavy equipment maintenance, quality and safety systems, and compliance with grid and energy standards. Industrial land, logistics, and lifting capacity are often material enablers.",
+      "6": "Common constraints include shortages of specialised electrical and commissioning skills, procurement structures favouring incumbents, long lead times and pipeline uncertainty, and standards complexity. Failure modes typically arise from skills bottlenecks and weak supply chain integration rather than lack of demand.",
+      "7": "Workforce needs concentrate in technicians, trades workers, engineers, and machine operators. Many skills are transferable from heavy industry and infrastructure services, but grid connection, commissioning, and storage systems often require targeted upskilling and certification.",
+      "8": "Enabling conditions typically include regulatory clarity, consistent standards, workforce development aligned to project phases, suitable industrial infrastructure, and coordination mechanisms linking proponents, suppliers, and training providers.",
+      "9": "The sector often progresses from emerging pilot deployments, to rapid scaling with acute skills demand and supply chain stress, then to maturity characterised by stable operations, refurbishment, and repowering cycles.",
+      "10": "Strategic implications commonly include prioritising workforce alignment, anticipating industrial land and infrastructure pressure, and improving coordination across supply chains. Strategies should treat the sector as services led and enablement focused rather than ownership led."
+    },
+    "sources": [
+      "GW3_METS_Revenue_Diversification_Strategy"
+    ]
+  },
+  {
+    "id": "sector_opportunity_critical_minerals_value_chain",
+    "name": "Critical Minerals Value Chain Services",
+    "version": "2026_02_07",
+    "tags": [
+      "energy_transition",
+      "resources",
+      "processing",
+      "manufacturing",
+      "supply_chain"
+    ],
+    "sections": {
+      "1": "This sector includes services and capabilities supporting critical minerals exploration, extraction, processing, and downstream component manufacturing. It excludes mineral rights ownership and focuses on industrial services, processing capability, and supply chain support.",
+      "2": "Drivers include energy transition mineral demand, strategic supply chain reconfiguration, and growing requirements for traceability and ethical sourcing.",
+      "3": "The sector can be a high value tradable enabler, linking industrial capability to global supply chains and supporting downstream manufacturing activities such as batteries and clean technology components.",
+      "4": "Value chain includes exploration and extraction services, mineral processing and refining, then downstream component manufacturing and recycling. Processing and refining are often bottlenecks with high capital intensity and standards requirements.",
+      "5": "Capability requirements include geological and surveying services, mining services, processing know how, safety and environmental compliance, quality systems, and in some segments chemical and metallurgical capability.",
+      "6": "Constraints include capital intensity for processing, skills shortages in processing and automation, coordination needs for shared infrastructure, and policy and permitting complexity. Failure modes include stalled scale up from pilot to commercial and fragmented infrastructure planning.",
+      "7": "Workforce spans mining and industrial trades, process technicians, metallurgical and chemical engineers, automation specialists, and quality assurance roles.",
+      "8": "Enabling conditions include common user processing infrastructure, permitting clarity, skills pathways for processing, and coordination across government and industry to de risk scale up.",
+      "9": "Typical pathway moves from exploration and early extraction services, to pilot processing and demonstration, then scale up to commercial processing and downstream manufacturing integration.",
+      "10": "Strategic implications include focusing on processing bottlenecks, shared infrastructure, and workforce transition pathways, with clear positioning on where along the value chain participation is realistic."
+    },
+    "sources": [
+      "GW3_METS_Revenue_Diversification_Strategy"
+    ]
+  },
+  {
+    "id": "sector_opportunity_bioenergy_biofuels",
+    "name": "Bioenergy and Biofuels",
+    "version": "2026_02_07",
+    "tags": [
+      "energy_transition",
+      "bioeconomy",
+      "industrial_process",
+      "fuels"
+    ],
+    "sections": {
+      "1": "This sector includes production systems and industrial services supporting bioenergy and biofuels, including sustainable aviation fuel, renewable diesel, and related biorefining activities.",
+      "2": "Drivers include decarbonisation constraints in hard to electrify sectors such as aviation and shipping, combined with policy support for renewable fuels and biomass utilisation.",
+      "3": "Bioenergy can provide stable industrial demand and create value through conversion of biomass and byproducts into fuels and energy, supporting regional resilience where feedstock systems exist.",
+      "4": "Value chain spans feedstock aggregation, preprocessing, conversion and refining, logistics and distribution, then operations and maintenance of facilities.",
+      "5": "Capability requirements include process engineering, mechanical and fabrication services, electrical trades, operations and maintenance, logistics, and in some segments scientific capability related to feedstock and conversion pathways.",
+      "6": "Constraints include feedstock logistics and competition, technology uncertainty across pathways, and skills gaps in biochemical and process operations. Failure modes include scale constraints from feedstock availability and insufficient demand aggregation.",
+      "7": "Workforce spans trades and technicians for construction and maintenance, process operators, engineers, and specialist roles in feedstock systems.",
+      "8": "Enabling conditions include stable demand signals, feedstock coordination, permitting clarity, and capability to operate in controlled industrial environments with safety and quality requirements.",
+      "9": "Typical evolution moves from demonstration and pilot conversion, to commercial facilities, then scale through replication and supply chain optimisation.",
+      "10": "Strategic implications include clarifying feedstock systems, aligning skills to process operations, and coordinating demand signals from hard to electrify industries."
+    },
+    "sources": [
+      "GW3_METS_Revenue_Diversification_Strategy"
+    ]
+  },
+  {
+    "id": "sector_opportunity_biomanufacturing",
+    "name": "Biomanufacturing and Precision Fermentation",
+    "version": "2026_02_07",
+    "tags": [
+      "bioeconomy",
+      "advanced_manufacturing",
+      "food",
+      "bioprocess"
+    ],
+    "sections": {
+      "1": "This sector includes industrial bioprocessing and precision fermentation for production of food ingredients, chemicals, enzymes, and related products. It focuses on manufacturing capability rather than research alone.",
+      "2": "Drivers include demand for lower carbon inputs, supply chain resilience, advances in synthetic biology, and growth in alternative proteins and novel ingredients.",
+      "3": "Biomanufacturing can add value through high margin manufacturing, creating skilled jobs and enabling export capable products where quality standards are met.",
+      "4": "Value chain includes feedstock inputs, fermentation and processing, quality control, packaging and logistics, then market access and distribution.",
+      "5": "Capability requirements include fabrication and maintenance of process equipment, controlled environment operations, food grade or GMP compliant processes, quality assurance, and specialist bioprocess engineering.",
+      "6": "Constraints include certification requirements, skills shortages in bioprocess operations, and high standards for contamination control. Failure modes include inability to meet standards at scale and weak downstream market access.",
+      "7": "Workforce spans process operators, lab technicians, engineers, quality specialists, and maintenance trades adapted to controlled environments.",
+      "8": "Enabling conditions include access to appropriate facilities, standards and certification pathways, training aligned to process operations, and collaboration between industry and training institutions.",
+      "9": "Typical pathway moves from pilot and demonstration facilities, to first commercial plants, then to network scale and product diversification.",
+      "10": "Strategic implications include prioritising standards readiness, workforce pathways for controlled environments, and the enabling infrastructure required for scale."
+    },
+    "sources": [
+      "GW3_METS_Revenue_Diversification_Strategy"
+    ]
+  },
+  {
+    "id": "sector_opportunity_circular_economy_mining_industrial",
+    "name": "Circular Economy in Industrial and Resource Supply Chains",
+    "version": "2026_02_07",
+    "tags": [
+      "circular_economy",
+      "industrial_services",
+      "materials",
+      "maintenance"
+    ],
+    "sections": {
+      "1": "This sector includes services and business models that extend product life, enable refurbishment, repurposing, recycling, and material recovery within industrial supply chains.",
+      "2": "Drivers include waste reduction requirements, cost pressure, carbon accounting, and growing demand for circular procurement and lifecycle performance.",
+      "3": "Circular economy activity can improve productivity through reduced material intensity, new service models, and retention of value in local supply chains.",
+      "4": "Value chain includes product design and lifecycle planning, maintenance and refurbishment services, material recovery and processing, then reintegration into supply chains.",
+      "5": "Capability requirements include maintenance and repair capability, materials analysis, lifecycle thinking, logistics, and compliance with waste regulations.",
+      "6": "Constraints include regulatory restrictions on waste handling, limited lifecycle skills, and logistical cost. Failure modes include being trapped at low value recycling rather than higher value refurbishment and reuse.",
+      "7": "Workforce includes technicians, engineers, logistics roles, and specialists in materials and compliance.",
+      "8": "Enabling conditions include regulatory clarity for reuse, access to sites and material streams, demand signals from large buyers, and coordination across value chains.",
+      "9": "Maturity often progresses from internal efficiency initiatives, to service offerings, to integrated circular business models at scale.",
+      "10": "Strategic implications include focusing on higher value rungs of circularity, enabling regulatory pathways, and coordinating demand for refurbished or circular products."
+    },
+    "sources": [
+      "GW3_METS_Revenue_Diversification_Strategy"
+    ]
+  },
+  {
+    "id": "sector_opportunity_space_industrial_support",
+    "name": "Space Industry Manufacturing and Operations Support",
+    "version": "2026_02_07",
+    "tags": [
+      "space",
+      "advanced_manufacturing",
+      "operations",
+      "standards"
+    ],
+    "sections": {
+      "1": "This sector includes manufacturing, fabrication, integration, operations support, and maintenance services for space industry activities, including launch and ground systems support.",
+      "2": "Drivers include rapid growth in satellite deployment, constrained launch capacity, and increased national investment in space capability and sovereign infrastructure.",
+      "3": "Space industry support can create high quality manufacturing and engineering demand with strong spillovers into adjacent high standards industries.",
+      "4": "Value chain spans component manufacturing, systems integration, ground infrastructure, operations and maintenance, then data services in downstream markets.",
+      "5": "Capability requirements include high quality fabrication, engineering, adherence to strict standards, and quality assurance systems often aligned to ISO and defence like requirements.",
+      "6": "Constraints include high regulatory and standards barriers, limited near term demand visibility, and accreditation costs. Failure modes include inability to meet standards or insufficient market scale for early entrants.",
+      "7": "Workforce includes engineers, technicians, production test roles, and quality specialists.",
+      "8": "Enabling conditions include standards pathways, supplier accreditation support, and clear procurement requirements from space operators and primes.",
+      "9": "Maturity typically progresses from limited supply roles and bespoke fabrication, to repeatable contracts, to broader integration and operations support ecosystems.",
+      "10": "Strategic implications include focusing on standards readiness, supplier accreditation pathways, and targeted manufacturing entry points where capability aligns."
+    },
+    "sources": [
+      "GW3_METS_Revenue_Diversification_Strategy"
+    ]
+  },
+  {
+    "id": "sector_opportunity_post_mining_land_use",
+    "name": "Post Mining Land Use and Mine Closure Solutions",
+    "version": "2026_02_07",
+    "tags": [
+      "mine_closure",
+      "remediation",
+      "land_use",
+      "environmental_services"
+    ],
+    "sections": {
+      "1": "This sector includes planning, remediation, closure engineering, and transition solutions for post mining land use, including environmental restoration and repurposing for new productive uses.",
+      "2": "Drivers include rising closure liabilities, regulatory scrutiny, and the scale of assets approaching end of life.",
+      "3": "The sector supports resilience by converting closure obligations into new land use value, reducing long term liabilities and enabling new economic activity.",
+      "4": "Value chain includes early planning and assessment, progressive rehabilitation, closure works, monitoring, and transition to new land uses such as energy, agriculture, or industrial precincts.",
+      "5": "Capability requirements include environmental and engineering services, earthmoving, compliance, monitoring, and cross stakeholder planning capability.",
+      "6": "Constraints include unclear risk allocation, limited incentives for innovative end uses, and scaling challenges from pilots to whole of site outcomes. Failure modes include defaulting to minimal rehabilitation and missed reuse opportunities.",
+      "7": "Workforce includes environmental specialists, engineers, earthmoving and site operations roles, and planning professionals.",
+      "8": "Enabling conditions include clarity on post closure risk, access to sites, multi stakeholder planning processes, and regulatory arrangements that support beneficial land uses.",
+      "9": "Maturity progresses from compliance led rehabilitation, to integrated closure planning, to innovative multi use post mining precinct development where feasible.",
+      "10": "Strategic implications include prioritising early planning, clarifying risk and incentives, and building cross stakeholder coordination capacity for multi site scaling."
+    },
+    "sources": [
+      "GW3_METS_Revenue_Diversification_Strategy"
+    ]
+  }
+]

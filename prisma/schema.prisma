@@ -290,3 +290,156 @@ model ConstraintEvent {
   @@index([changedAt])
   @@map("constraint_events")
 }
+
+// =============================================================================
+// Sector Opportunities & Strategies — REFERENCE_SECTOR_OPPORTUNITY_TEMPLATE.md,
+// REFERENCE_SECTOR_DEVELOPMENT_STRATEGY_BLUEPRINT.md,
+// REFERENCE_STRATEGY_GRADING_SYSTEM.md
+// =============================================================================
+
+/// Grade letter for a strategy grading — REFERENCE_STRATEGY_GRADING_SYSTEM.md
+enum GradeLetter {
+  A
+  A_minus  @map("A-")
+  B
+  B_minus  @map("B-")
+  C
+  D
+  F
+}
+
+/// Sector Opportunity — place-agnostic reference object (10-section template).
+/// REFERENCE_SECTOR_OPPORTUNITY_TEMPLATE.md
+model SectorOpportunity {
+  id        String   @id
+  name      String
+  version   String   @default("1")
+  tags      String[] @default([])
+
+  // 10 sections keyed "1"–"10", stored as markdown text.
+  section1  String   @default("") @map("section_1")   // Sector Opportunity Definition
+  section2  String   @default("") @map("section_2")   // Structural Drivers
+  section3  String   @default("") @map("section_3")   // Economic Role
+  section4  String   @default("") @map("section_4")   // Value Chain Structure
+  section5  String   @default("") @map("section_5")   // Capability Requirements
+  section6  String   @default("") @map("section_6")   // Common Constraints & Failure Modes
+  section7  String   @default("") @map("section_7")   // Workforce & Skills Profile
+  section8  String   @default("") @map("section_8")   // Enabling Conditions
+  section9  String   @default("") @map("section_9")   // Maturity & Evolution Pathways
+  section10 String   @default("") @map("section_10")  // Strategic Implications
+
+  sources   String[] @default([])
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  strategies StrategySectorOpportunity[]
+
+  @@map("sector_opportunities")
+}
+
+/// Strategy lifecycle status
+enum StrategyStatus {
+  draft
+  published
+}
+
+/// Sector Development Strategy — place-specific, references sector opportunities.
+/// REFERENCE_SECTOR_DEVELOPMENT_STRATEGY_BLUEPRINT.md
+model SectorDevelopmentStrategy {
+  id              String          @id @default(cuid())
+  title           String
+  type            String          @default("sector_development_strategy")
+  status          StrategyStatus  @default(published)
+  sourceDocument  String?         @map("source_document")
+  summary         String          @default("")
+
+  /// Raw extracted text from the uploaded source document (populated during upload).
+  extractedText   String?         @map("extracted_text")
+
+  // Blueprint components (6) — markdown content per component_id.
+  component1      String   @default("") @map("component_1")  // Sector Diagnostics & Comparative Advantage
+  component2      String   @default("") @map("component_2")  // Economic Geography & Places of Production
+  component3      String   @default("") @map("component_3")  // Regulatory & Enabling Environment
+  component4      String   @default("") @map("component_4")  // Value Chain & Market Integration
+  component5      String   @default("") @map("component_5")  // Workforce & Skills Alignment
+  component6      String   @default("") @map("component_6")  // Sector Culture & Norms
+
+  // Selection logic (stored as JSON-compatible text fields)
+  selectionLogicAdjacentDef  String?  @map("selection_logic_adjacent_def")
+  selectionLogicGrowthDef    String?  @map("selection_logic_growth_def")
+  selectionCriteria          String[] @default([]) @map("selection_criteria")
+
+  crossCuttingThemes         String[] @default([]) @map("cross_cutting_themes")
+  stakeholderCategories      String[] @default([]) @map("stakeholder_categories")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  prioritySectors StrategySectorOpportunity[]
+  grading         StrategyGrade?
+  documents       StrategyDocument[]
+
+  @@index([status])
+  @@map("sector_development_strategies")
+}
+
+/// Attached document for a strategy (stored as binary — MVP; migrate to S3 for production)
+model StrategyDocument {
+  id          String   @id @default(cuid())
+  strategyId  String   @map("strategy_id")
+  fileName    String   @map("file_name")
+  mimeType    String   @map("mime_type")
+  sizeBytes   Int      @map("size_bytes")
+  fileData    Bytes    @map("file_data")
+  label       String?
+  addedAt     DateTime @default(now()) @map("added_at")
+
+  strategy    SectorDevelopmentStrategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+
+  @@index([strategyId])
+  @@map("strategy_documents")
+}
+
+/// Join table: Strategy ↔ SectorOpportunity (many-to-many, ordered)
+model StrategySectorOpportunity {
+  strategyId          String  @map("strategy_id")
+  sectorOpportunityId String  @map("sector_opportunity_id")
+  sortOrder           Int     @default(0) @map("sort_order")
+
+  strategy            SectorDevelopmentStrategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+  sectorOpportunity   SectorOpportunity        @relation(fields: [sectorOpportunityId], references: [id], onDelete: Cascade)
+
+  @@id([strategyId, sectorOpportunityId])
+  @@map("strategy_sector_opportunities")
+}
+
+/// Strategy grading — REFERENCE_STRATEGY_GRADING_SYSTEM.md
+model StrategyGrade {
+  id                    String      @id @default(cuid())
+  strategyId            String      @unique @map("strategy_id")
+  gradeLetter           GradeLetter @map("grade_letter")
+  gradeRationaleShort   String      @default("") @map("grade_rationale_short")
+
+  // Evidence notes per blueprint component (keyed by component_id 1–6)
+  evidenceComp1         String?     @map("evidence_comp_1")
+  evidenceComp2         String?     @map("evidence_comp_2")
+  evidenceComp3         String?     @map("evidence_comp_3")
+  evidenceComp4         String?     @map("evidence_comp_4")
+  evidenceComp5         String?     @map("evidence_comp_5")
+  evidenceComp6         String?     @map("evidence_comp_6")
+
+  // Missing elements: array of { componentId, reason } stored as JSON string
+  missingElements       String      @default("[]") @map("missing_elements")
+
+  scopeDisciplineNotes  String?     @map("scope_discipline_notes")
+
+  createdAt             DateTime    @default(now()) @map("created_at")
+  updatedAt             DateTime    @updatedAt @map("updated_at")
+
+  strategy              SectorDevelopmentStrategy @relation(fields: [strategyId], references: [id], onDelete: Cascade)
+
+  @@map("strategy_grades")
+}

@@ -21,6 +21,8 @@ async function run() {
   const lgas = require("../data/lgas.json") as Record<string, unknown>[];
   const deals = require("../data/deals.json") as Record<string, unknown>[];
   const opportunityTypes = require("../data/opportunityTypes.json") as Record<string, unknown>[];
+  const sectorOpportunities = require("../data/sectorOpportunities.json") as Record<string, unknown>[];
+  const strategies = require("../data/strategies.json") as Record<string, unknown>[];
 
   // ==========================================================================
   // Value mappers: JSON kebab-case → Prisma enum underscore-case
@@ -66,6 +68,18 @@ async function run() {
     "not-started": "not_started",
     "in-progress": "in_progress",
     complete: "complete",
+  };
+
+  const gradeLetterMap: Record<string, string> = {
+    A: "A",
+    "A-": "A_minus",
+    "A_minus": "A_minus",
+    B: "B",
+    "B-": "B_minus",
+    "B_minus": "B_minus",
+    C: "C",
+    D: "D",
+    F: "F",
   };
 
   // ==========================================================================
@@ -278,6 +292,112 @@ async function run() {
           date: tm.date ?? null,
         },
       });
+    }
+  }
+
+  // --- 4. Sector Opportunities ---
+  console.log(`  Sector opportunities: ${sectorOpportunities.length}`);
+  for (const so of sectorOpportunities) {
+    const sections = (so.sections ?? {}) as Record<string, string>;
+    const soData = {
+      name: so.name as string,
+      version: (so.version as string) ?? "1",
+      tags: (so.tags as string[]) ?? [],
+      section1: sections["1"] ?? "",
+      section2: sections["2"] ?? "",
+      section3: sections["3"] ?? "",
+      section4: sections["4"] ?? "",
+      section5: sections["5"] ?? "",
+      section6: sections["6"] ?? "",
+      section7: sections["7"] ?? "",
+      section8: sections["8"] ?? "",
+      section9: sections["9"] ?? "",
+      section10: sections["10"] ?? "",
+      sources: (so.sources as string[]) ?? [],
+    };
+    await prisma.sectorOpportunity.upsert({
+      where: { id: so.id as string },
+      update: soData,
+      create: { id: so.id as string, ...soData },
+    });
+  }
+
+  // --- 5. Strategies + Grading ---
+  console.log(`  Strategies: ${strategies.length}`);
+  for (const s of strategies) {
+    const selectionLogic = (s.selectionLogic ?? {}) as Record<string, unknown>;
+    const stratData = {
+      title: s.title as string,
+      type: (s.type as string) ?? "sector_development_strategy",
+      sourceDocument: (s.sourceDocument as string) ?? null,
+      summary: (s.summary as string) ?? "",
+      // Components (strategies JSON doesn't have component content yet — default empty)
+      component1: "",
+      component2: "",
+      component3: "",
+      component4: "",
+      component5: "",
+      component6: "",
+      selectionLogicAdjacentDef: (selectionLogic.adjacentDefinition as string) ?? null,
+      selectionLogicGrowthDef: (selectionLogic.growthDefinition as string) ?? null,
+      selectionCriteria: (selectionLogic.criteria as string[]) ?? [],
+      crossCuttingThemes: (s.crossCuttingThemes as string[]) ?? [],
+      stakeholderCategories: (s.stakeholderCategories as string[]) ?? [],
+    };
+    await prisma.sectorDevelopmentStrategy.upsert({
+      where: { id: s.id as string },
+      update: stratData,
+      create: { id: s.id as string, ...stratData },
+    });
+
+    // Priority sector links
+    const prioritySectorIds = (s.prioritySectorIds as string[]) ?? [];
+    // Clear existing links then re-create with sort order
+    await prisma.strategySectorOpportunity.deleteMany({
+      where: { strategyId: s.id as string },
+    });
+    for (let i = 0; i < prioritySectorIds.length; i++) {
+      await prisma.strategySectorOpportunity.create({
+        data: {
+          strategyId: s.id as string,
+          sectorOpportunityId: prioritySectorIds[i],
+          sortOrder: i,
+        },
+      });
+    }
+
+    // Grading
+    const grading = s.grading as Record<string, unknown> | undefined;
+    if (grading) {
+      const evidenceByComp = (grading.evidenceNotesByComponent ?? {}) as Record<string, string>;
+      const missingElements = (grading.missingElements ?? []) as Record<string, string>[];
+      const gradeData = {
+        gradeLetter: gradeLetterMap[(grading.gradeLetter as string)] ?? "C",
+        gradeRationaleShort: (grading.gradeRationaleShort as string) ?? "",
+        evidenceComp1: evidenceByComp["1"] ?? null,
+        evidenceComp2: evidenceByComp["2"] ?? null,
+        evidenceComp3: evidenceByComp["3"] ?? null,
+        evidenceComp4: evidenceByComp["4"] ?? null,
+        evidenceComp5: evidenceByComp["5"] ?? null,
+        evidenceComp6: evidenceByComp["6"] ?? null,
+        missingElements: JSON.stringify(missingElements),
+        scopeDisciplineNotes: (grading.scopeDisciplineNotes as string) ?? null,
+      };
+
+      // Upsert grading — find by strategyId
+      const existingGrade = await prisma.strategyGrade.findUnique({
+        where: { strategyId: s.id as string },
+      });
+      if (existingGrade) {
+        await prisma.strategyGrade.update({
+          where: { strategyId: s.id as string },
+          data: gradeData,
+        });
+      } else {
+        await prisma.strategyGrade.create({
+          data: { strategyId: s.id as string, ...gradeData },
+        });
+      }
     }
   }
 

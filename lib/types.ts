@@ -226,3 +226,145 @@ export interface GeoJSONFeatureCollection {
   type: "FeatureCollection";
   features: GeoJSONFeature[];
 }
+
+// =============================================================================
+// Sector Opportunities & Strategies
+// REFERENCE_SECTOR_OPPORTUNITY_TEMPLATE.md
+// REFERENCE_SECTOR_DEVELOPMENT_STRATEGY_BLUEPRINT.md
+// REFERENCE_STRATEGY_GRADING_SYSTEM.md
+// =============================================================================
+
+/** Grade letter for strategy assessment — REFERENCE_STRATEGY_GRADING_SYSTEM.md */
+export type GradeLetter = "A" | "A-" | "B" | "B-" | "C" | "D" | "F";
+
+/**
+ * Section IDs for SectorOpportunity (1–10).
+ * REFERENCE_SECTOR_OPPORTUNITY_TEMPLATE.md
+ */
+export type SectorOpportunitySectionId =
+  | "1" | "2" | "3" | "4" | "5" | "6" | "7" | "8" | "9" | "10";
+
+/** Human-readable names for the 10 sector opportunity sections. */
+export const SECTOR_OPPORTUNITY_SECTION_NAMES: Record<SectorOpportunitySectionId, string> = {
+  "1": "Sector Opportunity Definition",
+  "2": "Structural Drivers of the Opportunity",
+  "3": "Economic Role of the Sector",
+  "4": "Typical Value Chain Structure",
+  "5": "Capability Requirements",
+  "6": "Common Constraints and Failure Modes",
+  "7": "Workforce and Skills Profile",
+  "8": "Enabling Conditions",
+  "9": "Maturity and Evolution Pathways",
+  "10": "Strategic Implications",
+};
+
+/**
+ * Sector Opportunity — place-agnostic reference object.
+ * REFERENCE_SECTOR_OPPORTUNITY_TEMPLATE.md
+ */
+export interface SectorOpportunity {
+  id: string;
+  name: string;
+  version: string;
+  tags: string[];
+  /** 10 sections keyed by SectorOpportunitySectionId, each containing markdown. */
+  sections: Record<SectorOpportunitySectionId, string>;
+  sources: string[];
+}
+
+/**
+ * Blueprint component IDs for SectorDevelopmentStrategy (1–6).
+ * REFERENCE_SECTOR_DEVELOPMENT_STRATEGY_BLUEPRINT.md
+ */
+export type StrategyComponentId = "1" | "2" | "3" | "4" | "5" | "6";
+
+/** Human-readable names for the 6 strategy blueprint components. */
+export const STRATEGY_COMPONENT_NAMES: Record<StrategyComponentId, string> = {
+  "1": "Sector Diagnostics and Comparative Advantage",
+  "2": "Economic Geography and Places of Production",
+  "3": "Regulatory and Enabling Environment",
+  "4": "Value Chain and Market Integration",
+  "5": "Workforce and Skills Alignment",
+  "6": "Sector Culture and Norms",
+};
+
+/** Economic Development Design Tool domains (EDDT visual). */
+export const EDDT_DOMAINS = [
+  "Market",
+  "Capital",
+  "Support Services",
+  "Businesses",
+  "Infrastructure",
+  "Policy",
+  "Culture",
+] as const;
+export type EddtDomain = (typeof EDDT_DOMAINS)[number];
+
+/** Mapping of blueprint components to EDDT domains. */
+export const STRATEGY_COMPONENT_EDDT_DOMAINS: Record<StrategyComponentId, EddtDomain[]> = {
+  "1": ["Market", "Businesses"],
+  "2": ["Infrastructure", "Businesses"],
+  "3": ["Market", "Policy"],
+  "4": ["Market", "Businesses"],
+  "5": ["Support Services", "Businesses"],
+  "6": ["Culture"],
+};
+
+/** Strategy lifecycle status. */
+export type StrategyStatus = "draft" | "published";
+
+/** Attached document stored with a strategy. */
+export interface StrategyDocument {
+  id: string;
+  fileName: string;
+  mimeType: string;
+  sizeBytes: number;
+  addedAt: string;
+  label?: string;
+}
+
+/**
+ * Sector Development Strategy — place-specific, linked to sector opportunities.
+ * REFERENCE_SECTOR_DEVELOPMENT_STRATEGY_BLUEPRINT.md
+ */
+export interface SectorDevelopmentStrategy {
+  id: string;
+  title: string;
+  type: string;
+  status: StrategyStatus;
+  sourceDocument?: string;
+  summary: string;
+  /** Raw extracted text from the uploaded source document. */
+  extractedText?: string;
+  /** 6 blueprint components keyed by StrategyComponentId, each containing markdown. */
+  components: Record<StrategyComponentId, string>;
+  selectionLogic?: {
+    adjacentDefinition?: string;
+    growthDefinition?: string;
+    criteria: string[];
+  };
+  crossCuttingThemes: string[];
+  stakeholderCategories: string[];
+  /** IDs of linked SectorOpportunity records. */
+  prioritySectorIds: string[];
+}
+
+/** Missing element in a strategy grading. */
+export interface StrategyGradeMissingElement {
+  componentId: StrategyComponentId;
+  reason: string;
+}
+
+/**
+ * Strategy grading — REFERENCE_STRATEGY_GRADING_SYSTEM.md
+ */
+export interface StrategyGrade {
+  id: string;
+  strategyId: string;
+  gradeLetter: GradeLetter;
+  gradeRationaleShort: string;
+  /** Evidence notes keyed by blueprint component_id (1–6). */
+  evidenceNotesByComponent: Partial<Record<StrategyComponentId, string>>;
+  missingElements: StrategyGradeMissingElement[];
+  scopeDisciplineNotes?: string;
+}

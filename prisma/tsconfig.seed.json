@@ -8,5 +8,5 @@
       "@/*": ["../*"]
     }
   },
-  "include": ["seed.ts", "../lib/generated/**/*.ts"]
+  "include": ["seed.ts", "../scripts/ingest-seeds.ts", "../lib/generated/**/*.ts"]
 }

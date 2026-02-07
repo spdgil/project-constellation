@@ -146,3 +146,35 @@ export function artefactStatusToDb(s: FrontendArtefactStatus): string {
   };
   return map[s] ?? s;
 }
+
+// --- GradeLetter ---
+
+import type { GradeLetter as FrontendGradeLetter } from "@/lib/types";
+
+const GRADE_TO_DB: Record<string, string> = {
+  A: "A",
+  "A-": "A_minus",
+  B: "B",
+  "B-": "B_minus",
+  C: "C",
+  D: "D",
+  F: "F",
+};
+
+const GRADE_FROM_DB: Record<string, FrontendGradeLetter> = {
+  A: "A",
+  A_minus: "A-",
+  B: "B",
+  B_minus: "B-",
+  C: "C",
+  D: "D",
+  F: "F",
+};
+
+export function gradeLetterToDb(g: FrontendGradeLetter): string {
+  return GRADE_TO_DB[g] ?? g;
+}
+
+export function gradeLetterFromDb(g: string): FrontendGradeLetter {
+  return GRADE_FROM_DB[g] ?? (g as FrontendGradeLetter);
+}

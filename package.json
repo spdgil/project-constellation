@@ -12,6 +12,7 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "tsx --tsconfig prisma/tsconfig.seed.json prisma/seed.ts",
     "db:reset": "prisma migrate reset --force && tsx --tsconfig prisma/tsconfig.seed.json prisma/seed.ts",
+    "seed:ingest": "tsx scripts/ingest-seeds.ts",
     "prepare": "husky"
   },
   "dependencies": {
