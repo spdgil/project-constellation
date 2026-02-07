@@ -118,10 +118,10 @@ export function HomeView({ deals: baseDeals }: HomeViewProps) {
   return (
     <div className="flex flex-col gap-8" data-testid="home-view">
       {/* ── Hero: text + stats (left) | map (right) ────────── */}
-      <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 lg:h-[780px]">
+      <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 lg:h-[860px]">
         {/* Left column — intro, summary cards, nav links */}
         <div
-          className="flex flex-col justify-center gap-4"
+          className="flex flex-col gap-6 pt-2"
           data-testid="summary-bar"
         >
           {/* Introduction */}
@@ -131,42 +131,46 @@ export function HomeView({ deals: baseDeals }: HomeViewProps) {
             opportunities to accelerate economic development and build
             resilience.
           </p>
-          <SummaryCard
-            label="Total deals"
-            value={String(deals.length)}
-            sub="across all sectors"
-            colour="blue"
-          />
-          <SummaryCard
-            label="Investment"
-            value={totalInvestment > 0 ? formatAUD(totalInvestment) : "—"}
-            sub="total deal value"
-            colour="amber"
-          />
-          <SummaryCard
-            label="Economic impact"
-            value={totalImpact > 0 ? formatAUD(totalImpact) : "—"}
-            sub="projected GDP contribution"
-            colour="emerald"
-          />
-          <SummaryCard
-            label="Jobs identified"
-            value={totalJobs > 0 ? totalJobs.toLocaleString() : "—"}
-            sub="across active deals"
-            colour="emerald"
-          />
 
-          {/* Quick links */}
-          <div className="flex flex-wrap gap-3 pt-2" data-testid="nav-links">
-            <NavLink href="/deals/list">Deals</NavLink>
-            <NavLink href="/sectors">Sectors</NavLink>
-            <NavLink href="/lga">LGA</NavLink>
+          {/* Key metrics — 2×2 grid */}
+          <div className="grid grid-cols-2 gap-3">
+            <SummaryCard
+              label="Total deals"
+              value={String(deals.length)}
+              sub="across all sectors"
+              colour="blue"
+            />
+            <SummaryCard
+              label="Investment"
+              value={totalInvestment > 0 ? formatAUD(totalInvestment) : "—"}
+              sub="total deal value"
+              colour="amber"
+            />
+            <SummaryCard
+              label="Economic impact"
+              value={totalImpact > 0 ? formatAUD(totalImpact) : "—"}
+              sub="projected GDP contribution"
+              colour="emerald"
+            />
+            <SummaryCard
+              label="Jobs identified"
+              value={totalJobs > 0 ? totalJobs.toLocaleString() : "—"}
+              sub="across active deals"
+              colour="emerald"
+            />
+          </div>
+
+          {/* Navigation links */}
+          <div className="grid grid-cols-3 gap-3" data-testid="nav-links">
+            <NavLink href="/deals/list" label="Deals" sub="Browse the pipeline" />
+            <NavLink href="/sectors" label="Sectors" sub="By opportunity type" />
+            <NavLink href="/lga" label="LGA" sub="Local government areas" />
           </div>
         </div>
 
         {/* Right column — map */}
         <div
-          className="h-[500px] lg:h-full rounded-lg overflow-hidden bg-[#FAF9F7]"
+          className="h-[560px] lg:h-full rounded-lg overflow-hidden bg-[#FAF9F7]"
           data-testid="map-container"
         >
           <MapCanvas
@@ -216,16 +220,19 @@ function SummaryCard({
   );
 }
 
-function NavLink({ href, children }: { href: string; children: React.ReactNode }) {
+function NavLink({ href, label, sub }: { href: string; label: string; sub: string }) {
   return (
     <Link
       href={href}
-      className="text-sm px-4 py-2 border border-[#E8E6E3] text-[#2C2C2C]
-                 hover:border-[#C8C4BF] hover:bg-[#FAF9F7]
+      className="group flex flex-col bg-white border border-[#E8E6E3] px-4 py-3
+                 hover:border-[#7A6B5A] hover:bg-[#FAF9F7]
                  transition-colors duration-200
                  focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A]"
     >
-      {children} <span aria-hidden="true">&rarr;</span>
+      <span className="text-sm font-medium text-[#2C2C2C] group-hover:text-[#7A6B5A] transition-colors duration-200">
+        {label} <span aria-hidden="true" className="text-[#9A9A9A] group-hover:text-[#7A6B5A]">&rarr;</span>
+      </span>
+      <span className="text-[11px] text-[#9A9A9A] mt-0.5">{sub}</span>
     </Link>
   );
 }

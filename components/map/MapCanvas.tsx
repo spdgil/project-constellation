@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Map, {
   Source,
   Layer,
@@ -71,20 +71,29 @@ export function MapCanvas({
     [initialView],
   );
 
-  /** On load: resize (ensures container dimensions are correct), then
-   *  fit to explicit bounds, LGA data extent, or skip entirely. */
+  /* Track whether the initial fit has already run (prevent re-fires). */
+  const hasFittedRef = useRef(false);
+
+  /** On load: resize then fit to explicit bounds or LGA data extent. */
   const handleLoad = useCallback(() => {
     const map = mapRef.current;
     if (!map) return;
     map.resize();
 
+    if (hasFittedRef.current) return;
+
     /* Fit to caller-provided bounds (e.g. Queensland outline). */
     if (initialFitBounds) {
       map.fitBounds(initialFitBounds, { padding: 24, duration: 0 });
+      hasFittedRef.current = true;
       return;
     }
 
-    if (!fitBoundsOnLoad) return;
+    if (!fitBoundsOnLoad) {
+      hasFittedRef.current = true;
+      return;
+    }
+
     if (!boundaries.features.length) return;
 
     let minLng = Infinity;
@@ -108,6 +117,7 @@ export function MapCanvas({
       [[minLng, minLat], [maxLng, maxLat]],
       { padding: 48, duration: 0 },
     );
+    hasFittedRef.current = true;
   }, [boundaries, fitBoundsOnLoad, initialFitBounds]);
 
   /* ------------------------------------------------------------------ */
