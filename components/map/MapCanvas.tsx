@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import Map, {
   Source,
   Layer,
@@ -71,10 +71,14 @@ export function MapCanvas({
     [initialView],
   );
 
-  /* Track whether the initial fit has already run (prevent re-fires). */
+  /* Refs to keep handleLoad stable (no dependency-driven recreation).   */
   const hasFittedRef = useRef(false);
+  const boundariesRef = useRef(boundaries);
+  boundariesRef.current = boundaries;
 
-  /** On load: resize then fit to explicit bounds or LGA data extent. */
+  /** On load: resize then fit to explicit bounds or LGA data extent.
+   *  Uses refs so the callback identity never changes — prevents
+   *  react-map-gl from re-firing onLoad on every render.              */
   const handleLoad = useCallback(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -94,14 +98,15 @@ export function MapCanvas({
       return;
     }
 
-    if (!boundaries.features.length) return;
+    const feats = boundariesRef.current.features;
+    if (!feats.length) return;
 
     let minLng = Infinity;
     let maxLng = -Infinity;
     let minLat = Infinity;
     let maxLat = -Infinity;
 
-    for (const f of boundaries.features) {
+    for (const f of feats) {
       if (!f.geometry?.coordinates) continue;
       walkCoords(f.geometry.coordinates, (lng, lat) => {
         minLng = Math.min(minLng, lng);
@@ -118,7 +123,8 @@ export function MapCanvas({
       { padding: 48, duration: 0 },
     );
     hasFittedRef.current = true;
-  }, [boundaries, fitBoundsOnLoad, initialFitBounds]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialFitBounds, fitBoundsOnLoad]);
 
   /* ------------------------------------------------------------------ */
   /* Click handler: LGA fill layer → select; empty → deselect           */

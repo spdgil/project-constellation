@@ -121,7 +121,7 @@ export function HomeView({ deals: baseDeals }: HomeViewProps) {
       <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 lg:h-[860px]">
         {/* Left column — intro, summary cards, nav links */}
         <div
-          className="flex flex-col gap-6 pt-2"
+          className="flex flex-col gap-6 pt-16 lg:pt-24"
           data-testid="summary-bar"
         >
           {/* Introduction */}
