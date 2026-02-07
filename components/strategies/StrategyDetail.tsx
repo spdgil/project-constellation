@@ -57,6 +57,7 @@ export function StrategyDetail({
   const [isGrading, setIsGrading] = useState(false);
   const [gradeError, setGradeError] = useState<string | null>(null);
   const [gradeWarnings, setGradeWarnings] = useState<string[]>([]);
+  const [gradeDetailOpen, setGradeDetailOpen] = useState(false);
 
   // Build sector opportunity lookup for linked items
   const soById = new Map<string, SectorOpportunity>();
@@ -243,57 +244,10 @@ export function StrategyDetail({
             </section>
           )}
 
-          {/* Re-grade option when grade exists */}
-          {grade && hasContent && (
-            <section className="bg-white border border-t-0 border-[#E8E6E3] px-6 py-3">
-              <div className="flex items-center justify-between gap-4">
-                <p className="text-xs text-[#6B6B6B]">
-                  Graded: {grade.gradeLetter}
-                </p>
-                <button
-                  type="button"
-                  onClick={handleGrade}
-                  disabled={isGrading}
-                  className="text-xs text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A] disabled:opacity-50"
-                  data-testid="regrade-btn"
-                >
-                  {isGrading ? "Re-grading…" : "Re-grade strategy"}
-                </button>
-              </div>
-            </section>
-          )}
+          {/* Re-grade handled in sidebar grade card */}
 
           {/* Accordion sections */}
           <div className="bg-white border border-t-0 border-[#E8E6E3] px-6">
-            {/* Priority sectors */}
-            <AccordionSection
-              title="Priority sectors"
-              badge={String(prioritySectors.length)}
-              defaultOpen
-            >
-              <ul className="space-y-2 list-none p-0 m-0" data-testid="priority-sectors">
-                {prioritySectors.map((so) => (
-                  <li key={so.id}>
-                    <Link
-                      href={`/sectors/${so.id}`}
-                      className="flex items-start gap-2 group text-sm text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A] transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
-                    >
-                      {so.name}
-                    </Link>
-                    {so.sections["1"] && (
-                      <p className="text-xs text-[#6B6B6B] mt-0.5 line-clamp-2 ml-0">
-                        {so.sections["1"].slice(0, 160)}
-                        {so.sections["1"].length > 160 ? "…" : ""}
-                      </p>
-                    )}
-                  </li>
-                ))}
-                {prioritySectors.length === 0 && (
-                  <li className="text-sm text-[#6B6B6B]">No priority sectors linked.</li>
-                )}
-              </ul>
-            </AccordionSection>
-
             {/* Selection logic */}
             {s.selectionLogic && (
               <AccordionSection title="Selection logic" defaultOpen>
@@ -385,97 +339,7 @@ export function StrategyDetail({
               </AccordionSection>
             )}
 
-            {/* Grade and evidence */}
-            {grade && (
-              <AccordionSection title="Strategy grade and evidence" defaultOpen>
-                <div className="space-y-5" data-testid="grade-section">
-                  {/* Grading warnings */}
-                  {gradeWarnings.length > 0 && (
-                    <div className="bg-amber-50 border border-amber-200 px-4 py-3 space-y-1">
-                      <p className="text-xs font-medium text-amber-800">
-                        Grading completed with {gradeWarnings.length}{" "}
-                        {gradeWarnings.length === 1 ? "warning" : "warnings"}:
-                      </p>
-                      <ul className="list-disc list-inside space-y-0.5">
-                        {gradeWarnings.map((w, i) => (
-                          <li key={i} className="text-xs text-amber-700">
-                            {w}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  {/* Grade summary */}
-                  <div className="flex items-start gap-4">
-                    <div
-                      className={`flex items-center justify-center w-14 h-14 text-xl font-heading font-medium shrink-0 ${GRADE_COLOUR_CLASSES[grade.gradeLetter]}`}
-                    >
-                      {grade.gradeLetter}
-                    </div>
-                    <div className="space-y-1 min-w-0">
-                      <p className={labelClass}>Grade rationale</p>
-                      <p className={bodyClass}>{grade.gradeRationaleShort}</p>
-                    </div>
-                  </div>
-
-                  {/* Scope discipline notes */}
-                  {grade.scopeDisciplineNotes && (
-                    <div>
-                      <p className={labelClass}>Scope discipline</p>
-                      <p className={`${bodyClass} mt-1`}>
-                        {grade.scopeDisciplineNotes}
-                      </p>
-                    </div>
-                  )}
-
-                  {/* Evidence by component */}
-                  <div className="border-t border-[#E8E6E3] pt-4">
-                    <p className={`${labelClass} mb-3`}>Evidence by blueprint component</p>
-                    <div className="space-y-3">
-                      {COMPONENT_IDS.map((cid) => {
-                        const note = grade.evidenceNotesByComponent[cid];
-                        if (!note) return null;
-                        const domains = STRATEGY_COMPONENT_EDDT_DOMAINS[cid];
-
-                        return (
-                          <div
-                            key={cid}
-                            className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-0.5"
-                          >
-                            <span className="text-xs font-medium text-[#2C2C2C] whitespace-nowrap">
-                              {cid}. {STRATEGY_COMPONENT_NAMES[cid]}
-                            </span>
-                            <span className="text-xs text-[#6B6B6B]">
-                              {domains.join(", ")}
-                            </span>
-                            <span />
-                            <p className={bodyClass}>{note}</p>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Missing elements */}
-                  {grade.missingElements.length > 0 && (
-                    <div className="border-t border-[#E8E6E3] pt-4">
-                      <p className={`${labelClass} mb-2`}>Missing elements</p>
-                      <ul className="space-y-1 list-none p-0 m-0">
-                        {grade.missingElements.map((me, i) => (
-                          <li key={i} className={bodyClass}>
-                            <span className="font-medium">
-                              Component {me.componentId}:
-                            </span>{" "}
-                            {me.reason}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              </AccordionSection>
-            )}
+            {/* Grade and evidence — rendered in sidebar instead */}
           </div>
         </div>
 
@@ -485,22 +349,139 @@ export function StrategyDetail({
           {grade ? (
             <div className={cardClass} data-testid="sidebar-grade-card">
               <p className={labelClass}>Strategy grade</p>
-              <div className="flex items-center gap-3">
+              <p className="text-xs text-[#6B6B6B] leading-relaxed">
+                AI assessment against the six-component blueprint for sector
+                development strategies.
+              </p>
+
+              {/* Grading warnings */}
+              {gradeWarnings.length > 0 && (
+                <div className="bg-amber-50 border border-amber-200 px-3 py-2 space-y-1">
+                  <p className="text-[10px] font-medium text-amber-800">
+                    {gradeWarnings.length}{" "}
+                    {gradeWarnings.length === 1 ? "warning" : "warnings"}
+                  </p>
+                  <ul className="list-disc list-inside space-y-0.5">
+                    {gradeWarnings.map((w, i) => (
+                      <li key={i} className="text-[10px] text-amber-700">
+                        {w}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Grade letter + rationale (always visible) */}
+              <div className="flex items-start gap-3 border-t border-[#E8E6E3] pt-3">
                 <div
-                  className={`flex items-center justify-center w-10 h-10 text-lg font-heading font-medium ${GRADE_COLOUR_CLASSES[grade.gradeLetter]}`}
+                  className={`flex items-center justify-center w-12 h-12 text-lg font-heading font-medium shrink-0 ${GRADE_COLOUR_CLASSES[grade.gradeLetter]}`}
                 >
                   {grade.gradeLetter}
                 </div>
-                <p className={`${bodyClass} line-clamp-3`}>
-                  {grade.gradeRationaleShort}
-                </p>
+                <div className="space-y-1 min-w-0">
+                  <p className={labelClass}>Rationale</p>
+                  <p className={bodyClass}>{grade.gradeRationaleShort}</p>
+                </div>
               </div>
+
+              {/* Disclosure toggle */}
+              <button
+                type="button"
+                onClick={() => setGradeDetailOpen((v) => !v)}
+                className="flex items-center gap-1.5 text-xs text-[#7A6B5A] hover:text-[#5A4B3A] transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2"
+                aria-expanded={gradeDetailOpen}
+                data-testid="grade-detail-toggle"
+              >
+                <svg
+                  className={`w-3 h-3 transition-transform duration-200 ${gradeDetailOpen ? "rotate-90" : ""}`}
+                  viewBox="0 0 12 12"
+                  fill="none"
+                  aria-hidden="true"
+                >
+                  <path
+                    d="M4 2l4 4-4 4"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+                {gradeDetailOpen ? "Hide detail" : "Show detail"}
+              </button>
+
+              {/* Collapsible detail section */}
+              {gradeDetailOpen && (
+                <div className="space-y-3">
+                  {/* Scope discipline */}
+                  {grade.scopeDisciplineNotes && (
+                    <div className="border-t border-[#E8E6E3] pt-3">
+                      <p className={labelClass}>Scope discipline</p>
+                      <p className={`${bodyClass} mt-1`}>
+                        {grade.scopeDisciplineNotes}
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Evidence by component */}
+                  <div className="border-t border-[#E8E6E3] pt-3">
+                    <p className={`${labelClass} mb-2`}>Evidence by component</p>
+                    <div className="space-y-2">
+                      {COMPONENT_IDS.map((cid) => {
+                        const note = grade.evidenceNotesByComponent[cid];
+                        if (!note) return null;
+                        return (
+                          <div key={cid}>
+                            <p className="text-[10px] font-medium text-[#2C2C2C]">
+                              {cid}. {STRATEGY_COMPONENT_NAMES[cid]}
+                            </p>
+                            <p className="text-xs text-[#6B6B6B] leading-relaxed mt-0.5">
+                              {note}
+                            </p>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* Missing elements */}
+                  {grade.missingElements.length > 0 && (
+                    <div className="border-t border-[#E8E6E3] pt-3">
+                      <p className={`${labelClass} mb-2`}>Missing elements</p>
+                      <ul className="space-y-1 list-none p-0 m-0">
+                        {grade.missingElements.map((me, i) => (
+                          <li key={i} className="text-xs text-[#6B6B6B] leading-relaxed">
+                            <span className="font-medium text-[#2C2C2C]">
+                              Component {me.componentId}:
+                            </span>{" "}
+                            {me.reason}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Re-grade */}
+              {hasContent && (
+                <div className="border-t border-[#E8E6E3] pt-3">
+                  <button
+                    type="button"
+                    onClick={handleGrade}
+                    disabled={isGrading}
+                    className="text-xs text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A] disabled:opacity-50"
+                    data-testid="regrade-btn"
+                  >
+                    {isGrading ? "Re-grading…" : "Re-grade strategy"}
+                  </button>
+                </div>
+              )}
             </div>
           ) : hasContent ? (
             <div className={cardClass} data-testid="sidebar-grade-prompt">
               <p className={labelClass}>Strategy grade</p>
               <p className="text-xs text-[#6B6B6B] leading-relaxed">
-                Not yet graded.
+                AI assessment against the six-component blueprint. Not yet graded.
               </p>
               <button
                 type="button"
@@ -516,17 +497,26 @@ export function StrategyDetail({
 
           {/* Priority sectors card */}
           {prioritySectors.length > 0 && (
-            <div className={cardClass}>
+            <div className={cardClass} data-testid="sidebar-priority-sectors">
               <p className={labelClass}>Priority sectors</p>
-              <ul className="space-y-2 list-none p-0 m-0">
+              <p className="text-xs text-[#6B6B6B] leading-relaxed">
+                {prioritySectors.length} sectors identified by this strategy as
+                adjacent or growth opportunities for the region.
+              </p>
+              <ul className="space-y-3 list-none p-0 m-0 border-t border-[#E8E6E3] pt-3">
                 {prioritySectors.map((so) => (
                   <li key={so.id}>
                     <Link
                       href={`/sectors/${so.id}`}
-                      className="text-sm text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A] transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
+                      className="text-sm font-medium text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A] transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
                     >
                       {so.name}
                     </Link>
+                    {so.sections["1"] && (
+                      <p className="text-xs text-[#6B6B6B] leading-relaxed mt-0.5 line-clamp-2">
+                        {so.sections["1"]}
+                      </p>
+                    )}
                   </li>
                 ))}
               </ul>
