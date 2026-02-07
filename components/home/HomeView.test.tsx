@@ -237,7 +237,6 @@ describe("HomeView", () => {
     );
 
     expect(screen.getByRole("link", { name: /view all deals/i })).toHaveAttribute("href", "/deals");
-    expect(screen.getByRole("link", { name: /opportunities/i })).toHaveAttribute("href", "/opportunities");
     expect(screen.getByRole("link", { name: /new deal from document/i })).toHaveAttribute("href", "/deals/memo");
   });
 

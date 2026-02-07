@@ -327,32 +327,43 @@ export function DealDetail({
           &larr; Back to deals
         </Link>
         <div className="flex items-center gap-2">
-          {isSaving && (
-            <span className="text-xs text-[#7A6B5A] px-2 py-1 border border-[#E8E6E3] bg-[#F5F3F0]">
-              Saving…
-            </span>
+          {isEditing ? (
+            <>
+              {isSaving && (
+                <span className="text-xs text-[#7A6B5A] flex items-center gap-1.5">
+                  <span className="inline-block h-3 w-3 border-[1.5px] border-[#E8E6E3] border-t-[#7A6B5A] rounded-full animate-spin" />
+                  Saving
+                </span>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(true)}
+                aria-label="Delete deal"
+                className="h-9 px-3 text-sm text-[#9A9A9A] hover:text-red-600 transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
+              >
+                Delete
+              </button>
+              <button
+                type="button"
+                onClick={toggleEditing}
+                data-testid="mode-toggle"
+                aria-label="Save and exit edit mode"
+                className="h-9 px-4 text-sm font-medium bg-[#7A6B5A] text-white hover:bg-[#5A4B3A] border border-[#7A6B5A] transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
+              >
+                Done
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              onClick={toggleEditing}
+              data-testid="mode-toggle"
+              aria-label="Switch to edit mode"
+              className="h-9 px-4 text-sm border border-[#E8E6E3] bg-transparent text-[#2C2C2C] hover:border-[#7A6B5A] hover:text-[#7A6B5A] transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
+            >
+              Edit
+            </button>
           )}
-          <button
-            type="button"
-            onClick={() => setShowDeleteConfirm(true)}
-            aria-label="Delete deal"
-            className="h-9 px-3 text-sm border border-[#E8E6E3] bg-transparent text-red-600 hover:border-red-300 hover:bg-red-50 transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
-          >
-            Delete
-          </button>
-          <button
-            type="button"
-            onClick={toggleEditing}
-            aria-label={isEditing ? "Switch to view mode" : "Switch to edit mode"}
-            data-testid="mode-toggle"
-            className={`h-9 px-3 text-sm border transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7] ${
-              isEditing
-                ? "border-[#2C2C2C] bg-[#2C2C2C] text-white hover:bg-[#444]"
-                : "border-[#E8E6E3] bg-transparent text-[#2C2C2C] hover:border-[#9A9A9A]"
-            }`}
-          >
-            {isEditing ? "Editing" : "Edit"}
-          </button>
         </div>
       </div>
 

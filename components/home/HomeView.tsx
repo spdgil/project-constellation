@@ -195,15 +195,11 @@ function OverviewTab({
         <SectionHeading>By opportunity type</SectionHeading>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {otSummaries.map(({ ot, deals: otDeals, investment, readinessDist: dist, topConstraint }) => (
-            <Link
+            <div
               key={ot.id}
-              href={`/opportunities/${ot.id}`}
-              className="group block bg-white border border-[#E8E6E3] p-5
-                         hover:border-[#C8C4BF] hover:shadow-sm
-                         transition-all duration-200 ease-out
-                         focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A]"
+              className="bg-white border border-[#E8E6E3] p-5"
             >
-              <p className="text-sm font-medium text-[#2C2C2C] mb-3 group-hover:underline underline-offset-2">
+              <p className="text-sm font-medium text-[#2C2C2C] mb-3">
                 {ot.name}
               </p>
 
@@ -235,7 +231,7 @@ function OverviewTab({
                   {CONSTRAINT_LABELS[topConstraint[0]]}
                 </span>
               )}
-            </Link>
+            </div>
           ))}
         </div>
       </section>
@@ -300,7 +296,6 @@ function OverviewTab({
       {/* ── Quick actions ──────────────────────────────────── */}
       <div className="flex flex-wrap gap-3 pt-2">
         <ActionLink href="/deals">View all deals</ActionLink>
-        <ActionLink href="/opportunities">Opportunities</ActionLink>
         <ActionLink href="/deals/memo">New deal from document</ActionLink>
       </div>
     </div>

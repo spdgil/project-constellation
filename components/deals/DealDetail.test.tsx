@@ -231,7 +231,7 @@ describe("DealDetail", () => {
     // Toggle to edit mode
     fireEvent.click(screen.getByTestId("mode-toggle"));
 
-    expect(screen.getByTestId("mode-toggle")).toHaveTextContent("Editing");
+    expect(screen.getByTestId("mode-toggle")).toHaveTextContent("Done");
     expect(screen.getByLabelText("Readiness state")).toBeInTheDocument();
     expect(screen.getByLabelText("Dominant constraint")).toBeInTheDocument();
   });
