@@ -45,6 +45,78 @@ const cardClass = "bg-white border border-[#E8E6E3] p-5 space-y-3";
 const labelClass = "text-[10px] uppercase tracking-wider text-[#6B6B6B] font-medium";
 const bodyClass = "text-sm text-[#2C2C2C] leading-relaxed";
 
+/** Progressive disclosure for selection logic within the priority sectors section. */
+function SelectionLogicDisclosure({
+  selectionLogic,
+}: {
+  selectionLogic: NonNullable<SectorDevelopmentStrategy["selectionLogic"]>;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="border-t border-[#E8E6E3] pt-3">
+      <button
+        type="button"
+        onClick={() => setOpen((v) => !v)}
+        className="flex items-center gap-1.5 text-xs text-[#7A6B5A] hover:text-[#5A4B3A] transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2"
+        aria-expanded={open}
+      >
+        <svg
+          className={`w-3 h-3 transition-transform duration-200 ${open ? "rotate-90" : ""}`}
+          viewBox="0 0 12 12"
+          fill="none"
+          aria-hidden="true"
+        >
+          <path
+            d="M4 2l4 4-4 4"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+        {open ? "Hide selection logic" : "How were these sectors selected?"}
+      </button>
+
+      {open && (
+        <div className="space-y-4 mt-3">
+          {selectionLogic.adjacentDefinition && (
+            <div>
+              <p className={labelClass}>Adjacent sector definition</p>
+              <p className={`${bodyClass} mt-1`}>
+                {selectionLogic.adjacentDefinition}
+              </p>
+            </div>
+          )}
+          {selectionLogic.growthDefinition && (
+            <div>
+              <p className={labelClass}>Growth sector definition</p>
+              <p className={`${bodyClass} mt-1`}>
+                {selectionLogic.growthDefinition}
+              </p>
+            </div>
+          )}
+          {selectionLogic.criteria.length > 0 && (
+            <div>
+              <p className={labelClass}>Selection criteria</p>
+              <div className="flex flex-wrap gap-1.5 mt-1">
+                {selectionLogic.criteria.map((c) => (
+                  <span
+                    key={c}
+                    className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 bg-[#F5F3F0] text-[#6B6B6B] border border-[#E8E6E3]"
+                  >
+                    {humanise(c)}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function StrategyDetail({
   strategy: s,
   grade: initialGrade,
@@ -248,96 +320,83 @@ export function StrategyDetail({
 
           {/* Accordion sections */}
           <div className="bg-white border border-t-0 border-[#E8E6E3] px-6">
-            {/* Selection logic */}
-            {s.selectionLogic && (
-              <AccordionSection title="Selection logic" defaultOpen>
-                <div className="space-y-4">
-                  {s.selectionLogic.adjacentDefinition && (
-                    <div>
-                      <p className={labelClass}>Adjacent sector definition</p>
-                      <p className={`${bodyClass} mt-1`}>
-                        {s.selectionLogic.adjacentDefinition}
-                      </p>
-                    </div>
-                  )}
-                  {s.selectionLogic.growthDefinition && (
-                    <div>
-                      <p className={labelClass}>Growth sector definition</p>
-                      <p className={`${bodyClass} mt-1`}>
-                        {s.selectionLogic.growthDefinition}
-                      </p>
-                    </div>
-                  )}
-                  {s.selectionLogic.criteria.length > 0 && (
-                    <div>
-                      <p className={labelClass}>Selection criteria</p>
-                      <div className="flex flex-wrap gap-1.5 mt-1">
-                        {s.selectionLogic.criteria.map((c) => (
-                          <span
-                            key={c}
-                            className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 bg-[#F5F3F0] text-[#6B6B6B] border border-[#E8E6E3]"
-                          >
-                            {humanise(c)}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </AccordionSection>
-            )}
-
-            {/* Cross-cutting action themes */}
-            {s.crossCuttingThemes.length > 0 && (
-              <AccordionSection title="Cross-cutting action themes" defaultOpen={false}>
-                <div className="flex flex-wrap gap-1.5">
-                  {s.crossCuttingThemes.map((theme) => (
-                    <span
-                      key={theme}
-                      className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 bg-[#F5F3F0] text-[#6B6B6B] border border-[#E8E6E3]"
+            {/* Priority sectors with nested selection logic */}
+            <AccordionSection
+              title="Priority sectors"
+              badge={String(prioritySectors.length)}
+              defaultOpen
+            >
+              <div className="space-y-4">
+                <p className="text-xs text-[#6B6B6B] leading-relaxed">
+                  Sectors identified by this strategy as adjacent or growth
+                  opportunities for the region.
+                </p>
+                <div
+                  className="grid grid-cols-1 sm:grid-cols-2 gap-3"
+                  data-testid="priority-sectors"
+                >
+                  {prioritySectors.map((so) => (
+                    <Link
+                      key={so.id}
+                      href={`/sectors/${so.id}`}
+                      className="group block border border-[#E8E6E3] bg-[#FAF9F7] p-3 space-y-1.5 hover:border-[#7A6B5A] hover:bg-white transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                     >
-                      {humanise(theme)}
-                    </span>
-                  ))}
-                </div>
-              </AccordionSection>
-            )}
-
-            {/* Stakeholder categories */}
-            {s.stakeholderCategories.length > 0 && (
-              <AccordionSection title="Stakeholder categories" defaultOpen={false}>
-                <div className="flex flex-wrap gap-1.5">
-                  {s.stakeholderCategories.map((cat) => (
-                    <span
-                      key={cat}
-                      className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 bg-[#F5F3F0] text-[#6B6B6B] border border-[#E8E6E3]"
-                    >
-                      {humanise(cat)}
-                    </span>
-                  ))}
-                </div>
-              </AccordionSection>
-            )}
-
-            {/* Blueprint components (strategy content, if any) */}
-            {COMPONENT_IDS.some((cid) => s.components[cid]) && (
-              <AccordionSection title="Blueprint components" defaultOpen={false}>
-                <div className="space-y-4">
-                  {COMPONENT_IDS.map((cid) => {
-                    const content = s.components[cid];
-                    if (!content) return null;
-                    return (
-                      <div key={cid}>
-                        <p className={labelClass}>
-                          {cid}. {STRATEGY_COMPONENT_NAMES[cid]}
+                      <p className="text-sm font-medium text-[#2C2C2C] group-hover:text-[#7A6B5A] transition duration-300 ease-out">
+                        {so.name}
+                      </p>
+                      {so.sections["1"] && (
+                        <p className="text-xs text-[#6B6B6B] leading-relaxed line-clamp-2">
+                          {so.sections["1"]}
                         </p>
-                        <p className={`${bodyClass} mt-1`}>{content}</p>
-                      </div>
-                    );
-                  })}
+                      )}
+                      {so.tags.length > 0 && (
+                        <div className="flex flex-wrap gap-1 pt-0.5">
+                          {so.tags.slice(0, 3).map((tag) => (
+                            <span
+                              key={tag}
+                              className="text-[9px] uppercase tracking-wider px-1 py-0.5 bg-white text-[#6B6B6B] border border-[#E8E6E3]"
+                            >
+                              {tag}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </Link>
+                  ))}
                 </div>
-              </AccordionSection>
-            )}
+                {prioritySectors.length === 0 && (
+                  <p className="text-sm text-[#6B6B6B]">No priority sectors linked.</p>
+                )}
+
+                {/* Selection logic — progressive disclosure */}
+                {s.selectionLogic && (
+                  <SelectionLogicDisclosure selectionLogic={s.selectionLogic} />
+                )}
+              </div>
+            </AccordionSection>
+
+            {/* Blueprint components — each as its own accordion */}
+            {COMPONENT_IDS.map((cid) => {
+              const content = s.components[cid];
+              if (!content) return null;
+              const domains = STRATEGY_COMPONENT_EDDT_DOMAINS[cid];
+              return (
+                <AccordionSection
+                  key={cid}
+                  title={`${cid}. ${STRATEGY_COMPONENT_NAMES[cid]}`}
+                  badge={domains.join(" · ")}
+                  defaultOpen={cid === "1"}
+                >
+                  <div className="space-y-2">
+                    {content.split("\n\n").map((para, i) => (
+                      <p key={i} className={bodyClass}>
+                        {para}
+                      </p>
+                    ))}
+                  </div>
+                </AccordionSection>
+              );
+            })}
 
             {/* Grade and evidence — rendered in sidebar instead */}
           </div>
@@ -495,33 +554,7 @@ export function StrategyDetail({
             </div>
           ) : null}
 
-          {/* Priority sectors card */}
-          {prioritySectors.length > 0 && (
-            <div className={cardClass} data-testid="sidebar-priority-sectors">
-              <p className={labelClass}>Priority sectors</p>
-              <p className="text-xs text-[#6B6B6B] leading-relaxed">
-                {prioritySectors.length} sectors identified by this strategy as
-                adjacent or growth opportunities for the region.
-              </p>
-              <ul className="space-y-3 list-none p-0 m-0 border-t border-[#E8E6E3] pt-3">
-                {prioritySectors.map((so) => (
-                  <li key={so.id}>
-                    <Link
-                      href={`/sectors/${so.id}`}
-                      className="text-sm font-medium text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A] transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
-                    >
-                      {so.name}
-                    </Link>
-                    {so.sections["1"] && (
-                      <p className="text-xs text-[#6B6B6B] leading-relaxed mt-0.5 line-clamp-2">
-                        {so.sections["1"]}
-                      </p>
-                    )}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+          {/* Priority sectors moved to left panel */}
 
           {/* EDDT visual */}
           <div className={cardClass}>

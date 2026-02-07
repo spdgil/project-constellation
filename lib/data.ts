@@ -80,6 +80,7 @@ interface RawStrategy {
   type?: string;
   sourceDocument?: string;
   summary?: string;
+  components?: Record<string, string>;
   prioritySectorIds?: string[];
   selectionLogic?: {
     adjacentDefinition?: string;
@@ -108,7 +109,14 @@ export async function loadStrategies(): Promise<SectorDevelopmentStrategy[]> {
     status: "published" as const,
     sourceDocument: r.sourceDocument,
     summary: r.summary ?? "",
-    components: { "1": "", "2": "", "3": "", "4": "", "5": "", "6": "" },
+    components: {
+      "1": r.components?.["1"] ?? "",
+      "2": r.components?.["2"] ?? "",
+      "3": r.components?.["3"] ?? "",
+      "4": r.components?.["4"] ?? "",
+      "5": r.components?.["5"] ?? "",
+      "6": r.components?.["6"] ?? "",
+    },
     selectionLogic: r.selectionLogic
       ? {
           adjacentDefinition: r.selectionLogic.adjacentDefinition,

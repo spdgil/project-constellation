@@ -295,6 +295,19 @@ describe("GW3 strategy rendering completeness", () => {
     }
   });
 
+  it("strategy has all 6 blueprint components with 2+ paragraphs each", async () => {
+    const strategies = await loadStrategies();
+    const gw3 = strategies[0];
+    const componentIds: StrategyComponentId[] = ["1", "2", "3", "4", "5", "6"];
+    for (const cid of componentIds) {
+      const content = gw3.components[cid];
+      expect(content.length).toBeGreaterThan(100);
+      // Each component should have at least 2 paragraphs (separated by \n\n)
+      const paragraphs = content.split("\n\n").filter((p) => p.trim().length > 0);
+      expect(paragraphs.length).toBeGreaterThanOrEqual(2);
+    }
+  });
+
   it("every sector opportunity has all 10 sections with content", async () => {
     const sos = await loadSectorOpportunities();
     const sectionIds: SectorOpportunitySectionId[] = [
