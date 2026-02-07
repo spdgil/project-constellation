@@ -61,6 +61,7 @@ describe("DealSidebar", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[baseDeal]}
+        sectorOpportunities={[]}
       />
     );
 
@@ -77,6 +78,7 @@ describe("DealSidebar", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[baseDeal]}
+        sectorOpportunities={[]}
       />
     );
 
@@ -93,6 +95,7 @@ describe("DealSidebar", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[baseDeal, relatedDeal]}
+        sectorOpportunities={[]}
       />
     );
 
@@ -108,6 +111,7 @@ describe("DealSidebar", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[baseDeal]}
+        sectorOpportunities={[]}
       />
     );
 

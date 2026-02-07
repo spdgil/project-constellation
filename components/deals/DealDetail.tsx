@@ -8,6 +8,7 @@ import type {
   DealDocument,
   LGA,
   OpportunityType,
+  SectorOpportunity,
   ReadinessState,
   Constraint,
   GateStatus,
@@ -31,6 +32,7 @@ import { formatDate } from "@/lib/format";
 import { AccordionSection } from "@/components/ui/AccordionSection";
 import { DealHero } from "./DealHero";
 import { DealSidebar } from "./DealSidebar";
+import { DealPathwayStepper } from "./DealPathwayStepper";
 
 const ARTEFACT_STATUS_CYCLE: ArtefactStatus[] = ["not-started", "in-progress", "complete"];
 
@@ -64,6 +66,7 @@ export interface DealDetailProps {
   opportunityTypes: OpportunityType[];
   lgas: LGA[];
   allDeals: Deal[];
+  sectorOpportunities: SectorOpportunity[];
 }
 
 /**
@@ -80,6 +83,7 @@ export function DealDetail({
   opportunityTypes,
   lgas,
   allDeals,
+  sectorOpportunities,
 }: DealDetailProps) {
   const router = useRouter();
   const [deal, setDeal] = useState<Deal | null>(initialDeal);
@@ -390,12 +394,26 @@ export function DealDetail({
         </div>
       )}
 
+      {/* Deal pathway — shows current stage in context */}
+      <DealPathwayStepper activeStageId={deal.stage} />
+
       {/* Two-column grid: main + sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main content (2/3) */}
         <div className="lg:col-span-2 space-y-0">
           {/* Hero card */}
-          <DealHero deal={deal} opportunityTypes={opportunityTypes} lgas={lgas} />
+          <DealHero
+            deal={deal}
+            opportunityTypes={opportunityTypes}
+            lgas={lgas}
+            isEditing={isEditing}
+            onSave={saveDealField}
+            onOptimisticUpdate={(patch) =>
+              setDeal((prev) =>
+                prev ? { ...prev, ...patch, updatedAt: new Date().toISOString() } : prev,
+              )
+            }
+          />
 
           {/* Edit-mode overrides for classification */}
           {isEditing && (
@@ -883,6 +901,7 @@ export function DealDetail({
               opportunityTypes={opportunityTypes}
               lgas={lgas}
               allDeals={allDeals}
+              sectorOpportunities={sectorOpportunities}
             />
           </div>
         </div>
@@ -890,3 +909,4 @@ export function DealDetail({
     </div>
   );
 }
+

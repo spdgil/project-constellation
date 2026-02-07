@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { DealHero } from "./DealHero";
 import type { Deal, LGA, OpportunityType } from "@/lib/types";
@@ -42,11 +42,21 @@ const mockDeal: Deal = {
   economicImpactDescription: "Part of critical minerals pipeline",
 };
 
+const noopSave = vi.fn();
+const noopUpdate = vi.fn();
+
+const defaultProps = {
+  deal: mockDeal,
+  opportunityTypes: mockOpportunityTypes,
+  lgas: mockLgas,
+  isEditing: false,
+  onSave: noopSave,
+  onOptimisticUpdate: noopUpdate,
+};
+
 describe("DealHero", () => {
   it("renders deal name as h1", () => {
-    render(
-      <DealHero deal={mockDeal} opportunityTypes={mockOpportunityTypes} lgas={mockLgas} />
-    );
+    render(<DealHero {...defaultProps} />);
 
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
       "RCOE FlexiLab pilot"
@@ -54,9 +64,7 @@ describe("DealHero", () => {
   });
 
   it("renders stage, readiness, and constraint badges", () => {
-    render(
-      <DealHero deal={mockDeal} opportunityTypes={mockOpportunityTypes} lgas={mockLgas} />
-    );
+    render(<DealHero {...defaultProps} />);
 
     expect(screen.getByText("Pre-feasibility")).toBeInTheDocument();
     expect(screen.getByText("Feasibility underway")).toBeInTheDocument();
@@ -64,18 +72,14 @@ describe("DealHero", () => {
   });
 
   it("renders opportunity type name and LGA names in meta line", () => {
-    render(
-      <DealHero deal={mockDeal} opportunityTypes={mockOpportunityTypes} lgas={mockLgas} />
-    );
+    render(<DealHero {...defaultProps} />);
 
     expect(screen.getByText(/Critical minerals/)).toBeInTheDocument();
     expect(screen.getByText(/Mackay/)).toBeInTheDocument();
   });
 
   it("renders description paragraphs when description is provided", () => {
-    render(
-      <DealHero deal={mockDeal} opportunityTypes={mockOpportunityTypes} lgas={mockLgas} />
-    );
+    render(<DealHero {...defaultProps} />);
 
     expect(screen.getByText("First paragraph.")).toBeInTheDocument();
     expect(screen.getByText("Second paragraph.")).toBeInTheDocument();
@@ -83,35 +87,51 @@ describe("DealHero", () => {
 
   it("falls back to summary when description is not provided", () => {
     const dealWithoutDesc = { ...mockDeal, description: undefined };
-    render(
-      <DealHero deal={dealWithoutDesc} opportunityTypes={mockOpportunityTypes} lgas={mockLgas} />
-    );
+    render(<DealHero {...defaultProps} deal={dealWithoutDesc} />);
 
     expect(screen.getByText("Pilot processing facility.")).toBeInTheDocument();
   });
 
-  it("renders investment value and economic impact", () => {
-    render(
-      <DealHero deal={mockDeal} opportunityTypes={mockOpportunityTypes} lgas={mockLgas} />
-    );
+  it("renders financial metrics with formatted values in view mode", () => {
+    render(<DealHero {...defaultProps} />);
 
-    expect(screen.getByText(/AUD \$5\.7M/)).toBeInTheDocument();
+    expect(screen.getByText(/\$5\.7M/)).toBeInTheDocument();
     expect(screen.getByText(/Queensland Government funding/)).toBeInTheDocument();
-    expect(screen.getByText(/AUD \$30000\.0M GDP/)).toBeInTheDocument();
+    expect(screen.getByText(/\$30B/)).toBeInTheDocument();
+  });
+
+  it("renders dashes for empty financial metrics", () => {
+    const emptyDeal = {
+      ...mockDeal,
+      investmentValueAmount: 0,
+      investmentValueDescription: "",
+      economicImpactAmount: 0,
+      economicImpactDescription: "",
+      economicImpactJobs: undefined,
+    };
+    render(<DealHero {...defaultProps} deal={emptyDeal} />);
+
+    const dashes = screen.getAllByText("—");
+    expect(dashes.length).toBe(3); // investment, impact, jobs
+  });
+
+  it("renders input fields in edit mode", () => {
+    render(<DealHero {...defaultProps} isEditing={true} />);
+
+    expect(screen.getByLabelText("Investment amount")).toBeInTheDocument();
+    expect(screen.getByLabelText("Investment description")).toBeInTheDocument();
+    expect(screen.getByLabelText("Economic impact amount")).toBeInTheDocument();
+    expect(screen.getByLabelText("Jobs count")).toBeInTheDocument();
   });
 
   it("renders key stakeholders", () => {
-    render(
-      <DealHero deal={mockDeal} opportunityTypes={mockOpportunityTypes} lgas={mockLgas} />
-    );
+    render(<DealHero {...defaultProps} />);
 
     expect(screen.getByText("QLD Government, Mining3")).toBeInTheDocument();
   });
 
   it("renders next step", () => {
-    render(
-      <DealHero deal={mockDeal} opportunityTypes={mockOpportunityTypes} lgas={mockLgas} />
-    );
+    render(<DealHero {...defaultProps} />);
 
     expect(screen.getByText("Secure offtake.")).toBeInTheDocument();
   });

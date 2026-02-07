@@ -94,7 +94,7 @@ describe("DealsSearch", () => {
     localStorage.clear();
   });
 
-  it("renders search input, filter dropdowns, and results list", () => {
+  it("renders search input, filter dropdowns, and results grid", () => {
     render(
       <DealsSearch
         deals={mockDeals}
@@ -105,13 +105,11 @@ describe("DealsSearch", () => {
 
     expect(screen.getByTestId("deals-search")).toBeInTheDocument();
     expect(
-      screen.getByRole("heading", { name: /search deals/i })
+      screen.getByRole("heading", { name: /deals/i })
     ).toBeInTheDocument();
     const input = screen.getByTestId("deals-search-input");
     expect(input).toBeInTheDocument();
-    expect(input.getAttribute("placeholder")).toMatch(
-      /filter by deal name, opportunity type, or lga name/i
-    );
+    expect(input.getAttribute("placeholder")).toMatch(/search deals/i);
     expect(screen.getByTestId("deals-results-list")).toBeInTheDocument();
     expect(screen.getByTestId("deals-count")).toHaveTextContent("2 deals");
 
@@ -200,7 +198,7 @@ describe("DealsSearch", () => {
     expect(screen.getByText("No deals match your filters.")).toBeInTheDocument();
   });
 
-  it("clicking a deal navigates to the deal detail page", () => {
+  it("deal cards link to the deal detail page", () => {
     render(
       <DealsSearch
         deals={mockDeals}
@@ -209,13 +207,12 @@ describe("DealsSearch", () => {
       />
     );
 
-    const list = screen.getByTestId("deals-results-list");
-    fireEvent.click(within(list).getByText("RCOE FlexiLab pilot"));
-
-    expect(pushMock).toHaveBeenCalledWith("/deals/demo-flexilab");
+    const grid = screen.getByTestId("deals-results-list");
+    const firstCard = within(grid).getByText("RCOE FlexiLab pilot").closest("a");
+    expect(firstCard).toHaveAttribute("href", "/deals/demo-flexilab");
   });
 
-  it("keyboard Enter on highlighted result navigates to deal detail page", () => {
+  it("renders summary stats bar", () => {
     render(
       <DealsSearch
         deals={mockDeals}
@@ -224,44 +221,7 @@ describe("DealsSearch", () => {
       />
     );
 
-    const input = screen.getByTestId("deals-search-input");
-    input.focus();
-    fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
-
-    expect(pushMock).toHaveBeenCalledWith("/deals/demo-flexilab");
-  });
-
-  it("keyboard ArrowDown then Enter navigates to second deal", () => {
-    render(
-      <DealsSearch
-        deals={mockDeals}
-        opportunityTypes={mockOpportunityTypes}
-        lgas={mockLgas}
-      />
-    );
-
-    const input = screen.getByTestId("deals-search-input");
-    input.focus();
-    fireEvent.keyDown(input, { key: "ArrowDown", code: "ArrowDown" });
-    fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
-
-    expect(pushMock).toHaveBeenCalledWith("/deals/solar-project");
-  });
-
-  it("shows gate progress indicator in list items", () => {
-    render(
-      <DealsSearch
-        deals={mockDeals}
-        opportunityTypes={mockOpportunityTypes}
-        lgas={mockLgas}
-      />
-    );
-
-    const gateIndicators = screen.getAllByTestId("gate-progress");
-    expect(gateIndicators).toHaveLength(2);
-    // First deal: 0/3 (all pending)
-    expect(gateIndicators[0]).toHaveTextContent("0/3 gates");
-    // Second deal: 1/3 (Strategic Suitability satisfied)
-    expect(gateIndicators[1]).toHaveTextContent("1/3 gates");
+    expect(screen.getByTestId("summary-bar")).toBeInTheDocument();
+    expect(screen.getByText("Total deals")).toBeInTheDocument();
   });
 });

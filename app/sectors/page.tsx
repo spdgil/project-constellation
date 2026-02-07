@@ -5,20 +5,7 @@ import {
 } from "@/lib/db/queries";
 import { SectorOpportunitiesIndex } from "@/components/sectors/SectorOpportunitiesIndex";
 import type { Deal, SectorDevelopmentStrategy } from "@/lib/types";
-
-/**
- * Map an opportunity-type ID (on deals) to the corresponding sector-opportunity
- * ID so we can aggregate deal stats per sector.
- */
-const OPP_TYPE_TO_SECTOR: Record<string, string> = {
-  "critical-minerals": "sector_opportunity_critical_minerals_value_chain",
-  "renewable-energy": "sector_opportunity_renewable_energy_services",
-  bioenergy: "sector_opportunity_bioenergy_biofuels",
-  biomanufacturing: "sector_opportunity_biomanufacturing",
-  "circular-economy": "sector_opportunity_circular_economy_mining_industrial",
-  space: "sector_opportunity_space_industrial_support",
-  "post-mining-land-use": "sector_opportunity_post_mining_land_use",
-};
+import { OPP_TYPE_TO_SECTOR } from "@/lib/colour-system";
 
 export interface SectorStats {
   dealCount: number;

@@ -90,13 +90,15 @@ describe("DealDetail", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[mockDeal]}
+        sectorOpportunities={[]}
       />
     );
 
     expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(
       "RCOE FlexiLab pilot"
     );
-    expect(screen.getByText("Pre-feasibility")).toBeInTheDocument();
+    // Stats bar and hero both show "Pre-feasibility"
+    expect(screen.getAllByText("Pre-feasibility").length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("Feasibility underway")).toBeInTheDocument();
   });
 
@@ -108,6 +110,7 @@ describe("DealDetail", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[mockDeal]}
+        sectorOpportunities={[]}
       />
     );
 
@@ -123,6 +126,7 @@ describe("DealDetail", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[mockDeal]}
+        sectorOpportunities={[]}
       />
     );
 
@@ -138,11 +142,13 @@ describe("DealDetail", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[mockDeal]}
+        sectorOpportunities={[]}
       />
     );
 
     expect(screen.getByText("Risks and challenges")).toBeInTheDocument();
-    expect(screen.getByText("2")).toBeInTheDocument();
+    // Badge "2" appears in multiple places (pathway stepper, risks count)
+    expect(screen.getAllByText("2").length).toBeGreaterThanOrEqual(1);
   });
 
   it("renders strategic actions accordion section", () => {
@@ -153,6 +159,7 @@ describe("DealDetail", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[mockDeal]}
+        sectorOpportunities={[]}
       />
     );
 
@@ -167,6 +174,7 @@ describe("DealDetail", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[mockDeal]}
+        sectorOpportunities={[]}
       />
     );
 
@@ -181,6 +189,7 @@ describe("DealDetail", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[mockDeal]}
+        sectorOpportunities={[]}
       />
     );
 
@@ -195,6 +204,7 @@ describe("DealDetail", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[mockDeal]}
+        sectorOpportunities={[]}
       />
     );
 
@@ -210,6 +220,7 @@ describe("DealDetail", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[mockDeal]}
+        sectorOpportunities={[]}
       />
     );
 
@@ -248,12 +259,14 @@ describe("DealDetail", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[dealWithDocs]}
+        sectorOpportunities={[]}
       />
     );
 
     // Accordion header visible with badge
     expect(screen.getByText("Document directory")).toBeInTheDocument();
-    expect(screen.getByText("1")).toBeInTheDocument(); // badge
+    // Badge "1" appears in multiple places (gate checklist, document directory)
+    expect(screen.getAllByText("1").length).toBeGreaterThanOrEqual(1);
 
     // Expand the accordion to see contents
     fireEvent.click(screen.getByText("Document directory"));
@@ -272,6 +285,7 @@ describe("DealDetail", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[mockDeal]}
+        sectorOpportunities={[]}
       />
     );
 
@@ -301,6 +315,7 @@ describe("DealDetail", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[mockDeal]}
+        sectorOpportunities={[]}
       />
     );
 
