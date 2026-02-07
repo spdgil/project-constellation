@@ -5,10 +5,8 @@ import { usePathname } from "next/navigation";
 
 const NAV_ITEMS = [
   { href: "/", label: "Home" },
-  { href: "/map", label: "Map" },
   { href: "/opportunities", label: "Opportunities" },
   { href: "/deals", label: "Deals" },
-  { href: "/state", label: "State" },
   { href: "/about", label: "About" },
 ] as const;
 
@@ -20,14 +18,19 @@ export function Header() {
       className="border-b bg-[#FAF9F7] border-[#E8E6E3]"
       role="banner"
     >
-      <div className="mx-auto max-w-screen-2xl px-4 sm:px-6 flex items-center gap-8 h-14">
-        <Link
-          href="/"
-          className="font-heading text-xl text-[#2C2C2C] underline-offset-2 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7] transition-[box-shadow] duration-200 ease-out"
-        >
-          Project Constellation
-        </Link>
-        <nav aria-label="Main" className="flex items-center gap-1">
+      <div className="mx-auto max-w-screen-2xl px-4 sm:px-6">
+        {/* App name — sits above the tabs */}
+        <div className="pt-3 pb-1">
+          <Link
+            href="/"
+            className="font-heading text-xl text-[#2C2C2C] underline-offset-2 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7] transition-[box-shadow] duration-200 ease-out"
+          >
+            Project Constellation
+          </Link>
+        </div>
+
+        {/* Navigation tabs */}
+        <nav aria-label="Main" className="flex items-center gap-1 -mb-px">
           {NAV_ITEMS.map(({ href, label }) => {
             const isActive =
               href === "/"
@@ -40,7 +43,7 @@ export function Header() {
                 href={href}
                 aria-current={isActive ? "page" : undefined}
                 className={`
-                  text-sm px-3 py-1.5
+                  text-sm px-3 py-2
                   focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]
                   transition duration-200 ease-out
                   ${

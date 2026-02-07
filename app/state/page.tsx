@@ -1,14 +1,15 @@
-import { loadPageData } from "@/lib/load-page-data";
-import { StateView } from "@/components/state/StateView";
+import { redirect } from "next/navigation";
 
-export default async function StatePage() {
-  const { lgas, deals, opportunityTypes } = await loadPageData("state page");
-
-  return (
-    <StateView
-      opportunityTypes={opportunityTypes}
-      deals={deals}
-      lgas={lgas}
-    />
-  );
+/**
+ * /state has been consolidated into the Home page.
+ * Redirect any old bookmarks or links.
+ */
+export default async function StatePage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const params = await searchParams;
+  if (params.tab === "map") redirect("/?tab=map");
+  redirect("/");
 }

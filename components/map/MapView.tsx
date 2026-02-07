@@ -8,7 +8,6 @@ import type { DealGeoPosition } from "./MapCanvas";
 import { DealDrawer } from "./DealDrawer";
 import { LgaPanel } from "./LgaPanel";
 import { LgaBottomSheet } from "./LgaBottomSheet";
-import Link from "next/link";
 
 const EMPTY_BOUNDARIES: GeoJSONFeatureCollection = {
   type: "FeatureCollection",
@@ -91,24 +90,9 @@ export function MapView({
     : null;
 
   return (
-    <div className="flex flex-col h-full min-h-[calc(100vh-8rem)]">
-      <div className="flex items-center justify-between gap-4 mb-2">
-        <h1 className="font-heading text-2xl font-normal leading-[1.3] text-[#2C2C2C]">
-          Explore by map
-        </h1>
-        <Link
-          href="/"
-          className="text-sm text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
-        >
-          Back to home
-        </Link>
-      </div>
-      <p className="text-sm text-[#6B6B6B] leading-relaxed mb-4">
-        Click a boundary or use the sidebar to explore LGA details and deals.
-      </p>
-
+    <div className="flex flex-col h-full min-h-0">
       {boundaryError && (
-        <p className="text-sm text-red-700 bg-red-50 border border-red-200 px-3 py-2 mb-4" role="alert">
+        <p className="text-sm text-red-700 bg-red-50 border border-red-200 px-3 py-2 mb-2" role="alert">
           {boundaryError}
         </p>
       )}

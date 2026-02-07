@@ -123,7 +123,7 @@ describe("MapView", () => {
     capturedMapProps = {};
   });
 
-  it("renders heading, description text, and LGA list", () => {
+  it("renders LGA sidebar and map canvas", () => {
     render(
       <MapView
         lgas={mockLgas}
@@ -132,13 +132,6 @@ describe("MapView", () => {
         boundaries={mockBoundaries}
       />,
     );
-
-    expect(
-      screen.getByRole("heading", { name: /explore by map/i }),
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/click a boundary or use the sidebar/i),
-    ).toBeInTheDocument();
 
     const nav = screen.getByRole("navigation", { name: /lga list/i });
     expect(nav).toBeInTheDocument();

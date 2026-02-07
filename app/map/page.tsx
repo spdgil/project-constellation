@@ -1,18 +1,9 @@
-import { loadPageData } from "@/lib/load-page-data";
-import { MapView } from "@/components/map/MapView";
+import { redirect } from "next/navigation";
 
 /**
- * Map page — loads core data server-side; boundaries are lazy-loaded
- * client-side via /api/boundaries to avoid shipping 900KB in the page bundle.
+ * /map now lives as a tab on the Home page.
+ * Redirect any old bookmarks or links.
  */
-export default async function MapPage() {
-  const { lgas, deals, opportunityTypes } = await loadPageData("map page");
-
-  return (
-    <MapView
-      lgas={lgas}
-      deals={deals}
-      opportunityTypes={opportunityTypes}
-    />
-  );
+export default function MapPage() {
+  redirect("/?tab=map");
 }

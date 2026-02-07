@@ -1,155 +1,21 @@
 import { loadPageData } from "@/lib/load-page-data";
-import { READINESS_LABELS, CONSTRAINT_LABELS } from "@/lib/labels";
-import type { ReadinessState, Constraint } from "@/lib/types";
+import { HomeView } from "@/components/home/HomeView";
 
-export default async function HomePage() {
+interface HomePageProps {
+  searchParams: Promise<{ tab?: string }>;
+}
+
+export default async function HomePage({ searchParams }: HomePageProps) {
   const { lgas, deals, opportunityTypes } = await loadPageData("home page");
-
-  /* Pipeline summary */
-  const readinessCounts: Record<string, number> = {};
-  for (const deal of deals) {
-    readinessCounts[deal.readinessState] =
-      (readinessCounts[deal.readinessState] ?? 0) + 1;
-  }
-
-  /* Top constraints */
-  const constraintCounts: Record<string, number> = {};
-  for (const deal of deals) {
-    constraintCounts[deal.dominantConstraint] =
-      (constraintCounts[deal.dominantConstraint] ?? 0) + 1;
-  }
-  const topConstraints = Object.entries(constraintCounts)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 3);
+  const params = await searchParams;
+  const tab = params.tab === "map" ? "map" : "overview";
 
   return (
-    <div>
-      {/* ------------------------------------------------------------ */}
-      {/* Hero                                                          */}
-      {/* ------------------------------------------------------------ */}
-      <section className="mb-16">
-        <h1 className="font-heading text-3xl sm:text-4xl font-normal leading-[1.25] text-[#2C2C2C] mb-2">
-          Project Constellation
-        </h1>
-        <p className="mt-1 text-sm text-[#6B6B6B] mb-8">
-          Place-and-project dashboard for the Greater Whitsunday region — {lgas.length} LGAs, {opportunityTypes.length} opportunity types, {deals.length} deal exemplars.
-        </p>
-
-        {/* Key figures */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-[#E8E6E3] border border-[#E8E6E3]">
-          <Stat value={`~$30bn`} label="Gross regional product" />
-          <Stat value={String(lgas.length)} label="LGAs" />
-          <Stat value={String(opportunityTypes.length)} label="Opportunity types" />
-          <Stat value={String(deals.length)} label="Deal exemplars" />
-        </div>
-      </section>
-
-      {/* ------------------------------------------------------------ */}
-      {/* Pipeline at a glance                                          */}
-      {/* ------------------------------------------------------------ */}
-      <section className="mb-16">
-        <h2 className="font-heading text-lg font-normal leading-[1.4] text-[#2C2C2C] mb-6">
-          Pipeline at a glance
-        </h2>
-        <div className="grid sm:grid-cols-2 gap-8">
-          {/* Readiness breakdown */}
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-3">
-              Deals by readiness
-            </p>
-            <ul className="list-none p-0 m-0 space-y-2">
-              {Object.entries(readinessCounts)
-                .sort((a, b) => b[1] - a[1])
-                .map(([state, count]) => (
-                  <li
-                    key={state}
-                    className="flex items-baseline justify-between gap-4 text-sm"
-                  >
-                    <span className="text-[#2C2C2C]">
-                      {READINESS_LABELS[state as ReadinessState] ?? state}
-                    </span>
-                    <span className="text-[#6B6B6B] tabular-nums">{count}</span>
-                  </li>
-                ))}
-            </ul>
-          </div>
-
-          {/* Top constraints */}
-          <div>
-            <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-3">
-              Most common constraints
-            </p>
-            <ul className="list-none p-0 m-0 space-y-2">
-              {topConstraints.map(([constraint, count]) => (
-                <li
-                  key={constraint}
-                  className="flex items-baseline justify-between gap-4 text-sm"
-                >
-                  <span className="text-[#2C2C2C]">
-                    {CONSTRAINT_LABELS[constraint as Constraint] ?? constraint}
-                  </span>
-                  <span className="text-[#6B6B6B] tabular-nums">{count}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-        </div>
-      </section>
-
-      {/* ------------------------------------------------------------ */}
-      {/* LGA snapshots                                                 */}
-      {/* ------------------------------------------------------------ */}
-      <section className="mb-16">
-        <h2 className="font-heading text-lg font-normal leading-[1.4] text-[#2C2C2C] mb-6">
-          Greater Whitsunday LGAs
-        </h2>
-        <div className="grid sm:grid-cols-3 gap-4">
-          {lgas.map((lga) => {
-            const lgaDeals = deals.filter((d) => d.lgaIds.includes(lga.id));
-            const hypothesesCount = lga.opportunityHypotheses?.length ?? 0;
-            return (
-              <div
-                key={lga.id}
-                className="bg-white border border-[#E8E6E3] p-5"
-              >
-                <h3 className="font-heading text-base font-normal leading-[1.4] text-[#2C2C2C] mb-2">
-                  {lga.name}
-                </h3>
-                <p className="text-xs text-[#6B6B6B] leading-relaxed mb-4 line-clamp-3">
-                  {lga.summary?.split(". ").slice(0, 2).join(". ")}.
-                </p>
-                <div className="flex items-center gap-4 text-xs text-[#6B6B6B]">
-                  <span>
-                    {lgaDeals.length} deal{lgaDeals.length !== 1 ? "s" : ""}
-                  </span>
-                  <span className="text-[#E8E6E3]">|</span>
-                  <span>
-                    {hypothesesCount} hypothes{hypothesesCount !== 1 ? "es" : "is"}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-    </div>
+    <HomeView
+      opportunityTypes={opportunityTypes}
+      deals={deals}
+      lgas={lgas}
+      initialTab={tab}
+    />
   );
 }
-
-/* -------------------------------------------------------------------- */
-/* Subcomponents                                                        */
-/* -------------------------------------------------------------------- */
-
-function Stat({ value, label }: { value: string; label: string }) {
-  return (
-    <div className="bg-white p-4 sm:p-5">
-      <p className="font-heading text-xl sm:text-2xl font-normal text-[#2C2C2C] mb-1">
-        {value}
-      </p>
-      <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
-        {label}
-      </p>
-    </div>
-  );
-}
-

@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState, useCallback, useId } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import type { Deal, LGA, OpportunityType } from "@/lib/types";
 import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
@@ -13,6 +14,21 @@ import {
 import { READINESS_LABELS } from "@/lib/labels";
 import { AccordionSection } from "@/components/ui/AccordionSection";
 
+// Lazy-load MapView to avoid shipping Mapbox JS when the user is on the
+// aggregation tab. SSR disabled because Mapbox requires browser APIs.
+const MapView = dynamic(
+  () => import("@/components/map/MapView").then((m) => m.MapView),
+  { ssr: false, loading: () => <div className="h-[600px] bg-[#FAF9F7] animate-pulse" /> },
+);
+
+const TABS = ["aggregation", "map"] as const;
+type Tab = (typeof TABS)[number];
+
+const TAB_LABELS: Record<Tab, string> = {
+  aggregation: "Aggregation",
+  map: "Map",
+};
+
 const SECTION_IDS = [
   "pipeline-by-ot",
   "constraint-by-ot",
@@ -23,14 +39,18 @@ export interface StateViewProps {
   opportunityTypes: OpportunityType[];
   deals: Deal[];
   lgas: LGA[];
+  /** Pre-selected tab (e.g. when navigating from /map redirect). */
+  initialTab?: Tab;
 }
 
 export function StateView({
   opportunityTypes,
   deals: baseDeals,
   lgas,
+  initialTab = "aggregation",
 }: StateViewProps) {
   const deals = useDealsWithOverrides(baseDeals);
+  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
 
   const toggleSection = useCallback((id: (typeof SECTION_IDS)[number]) => {
@@ -47,9 +67,9 @@ export function StateView({
 
   return (
     <div data-testid="state-view">
-      <div className="flex items-center justify-between gap-4 mb-6">
+      <div className="flex items-center justify-between gap-4 mb-4">
         <h1 className="font-heading text-2xl font-normal leading-[1.3] text-[#2C2C2C]">
-          State aggregation
+          State
         </h1>
         <Link
           href="/"
@@ -59,47 +79,87 @@ export function StateView({
         </Link>
       </div>
 
-      <p className="text-sm text-[#6B6B6B] leading-relaxed mb-4">
-        Aggregates are computed from deals and reflect local edits.
-      </p>
-
-      <div className="space-y-0 border border-[#E8E6E3] bg-[#FFFFFF]">
-        <AccordionSection
-          id="pipeline-by-ot"
-          heading="Pipeline summary by opportunity type"
-          expanded={isExpanded("pipeline-by-ot")}
-          onToggle={() => toggleSection("pipeline-by-ot")}
-          controlsId={`${panelId}-pipeline`}
-          headingLevel="h2"
-          contentClassName="px-4 pb-4"
-        >
-          <PipelineByOt deals={deals} opportunityTypes={opportunityTypes} />
-        </AccordionSection>
-
-        <AccordionSection
-          id="constraint-by-ot"
-          heading="Constraint summary by opportunity type"
-          expanded={isExpanded("constraint-by-ot")}
-          onToggle={() => toggleSection("constraint-by-ot")}
-          controlsId={`${panelId}-constraint-ot`}
-          headingLevel="h2"
-          contentClassName="px-4 pb-4"
-        >
-          <ConstraintByOt deals={deals} opportunityTypes={opportunityTypes} />
-        </AccordionSection>
-
-        <AccordionSection
-          id="constraint-by-lga"
-          heading="Constraint summary by LGA"
-          expanded={isExpanded("constraint-by-lga")}
-          onToggle={() => toggleSection("constraint-by-lga")}
-          controlsId={`${panelId}-constraint-lga`}
-          headingLevel="h2"
-          contentClassName="px-4 pb-4"
-        >
-          <ConstraintByLga deals={deals} lgas={lgas} />
-        </AccordionSection>
+      {/* Tab bar */}
+      <div className="flex gap-1 border-b border-[#E8E6E3] mb-4" role="tablist" aria-label="State view tabs">
+        {TABS.map((tab) => (
+          <button
+            key={tab}
+            type="button"
+            role="tab"
+            aria-selected={activeTab === tab}
+            onClick={() => setActiveTab(tab)}
+            className={`
+              text-sm px-4 py-2 -mb-px
+              focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]
+              transition duration-200 ease-out
+              ${
+                activeTab === tab
+                  ? "text-[#2C2C2C] border-b-2 border-[#2C2C2C] font-medium"
+                  : "text-[#6B6B6B] border-b-2 border-transparent hover:text-[#2C2C2C] hover:border-[#C8C4BF]"
+              }
+            `}
+          >
+            {TAB_LABELS[tab]}
+          </button>
+        ))}
       </div>
+
+      {/* Tab content */}
+      {activeTab === "aggregation" && (
+        <div>
+          <p className="text-sm text-[#6B6B6B] leading-relaxed mb-4">
+            Aggregates are computed from deals and reflect local edits.
+          </p>
+
+          <div className="space-y-0 border border-[#E8E6E3] bg-[#FFFFFF]">
+            <AccordionSection
+              id="pipeline-by-ot"
+              heading="Pipeline summary by opportunity type"
+              expanded={isExpanded("pipeline-by-ot")}
+              onToggle={() => toggleSection("pipeline-by-ot")}
+              controlsId={`${panelId}-pipeline`}
+              headingLevel="h2"
+              contentClassName="px-4 pb-4"
+            >
+              <PipelineByOt deals={deals} opportunityTypes={opportunityTypes} />
+            </AccordionSection>
+
+            <AccordionSection
+              id="constraint-by-ot"
+              heading="Constraint summary by opportunity type"
+              expanded={isExpanded("constraint-by-ot")}
+              onToggle={() => toggleSection("constraint-by-ot")}
+              controlsId={`${panelId}-constraint-ot`}
+              headingLevel="h2"
+              contentClassName="px-4 pb-4"
+            >
+              <ConstraintByOt deals={deals} opportunityTypes={opportunityTypes} />
+            </AccordionSection>
+
+            <AccordionSection
+              id="constraint-by-lga"
+              heading="Constraint summary by LGA"
+              expanded={isExpanded("constraint-by-lga")}
+              onToggle={() => toggleSection("constraint-by-lga")}
+              controlsId={`${panelId}-constraint-lga`}
+              headingLevel="h2"
+              contentClassName="px-4 pb-4"
+            >
+              <ConstraintByLga deals={deals} lgas={lgas} />
+            </AccordionSection>
+          </div>
+        </div>
+      )}
+
+      {activeTab === "map" && (
+        <div className="h-[calc(100vh-200px)] min-h-[500px]">
+          <MapView
+            lgas={lgas}
+            deals={deals}
+            opportunityTypes={opportunityTypes}
+          />
+        </div>
+      )}
     </div>
   );
 }
