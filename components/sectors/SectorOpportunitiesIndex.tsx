@@ -1,36 +1,166 @@
 "use client";
 
-import { useMemo, useState, useCallback, useRef, useEffect } from "react";
+import { useMemo, useState, useCallback } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import type { SectorOpportunity } from "@/lib/types";
-import { SECTOR_OPPORTUNITY_SECTION_NAMES } from "@/lib/types";
+
+/* -------------------------------------------------------------------------- */
+/* Types                                                                       */
+/* -------------------------------------------------------------------------- */
+
+export interface SectorStats {
+  dealCount: number;
+  totalInvestment: number;
+  totalEconomicImpact: number;
+  totalJobs: number;
+  strategyCount: number;
+}
 
 export interface SectorOpportunitiesIndexProps {
   sectorOpportunities: SectorOpportunity[];
+  sectorStats: Record<string, SectorStats>;
+  totalDeals: number;
+  totalStrategies: number;
 }
 
-/**
- * Humanise a snake_case tag into a readable label.
- * e.g. "energy_transition" → "Energy transition"
- */
+/* -------------------------------------------------------------------------- */
+/* Design-system colour families (monochromatic tinting)                       */
+/* See DESIGN_SYSTEM.md — amber, blue, violet, emerald                        */
+/* -------------------------------------------------------------------------- */
+
+type ColourFamily = "amber" | "blue" | "violet" | "emerald";
+
+/** Sector → colour family mapping (thematic). */
+const SECTOR_COLOUR: Record<string, ColourFamily> = {
+  sector_opportunity_critical_minerals_value_chain: "amber",
+  sector_opportunity_renewable_energy_services: "emerald",
+  sector_opportunity_bioenergy_biofuels: "emerald",
+  sector_opportunity_biomanufacturing: "blue",
+  sector_opportunity_circular_economy_mining_industrial: "violet",
+  sector_opportunity_space_industrial_support: "blue",
+  sector_opportunity_post_mining_land_use: "amber",
+};
+
+/** Tag → colour family mapping (by semantic category). */
+const TAG_COLOUR: Record<string, ColourFamily> = {
+  energy_transition: "emerald",
+  infrastructure: "blue",
+  operations_maintenance: "blue",
+  construction: "blue",
+  manufacturing: "blue",
+  advanced_manufacturing: "violet",
+  resources: "amber",
+  processing: "amber",
+  supply_chain: "amber",
+  bioeconomy: "emerald",
+  industrial_process: "amber",
+  fuels: "amber",
+  food: "violet",
+  bioprocess: "violet",
+  circular_economy: "violet",
+  industrial_services: "amber",
+  materials: "amber",
+  maintenance: "blue",
+  space: "blue",
+  operations: "blue",
+  standards: "violet",
+  mine_closure: "amber",
+  remediation: "amber",
+  land_use: "emerald",
+  environmental_services: "emerald",
+};
+
+/** Tailwind class sets per colour family. */
+const COLOUR_CLASSES: Record<
+  ColourFamily,
+  { border: string; bg: string; text: string; tagBg: string; tagText: string; tagBorder: string }
+> = {
+  amber: {
+    border: "border-l-amber-400",
+    bg: "bg-amber-50",
+    text: "text-amber-700",
+    tagBg: "bg-amber-50",
+    tagText: "text-amber-700",
+    tagBorder: "border-amber-200",
+  },
+  blue: {
+    border: "border-l-blue-400",
+    bg: "bg-blue-50",
+    text: "text-blue-700",
+    tagBg: "bg-blue-50",
+    tagText: "text-blue-700",
+    tagBorder: "border-blue-200",
+  },
+  violet: {
+    border: "border-l-violet-400",
+    bg: "bg-violet-50",
+    text: "text-violet-700",
+    tagBg: "bg-violet-50",
+    tagText: "text-violet-700",
+    tagBorder: "border-violet-200",
+  },
+  emerald: {
+    border: "border-l-emerald-400",
+    bg: "bg-emerald-50",
+    text: "text-emerald-700",
+    tagBg: "bg-emerald-50",
+    tagText: "text-emerald-700",
+    tagBorder: "border-emerald-200",
+  },
+};
+
+/* -------------------------------------------------------------------------- */
+/* Helpers                                                                     */
+/* -------------------------------------------------------------------------- */
+
 function humaniseTag(tag: string): string {
-  return tag
-    .replace(/_/g, " ")
-    .replace(/^\w/, (c) => c.toUpperCase());
+  return tag.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase());
 }
+
+/** Format a dollar amount in compact AUD notation. */
+function formatAUD(value: number): string {
+  if (value === 0) return "$0";
+  if (value >= 1_000_000_000_000) {
+    const t = value / 1_000_000_000_000;
+    return `$${t % 1 === 0 ? t.toFixed(0) : t.toFixed(1)}T`;
+  }
+  if (value >= 1_000_000_000) {
+    const b = value / 1_000_000_000;
+    return `$${b % 1 === 0 ? b.toFixed(0) : b.toFixed(1)}B`;
+  }
+  if (value >= 1_000_000) {
+    const m = value / 1_000_000;
+    return `$${m % 1 === 0 ? m.toFixed(0) : m.toFixed(1)}M`;
+  }
+  if (value >= 1_000) {
+    const k = value / 1_000;
+    return `$${k % 1 === 0 ? k.toFixed(0) : k.toFixed(1)}K`;
+  }
+  return `$${value.toLocaleString()}`;
+}
+
+/** Extract a ~140-char snippet from the first paragraph of section 1. */
+function sectorSnippet(so: SectorOpportunity): string {
+  const text = so.sections["1"] ?? "";
+  const firstPara = text.split("\n\n")[0] ?? text;
+  if (firstPara.length <= 140) return firstPara;
+  return firstPara.slice(0, 137).replace(/\s+\S*$/, "") + "…";
+}
+
+/* -------------------------------------------------------------------------- */
+/* Component                                                                   */
+/* -------------------------------------------------------------------------- */
 
 export function SectorOpportunitiesIndex({
   sectorOpportunities,
+  sectorStats,
+  totalDeals,
+  totalStrategies,
 }: SectorOpportunitiesIndexProps) {
-  const router = useRouter();
   const [query, setQuery] = useState("");
   const [tagFilter, setTagFilter] = useState("");
-  const [highlightedIndex, setHighlightedIndex] = useState(0);
-  const listRef = useRef<HTMLUListElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Derive all unique tags for the filter dropdown
+  // Unique tags
   const allTags = useMemo(() => {
     const set = new Set<string>();
     for (const so of sectorOpportunities) {
@@ -39,25 +169,21 @@ export function SectorOpportunitiesIndex({
     return Array.from(set).sort();
   }, [sectorOpportunities]);
 
-  // Filter sector opportunities by query + tag
+  // Filter
   const filtered = useMemo(() => {
     let list = sectorOpportunities;
-
     if (tagFilter) {
       list = list.filter((so) => so.tags.includes(tagFilter));
     }
-
     if (query.trim()) {
       const q = query.toLowerCase().trim();
       list = list.filter((so) => {
         if (so.name.toLowerCase().includes(q)) return true;
         if (so.tags.some((t) => t.toLowerCase().includes(q))) return true;
-        // Search section 1 (definition) as a preview
         if (so.sections["1"]?.toLowerCase().includes(q)) return true;
         return false;
       });
     }
-
     return list;
   }, [sectorOpportunities, query, tagFilter]);
 
@@ -68,206 +194,296 @@ export function SectorOpportunitiesIndex({
     setTagFilter("");
   }, []);
 
-  // Reset highlight on filter change
-  useEffect(() => {
-    setHighlightedIndex(0);
-  }, [query, tagFilter]);
-
-  useEffect(() => {
-    if (highlightedIndex < 0) setHighlightedIndex(0);
-    if (highlightedIndex >= filtered.length)
-      setHighlightedIndex(Math.max(0, filtered.length - 1));
-  }, [highlightedIndex, filtered.length]);
-
-  const navigateTo = useCallback(
-    (so: SectorOpportunity) => {
-      router.push(`/sectors/${so.id}`);
-    },
-    [router],
-  );
-
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent) => {
-      if (e.key === "ArrowDown") {
-        e.preventDefault();
-        setHighlightedIndex((i) => Math.min(i + 1, filtered.length - 1));
-        return;
-      }
-      if (e.key === "ArrowUp") {
-        e.preventDefault();
-        setHighlightedIndex((i) => Math.max(i - 1, 0));
-        return;
-      }
-      if (e.key === "Enter" && filtered[highlightedIndex]) {
-        e.preventDefault();
-        navigateTo(filtered[highlightedIndex]);
-        return;
-      }
-    },
-    [filtered, highlightedIndex, navigateTo],
-  );
-
-  // Scroll highlighted item into view
-  useEffect(() => {
-    const el = listRef.current?.querySelector(
-      `[data-result-index="${highlightedIndex}"]`,
-    );
-    if (el && typeof (el as HTMLElement).scrollIntoView === "function") {
-      (el as HTMLElement).scrollIntoView({ block: "nearest", behavior: "smooth" });
+  // Aggregate stats across all (unfiltered) sectors for the summary bar
+  const globalStats = useMemo(() => {
+    let deals = 0;
+    let investment = 0;
+    let impact = 0;
+    let jobs = 0;
+    for (const s of Object.values(sectorStats)) {
+      deals += s.dealCount;
+      investment += s.totalInvestment;
+      impact += s.totalEconomicImpact;
+      jobs += s.totalJobs;
     }
-  }, [highlightedIndex]);
-
-  const selectClassName =
-    "h-9 px-2 border border-[#E8E6E3] bg-white text-[#2C2C2C] text-sm focus:border-[#7A6B5A] focus:ring-1 focus:ring-[#7A6B5A] focus:outline-none transition duration-300 ease-out";
+    return { deals, investment, impact, jobs };
+  }, [sectorStats]);
 
   return (
-    <div className="flex flex-col gap-4" data-testid="sectors-index">
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="font-heading text-2xl font-normal leading-[1.3] text-[#2C2C2C]">
-          Sector Opportunities
-        </h1>
+    <div className="flex flex-col gap-6" data-testid="sectors-index">
+      {/* ------------------------------------------------------------------ */}
+      {/* Header                                                              */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex items-start justify-between gap-4">
+        <div>
+          <h1 className="font-heading text-2xl font-normal leading-[1.3] text-[#2C2C2C]">
+            Sector Opportunities
+          </h1>
+          <p className="mt-1 text-sm text-[#6B6B6B] leading-relaxed max-w-2xl">
+            Seven priority sectors identified for METS diversification, based on
+            adjacency to existing skills, government priority, and growth
+            trajectory.
+          </p>
+        </div>
         <Link
           href="/"
-          className="text-sm text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
+          className="shrink-0 text-sm text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
         >
           Back to home
         </Link>
       </div>
 
-      {/* Search + filter bar */}
-      <div className="flex flex-col gap-3">
+      {/* ------------------------------------------------------------------ */}
+      {/* Summary metrics bar                                                 */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3" data-testid="summary-bar">
+        <SummaryCard
+          label="Sectors"
+          value={String(sectorOpportunities.length)}
+          sub="priority opportunities"
+          colour="violet"
+        />
+        <SummaryCard
+          label="Active deals"
+          value={String(totalDeals)}
+          sub="across all sectors"
+          colour="blue"
+        />
+        <SummaryCard
+          label="Investment"
+          value={formatAUD(globalStats.investment)}
+          sub="total deal value"
+          colour="amber"
+        />
+        <SummaryCard
+          label="Economic impact"
+          value={formatAUD(globalStats.impact)}
+          sub="projected GDP contribution"
+          colour="emerald"
+        />
+        <SummaryCard
+          label="Jobs identified"
+          value={globalStats.jobs > 0 ? globalStats.jobs.toLocaleString() : "—"}
+          sub="across active deals"
+          colour="emerald"
+        />
+      </div>
+
+      {/* ------------------------------------------------------------------ */}
+      {/* Search + filter bar                                                 */}
+      {/* ------------------------------------------------------------------ */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
         <label htmlFor="sectors-search-input" className="sr-only">
-          Filter sector opportunities by name or tag
+          Filter sector opportunities
         </label>
         <input
-          ref={inputRef}
           id="sectors-search-input"
           type="search"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder="Filter by sector name, tag, or definition"
+          placeholder="Search sectors…"
           aria-label="Filter sector opportunities by name or tag"
-          aria-controls="sectors-results-list"
-          aria-expanded={filtered.length > 0}
-          aria-activedescendant={
-            filtered[highlightedIndex]
-              ? `sector-result-${filtered[highlightedIndex].id}`
-              : undefined
-          }
-          role="combobox"
-          aria-autocomplete="list"
           autoComplete="off"
-          className="w-full h-10 px-3 border border-[#E8E6E3] bg-white text-[#2C2C2C] text-sm placeholder:text-[#9A9A9A] focus:border-[#7A6B5A] focus:ring-1 focus:ring-[#7A6B5A] focus:outline-none transition duration-300 ease-out"
+          className="flex-1 w-full sm:w-auto h-9 px-3 border border-[#E8E6E3] bg-white text-[#2C2C2C] text-sm placeholder:text-[#9A9A9A] focus:border-[#7A6B5A] focus:ring-1 focus:ring-[#7A6B5A] focus:outline-none transition duration-300 ease-out"
           data-testid="sectors-search-input"
         />
+        <select
+          value={tagFilter}
+          onChange={(e) => setTagFilter(e.target.value)}
+          aria-label="Filter by tag"
+          className="h-9 px-2 border border-[#E8E6E3] bg-white text-[#2C2C2C] text-sm focus:border-[#7A6B5A] focus:ring-1 focus:ring-[#7A6B5A] focus:outline-none transition duration-300 ease-out"
+          data-testid="filter-tag"
+        >
+          <option value="">All tags</option>
+          {allTags.map((t) => (
+            <option key={t} value={t}>
+              {humaniseTag(t)}
+            </option>
+          ))}
+        </select>
 
-        {/* Tag filter */}
-        <div className="flex flex-wrap items-center gap-3">
-          <select
-            value={tagFilter}
-            onChange={(e) => setTagFilter(e.target.value)}
-            aria-label="Filter by tag"
-            className={selectClassName}
-            data-testid="filter-tag"
+        <span className="text-xs text-[#6B6B6B]" data-testid="sectors-count">
+          {filtered.length}{" "}
+          {filtered.length === 1 ? "sector" : "sectors"}
+        </span>
+
+        {hasActiveFilters && (
+          <button
+            type="button"
+            onClick={clearFilters}
+            className="text-xs text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A]"
+            data-testid="clear-filters"
           >
-            <option value="">All tags</option>
-            {allTags.map((t) => (
-              <option key={t} value={t}>
-                {humaniseTag(t)}
-              </option>
-            ))}
-          </select>
+            Clear
+          </button>
+        )}
+      </div>
 
-          <span className="text-xs text-[#6B6B6B]" data-testid="sectors-count">
-            {filtered.length}{" "}
-            {filtered.length === 1 ? "sector opportunity" : "sector opportunities"}
-          </span>
+      {/* ------------------------------------------------------------------ */}
+      {/* Sector cards grid                                                   */}
+      {/* ------------------------------------------------------------------ */}
+      {filtered.length === 0 ? (
+        <div className="py-12 text-center text-sm text-[#6B6B6B]">
+          {hasActiveFilters
+            ? "No sector opportunities match your filters."
+            : "No sector opportunities available."}
+        </div>
+      ) : (
+        <div
+          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
+          data-testid="sectors-results-list"
+        >
+          {filtered.map((so) => {
+            const stats = sectorStats[so.id];
+            return (
+              <SectorCard key={so.id} sectorOpportunity={so} stats={stats} />
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
 
-          {hasActiveFilters && (
-            <button
-              type="button"
-              onClick={clearFilters}
-              className="text-xs text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A]"
-              data-testid="clear-filters"
-            >
-              Clear filters
-            </button>
-          )}
+/* -------------------------------------------------------------------------- */
+/* Sub-components                                                              */
+/* -------------------------------------------------------------------------- */
+
+function SummaryCard({
+  label,
+  value,
+  sub,
+  colour,
+}: {
+  label: string;
+  value: string;
+  sub: string;
+  colour: ColourFamily;
+}) {
+  const c = COLOUR_CLASSES[colour];
+  return (
+    <div
+      className={`bg-white border border-[#E8E6E3] border-l-[3px] ${c.border} px-4 py-3 space-y-0.5`}
+    >
+      <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] font-medium">
+        {label}
+      </p>
+      <p className={`text-xl font-heading font-normal ${c.text}`}>
+        {value}
+      </p>
+      <p className="text-[11px] text-[#9A9A9A]">{sub}</p>
+    </div>
+  );
+}
+
+function SectorCard({
+  sectorOpportunity: so,
+  stats,
+}: {
+  sectorOpportunity: SectorOpportunity;
+  stats?: SectorStats;
+}) {
+  const snippet = sectorSnippet(so);
+  const dealCount = stats?.dealCount ?? 0;
+  const investment = stats?.totalInvestment ?? 0;
+  const impact = stats?.totalEconomicImpact ?? 0;
+  const jobs = stats?.totalJobs ?? 0;
+
+  const colour = SECTOR_COLOUR[so.id] ?? "blue";
+  const c = COLOUR_CLASSES[colour];
+
+  return (
+    <Link
+      href={`/sectors/${so.id}`}
+      className={`group flex flex-col bg-white border border-[#E8E6E3] border-t-[3px] ${c.border.replace("border-l-", "border-t-")} hover:border-[#7A6B5A] transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]`}
+    >
+      {/* Card header */}
+      <div className="px-5 pt-5 pb-3 space-y-2">
+        <h2 className="text-[15px] font-medium text-[#2C2C2C] group-hover:text-[#7A6B5A] transition duration-300 ease-out leading-snug">
+          {so.name}
+        </h2>
+        <p className="text-xs text-[#6B6B6B] leading-relaxed line-clamp-3">
+          {snippet}
+        </p>
+      </div>
+
+      {/* Stats strip — always visible */}
+      <div className="mx-5 border-t border-[#E8E6E3] pt-3 pb-1">
+        <div className="grid grid-cols-4 gap-1">
+          <MiniStat
+            label="Deals"
+            value={dealCount > 0 ? String(dealCount) : "—"}
+            colour={dealCount > 0 ? colour : undefined}
+          />
+          <MiniStat
+            label="Investment"
+            value={investment > 0 ? formatAUD(investment) : "—"}
+          />
+          <MiniStat
+            label="Impact"
+            value={impact > 0 ? formatAUD(impact) : "—"}
+          />
+          <MiniStat
+            label="Jobs"
+            value={jobs > 0 ? jobs.toLocaleString() : "—"}
+          />
         </div>
       </div>
 
-      {/* Results list */}
-      <ul
-        ref={listRef}
-        id="sectors-results-list"
-        role="listbox"
-        aria-label="Sector opportunity search results"
-        className="list-none p-0 m-0 space-y-1 max-h-[60vh] overflow-auto border border-[#E8E6E3] bg-white"
-        onKeyDown={handleKeyDown}
-        data-testid="sectors-results-list"
-      >
-        {filtered.length === 0 ? (
-          <li className="p-4 text-sm text-[#6B6B6B]">
-            {hasActiveFilters
-              ? "No sector opportunities match your filters."
-              : "No sector opportunities available."}
-          </li>
-        ) : (
-          filtered.map((so, index) => {
-            const isHighlighted = index === highlightedIndex;
-            const definition = so.sections["1"] ?? "";
-            const preview =
-              definition.length > 180
-                ? definition.slice(0, 180) + "…"
-                : definition;
-
+      {/* Tags */}
+      <div className="px-5 pb-4 pt-2 mt-auto">
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {so.tags.slice(0, 4).map((tag) => {
+            const tagColour = TAG_COLOUR[tag];
+            const tc = tagColour ? COLOUR_CLASSES[tagColour] : null;
             return (
-              <li
-                key={so.id}
-                role="option"
-                id={`sector-result-${so.id}`}
-                data-result-index={index}
-                aria-selected={isHighlighted}
-                tabIndex={-1}
-                className={[
-                  "p-3 text-left cursor-pointer transition duration-300 ease-out",
-                  "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]",
-                  isHighlighted
-                    ? "border border-[#E8E6E3] bg-[#F5F3F0]"
-                    : "border border-transparent hover:bg-[#F5F3F0]",
-                ].join(" ")}
-                onClick={() => navigateTo(so)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    navigateTo(so);
-                  }
-                }}
+              <span
+                key={tag}
+                className={
+                  tc
+                    ? `text-[9px] uppercase tracking-wider px-1.5 py-0.5 ${tc.tagBg} ${tc.tagText} border ${tc.tagBorder}`
+                    : "text-[9px] uppercase tracking-wider px-1.5 py-0.5 bg-[#F5F3F0] text-[#6B6B6B] border border-[#E8E6E3]"
+                }
               >
-                <p className="text-sm text-[#2C2C2C] leading-relaxed font-medium">
-                  {so.name}
-                </p>
-                {preview && (
-                  <p className="text-xs text-[#6B6B6B] mt-1 line-clamp-2">
-                    {preview}
-                  </p>
-                )}
-                <div className="flex items-center gap-1.5 mt-1.5 flex-wrap">
-                  {so.tags.map((tag) => (
-                    <span
-                      key={tag}
-                      className="text-[10px] uppercase tracking-wider px-1.5 py-0.5 bg-[#F5F3F0] text-[#6B6B6B] border border-[#E8E6E3]"
-                    >
-                      {humaniseTag(tag)}
-                    </span>
-                  ))}
-                </div>
-              </li>
+                {humaniseTag(tag)}
+              </span>
             );
-          })
-        )}
-      </ul>
+          })}
+          {so.tags.length > 4 && (
+            <span className="text-[9px] text-[#9A9A9A]">
+              +{so.tags.length - 4}
+            </span>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
+}
+
+function MiniStat({
+  label,
+  value,
+  colour,
+}: {
+  label: string;
+  value: string;
+  colour?: ColourFamily;
+}) {
+  const c = colour ? COLOUR_CLASSES[colour] : null;
+  return (
+    <div className="text-center">
+      <p className="text-[10px] uppercase tracking-wider text-[#9A9A9A] font-medium">
+        {label}
+      </p>
+      {c ? (
+        <span
+          className={`inline-block mt-0.5 text-sm font-medium px-1.5 py-0.5 ${c.tagBg} ${c.tagText} border ${c.tagBorder}`}
+        >
+          {value}
+        </span>
+      ) : (
+        <p className="text-sm font-medium text-[#2C2C2C] mt-0.5">{value}</p>
+      )}
     </div>
   );
 }

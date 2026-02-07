@@ -102,10 +102,14 @@ export function AccordionSection({
       >
         <span className="flex items-center gap-2">
           {headingContent}
-          {badge && (
-            <span className="text-[10px] tracking-wider px-1.5 py-0.5 bg-[#F5F3F0] text-[#6B6B6B] border border-[#E8E6E3]">
-              {badge}
-            </span>
+          {badge != null && (
+            typeof badge === "string" || typeof badge === "number" ? (
+              <span className="text-[10px] tracking-wider px-1.5 py-0.5 bg-[#F5F3F0] text-[#6B6B6B] border border-[#E8E6E3]">
+                {badge}
+              </span>
+            ) : (
+              badge
+            )
           )}
         </span>
         <svg
