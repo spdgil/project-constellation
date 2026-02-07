@@ -1,0 +1,269 @@
+/**
+ * Server-side data-access functions.
+ * Query Prisma and return data shaped as frontend types (kebab-case enums).
+ * Used by server components (pages) and API routes.
+ */
+
+import { prisma } from "./prisma";
+import {
+  stageFromDb,
+  readinessFromDb,
+  constraintFromDb,
+  constraintArrayFromDb,
+  gateStatusFromDb,
+  artefactStatusFromDb,
+} from "./enum-maps";
+import type {
+  Deal,
+  DealStage,
+  DealGateEntry,
+  DealArtefact,
+  DealDocument,
+  EvidenceRef,
+  GovernmentProgram,
+  TimelineMilestone,
+  Note,
+  LGA,
+  LgaOpportunityHypothesis,
+  OpportunityType,
+  ConstraintEvent,
+  Constraint,
+} from "@/lib/types";
+
+// =============================================================================
+// Deal includes (all relations for full deal objects)
+// =============================================================================
+
+const DEAL_INCLUDE = {
+  lgas: true,
+  evidence: true,
+  notes: { orderBy: { createdAt: "desc" as const } },
+  gateChecklist: true,
+  artefacts: true,
+  governmentPrograms: true,
+  timeline: true,
+  documents: { orderBy: { addedAt: "desc" as const } },
+} as const;
+
+// =============================================================================
+// Mappers: Prisma model → frontend type
+// =============================================================================
+
+type PrismaDealFull = Awaited<
+  ReturnType<typeof prisma.deal.findFirst<{ include: typeof DEAL_INCLUDE }>>
+>;
+
+function mapDeal(d: NonNullable<PrismaDealFull>): Deal {
+  // Group gate entries by stage
+  const gateChecklist: Partial<Record<DealStage, DealGateEntry[]>> = {};
+  for (const g of d.gateChecklist) {
+    const stage = stageFromDb(g.stage);
+    if (!gateChecklist[stage]) gateChecklist[stage] = [];
+    gateChecklist[stage]!.push({
+      question: g.question,
+      status: gateStatusFromDb(g.status),
+    });
+  }
+
+  // Group artefacts by stage
+  const artefacts: Partial<Record<DealStage, DealArtefact[]>> = {};
+  for (const a of d.artefacts) {
+    const stage = stageFromDb(a.stage);
+    if (!artefacts[stage]) artefacts[stage] = [];
+    artefacts[stage]!.push({
+      name: a.name,
+      status: artefactStatusFromDb(a.status),
+      summary: a.summary ?? undefined,
+      url: a.url ?? undefined,
+    });
+  }
+
+  // Map evidence
+  const evidence: EvidenceRef[] = d.evidence.map((e) => ({
+    label: e.label ?? undefined,
+    url: e.url ?? undefined,
+    pageRef: e.pageRef ?? undefined,
+  }));
+
+  // Map notes
+  const notes: Note[] = d.notes.map((n) => ({
+    id: n.id,
+    content: n.content,
+    createdAt: n.createdAt.toISOString(),
+  }));
+
+  // Map government programs
+  const governmentPrograms: GovernmentProgram[] = d.governmentPrograms.map((gp) => ({
+    name: gp.name,
+    description: gp.description ?? undefined,
+  }));
+
+  // Map timeline
+  const timeline: TimelineMilestone[] = d.timeline.map((t) => ({
+    label: t.label,
+    date: t.date ?? undefined,
+  }));
+
+  // Map documents
+  const documents: DealDocument[] = d.documents.map((doc) => ({
+    id: doc.id,
+    fileName: doc.fileName,
+    mimeType: doc.mimeType,
+    sizeBytes: doc.sizeBytes,
+    dataUrl: "", // Not included in list queries — fetch on demand
+    addedAt: doc.addedAt.toISOString(),
+    label: doc.label ?? undefined,
+  }));
+
+  return {
+    id: d.id,
+    name: d.name,
+    opportunityTypeId: d.opportunityTypeId,
+    lgaIds: d.lgas.map((l) => l.lgaId),
+    lat: d.lat ?? undefined,
+    lng: d.lng ?? undefined,
+    stage: stageFromDb(d.stage),
+    readinessState: readinessFromDb(d.readinessState),
+    dominantConstraint: constraintFromDb(d.dominantConstraint),
+    summary: d.summary,
+    nextStep: d.nextStep,
+    evidence,
+    notes,
+    updatedAt: d.updatedAt.toISOString(),
+    gateChecklist,
+    artefacts,
+    description: d.description ?? undefined,
+    investmentValue: d.investmentValue ?? undefined,
+    economicImpact: d.economicImpact ?? undefined,
+    keyStakeholders: d.keyStakeholders,
+    risks: d.risks,
+    strategicActions: d.strategicActions,
+    infrastructureNeeds: d.infrastructureNeeds,
+    skillsImplications: d.skillsImplications ?? undefined,
+    marketDrivers: d.marketDrivers ?? undefined,
+    governmentPrograms,
+    timeline,
+    documents,
+  };
+}
+
+function mapLga(
+  l: Awaited<ReturnType<typeof prisma.lga.findFirst<{
+    include: { evidence: true; opportunityHypotheses: true; deals: true };
+  }>>>
+): LGA | null {
+  if (!l) return null;
+  return {
+    id: l.id,
+    name: l.name,
+    geometryRef: l.geometryRef,
+    summary: l.summary ?? undefined,
+    notes: l.notes,
+    repeatedConstraints: constraintArrayFromDb(l.repeatedConstraints as string[]),
+    opportunityHypotheses: l.opportunityHypotheses.map(
+      (oh): LgaOpportunityHypothesis => ({
+        id: oh.id,
+        name: oh.name,
+        summary: oh.summary ?? undefined,
+        dominantConstraint: oh.dominantConstraint
+          ? constraintFromDb(oh.dominantConstraint as string)
+          : undefined,
+      })
+    ),
+    activeDealIds: l.deals.map((d) => d.dealId),
+    evidence: l.evidence.map((e) => ({
+      label: e.label ?? undefined,
+      url: e.url ?? undefined,
+      pageRef: e.pageRef ?? undefined,
+    })),
+  };
+}
+
+function mapOpportunityType(
+  ot: Awaited<ReturnType<typeof prisma.opportunityType.findFirst>>
+): OpportunityType | null {
+  if (!ot) return null;
+  return {
+    id: ot.id,
+    name: ot.name,
+    definition: ot.definition,
+    economicFunction: ot.economicFunction,
+    typicalCapitalStack: ot.typicalCapitalStack,
+    typicalRisks: ot.typicalRisks,
+  };
+}
+
+// =============================================================================
+// Query functions
+// =============================================================================
+
+/** Load all deals with all relations. */
+export async function loadDeals(): Promise<Deal[]> {
+  const rows = await prisma.deal.findMany({
+    include: DEAL_INCLUDE,
+    orderBy: { updatedAt: "desc" },
+  });
+  return rows.map(mapDeal);
+}
+
+/** Load a single deal by ID. */
+export async function loadDealById(id: string): Promise<Deal | null> {
+  const row = await prisma.deal.findUnique({
+    where: { id },
+    include: DEAL_INCLUDE,
+  });
+  return row ? mapDeal(row) : null;
+}
+
+/** Load all LGAs with relations. */
+export async function loadLgas(): Promise<LGA[]> {
+  const rows = await prisma.lga.findMany({
+    include: {
+      evidence: true,
+      opportunityHypotheses: true,
+      deals: true,
+    },
+    orderBy: { name: "asc" },
+  });
+  return rows.map(mapLga).filter((l): l is LGA => l !== null);
+}
+
+/** Load all opportunity types. */
+export async function loadOpportunityTypes(): Promise<OpportunityType[]> {
+  const rows = await prisma.opportunityType.findMany({
+    orderBy: { name: "asc" },
+  });
+  return rows.map(mapOpportunityType).filter((ot): ot is OpportunityType => ot !== null);
+}
+
+/** Load constraint events for an entity. */
+export async function loadConstraintEvents(entityId: string): Promise<ConstraintEvent[]> {
+  const rows = await prisma.constraintEvent.findMany({
+    where: { entityId },
+    orderBy: { changedAt: "desc" },
+  });
+  return rows.map((r) => ({
+    id: r.id,
+    entityType: r.entityType as "deal" | "cluster",
+    entityId: r.entityId,
+    dominantConstraint: constraintFromDb(r.dominantConstraint as string),
+    changedAt: r.changedAt.toISOString(),
+    changeReason: r.changeReason,
+  }));
+}
+
+/** Get document file data (binary) for download. */
+export async function getDocumentData(
+  docId: string
+): Promise<{ fileName: string; mimeType: string; data: Buffer } | null> {
+  const doc = await prisma.dealDocument.findUnique({
+    where: { id: docId },
+    select: { fileName: true, mimeType: true, fileData: true },
+  });
+  if (!doc) return null;
+  return {
+    fileName: doc.fileName,
+    mimeType: doc.mimeType,
+    data: Buffer.from(doc.fileData),
+  };
+}

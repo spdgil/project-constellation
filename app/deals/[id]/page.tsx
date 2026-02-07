@@ -1,4 +1,5 @@
-import { loadPageData } from "@/lib/load-page-data";
+import { notFound } from "next/navigation";
+import { loadDealById, loadDeals, loadLgas, loadOpportunityTypes } from "@/lib/db/queries";
 import { DealDetail } from "@/components/deals/DealDetail";
 
 interface DealPageProps {
@@ -7,11 +8,17 @@ interface DealPageProps {
 
 export default async function DealPage({ params }: DealPageProps) {
   const { id } = await params;
-  const { deals, opportunityTypes, lgas } = await loadPageData("deal detail");
 
-  // Deal may exist in static JSON or only in localStorage (AI-created deals).
-  // Pass null and let the client component resolve from local storage.
-  const deal = deals.find((d) => d.id === id) ?? null;
+  const [deal, opportunityTypes, lgas, allDeals] = await Promise.all([
+    loadDealById(id),
+    loadOpportunityTypes(),
+    loadLgas(),
+    loadDeals(),
+  ]);
+
+  if (!deal) {
+    notFound();
+  }
 
   return (
     <DealDetail
@@ -19,7 +26,7 @@ export default async function DealPage({ params }: DealPageProps) {
       dealId={id}
       opportunityTypes={opportunityTypes}
       lgas={lgas}
-      allDeals={deals}
+      allDeals={allDeals}
     />
   );
 }

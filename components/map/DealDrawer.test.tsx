@@ -81,7 +81,7 @@ describe("DealDrawer", () => {
     expect(screen.getByText(/Last updated/i)).toBeInTheDocument();
   });
 
-  it("does not show Updated locally when deal has no local overrides", () => {
+  it("does not show saving indicator on load", () => {
     render(
       <DealDrawer
         deal={mockDeal}
@@ -91,7 +91,7 @@ describe("DealDrawer", () => {
       />
     );
 
-    expect(screen.queryByText(/updated locally/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/saving/i)).not.toBeInTheDocument();
   });
 
   it("defaults to view mode with static text instead of dropdowns", () => {
@@ -129,7 +129,12 @@ describe("DealDrawer", () => {
     expect(screen.getAllByTestId(/^gate-checkbox-/).length).toBe(3);
   });
 
-  it("editing readiness state updates UI and shows Updated locally", () => {
+  it("editing readiness state calls PATCH API", () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ ...mockDeal, readinessState: "conceptual-interest" }),
+    });
+
     render(
       <DealDrawer
         deal={mockDeal}
@@ -151,10 +156,18 @@ describe("DealDrawer", () => {
     });
 
     expect(readinessSelect).toHaveValue("conceptual-interest");
-    expect(screen.getByText(/updated locally/i)).toBeInTheDocument();
+    expect(global.fetch).toHaveBeenCalledWith(
+      `/api/deals/${mockDeal.id}`,
+      expect.objectContaining({ method: "PATCH" })
+    );
   });
 
-  it("editing dominant constraint updates UI and shows Updated locally", () => {
+  it("editing dominant constraint calls PATCH API", () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ ...mockDeal, dominantConstraint: "planning-and-approvals" }),
+    });
+
     render(
       <DealDrawer
         deal={mockDeal}
@@ -176,12 +189,20 @@ describe("DealDrawer", () => {
     });
 
     expect(constraintSelect).toHaveValue("planning-and-approvals");
-    expect(screen.getByText(/updated locally/i)).toBeInTheDocument();
+    expect(global.fetch).toHaveBeenCalledWith(
+      `/api/deals/${mockDeal.id}`,
+      expect.objectContaining({ method: "PATCH" })
+    );
   });
 
-  it("persisted on re-open: edited readiness is shown after close and open again", () => {
+  it("re-render with updated deal prop reflects new readiness state", () => {
     const onClose = vi.fn();
-    const { unmount } = render(
+    const updatedDeal = {
+      ...mockDeal,
+      readinessState: "structurable-but-stalled" as const,
+    };
+
+    const { rerender } = render(
       <DealDrawer
         deal={mockDeal}
         opportunityTypes={mockOpportunityTypes}
@@ -190,30 +211,19 @@ describe("DealDrawer", () => {
       />
     );
 
-    fireEvent.click(screen.getByTestId("mode-toggle"));
+    expect(screen.getByText("Feasibility underway")).toBeInTheDocument();
 
-    const readinessSelect = screen.getByRole("combobox", {
-      name: /readiness state/i,
-    });
-    fireEvent.change(readinessSelect, {
-      target: { value: "structurable-but-stalled" },
-    });
-    expect(readinessSelect).toHaveValue("structurable-but-stalled");
-
-    unmount();
-
-    render(
+    // Simulate re-render with updated deal (as if parent re-fetched from DB)
+    rerender(
       <DealDrawer
-        deal={mockDeal}
+        deal={updatedDeal}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
-        onClose={vi.fn()}
+        onClose={onClose}
       />
     );
 
-    // Re-opened in view mode, shows the persisted value as a badge
     expect(screen.getByText("Structurable but stalled")).toBeInTheDocument();
-    expect(screen.getByText(/updated locally/i)).toBeInTheDocument();
   });
 
   it("Escape calls onClose", () => {
@@ -304,7 +314,12 @@ describe("DealDrawer", () => {
     expect(screen.queryAllByTestId(/^gate-checkbox-/)).toHaveLength(0);
   });
 
-  it("edit mode shows gate checkboxes that toggle and persist", () => {
+  it("edit mode shows gate checkboxes that toggle and call API", () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockDeal,
+    });
+
     render(
       <DealDrawer
         deal={mockDeal}
@@ -324,7 +339,10 @@ describe("DealDrawer", () => {
 
     expect(checkboxes[0]).toBeChecked();
     expect(screen.getByText("1 of 3 satisfied")).toBeInTheDocument();
-    expect(screen.getByText(/updated locally/i)).toBeInTheDocument();
+    expect(global.fetch).toHaveBeenCalledWith(
+      `/api/deals/${mockDeal.id}`,
+      expect.objectContaining({ method: "PATCH" })
+    );
   });
 
   it("renders artefacts with status badges in view mode", () => {
@@ -351,6 +369,11 @@ describe("DealDrawer", () => {
   });
 
   it("cycling artefact status in edit mode advances through not-started → in-progress → complete", () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockDeal,
+    });
+
     render(
       <DealDrawer
         deal={mockDeal}
@@ -374,7 +397,7 @@ describe("DealDrawer", () => {
     fireEvent.click(statusBtn);
     expect(statusBtn).toHaveTextContent("Not started");
 
-    expect(screen.getByText(/updated locally/i)).toBeInTheDocument();
+    expect(global.fetch).toHaveBeenCalled();
   });
 
   it("shows View full detail link to deal detail page", () => {
@@ -393,6 +416,11 @@ describe("DealDrawer", () => {
   });
 
   it("artefact summary and URL fields are editable in edit mode", () => {
+    global.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => mockDeal,
+    });
+
     render(
       <DealDrawer
         deal={mockDeal}
@@ -416,6 +444,6 @@ describe("DealDrawer", () => {
     fireEvent.change(urlField, { target: { value: "https://example.com/doc.pdf" } });
     expect(urlField.value).toBe("https://example.com/doc.pdf");
 
-    expect(screen.getByText(/updated locally/i)).toBeInTheDocument();
+    expect(global.fetch).toHaveBeenCalled();
   });
 });

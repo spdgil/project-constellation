@@ -1,8 +1,8 @@
 import { describe, it, expect, vi } from "vitest";
 import { render, screen } from "@testing-library/react";
 
-/* Mock data loaders so the async server component can render in tests */
-vi.mock("@/lib/data", () => ({
+/* Mock database queries so the async server component can render in tests */
+vi.mock("@/lib/db/queries", () => ({
   loadLgas: () =>
     Promise.resolve([
       {

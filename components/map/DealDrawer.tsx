@@ -13,12 +13,7 @@ import type {
   DealGateEntry,
   DealArtefact,
 } from "@/lib/types";
-import {
-  getDealWithLocalOverrides,
-  hasLocalDealOverrides,
-  saveDealLocally,
-  appendConstraintEvent,
-} from "@/lib/deal-storage";
+// deal-storage is no longer needed — all mutations go through API routes
 import {
   READINESS_LABELS,
   STAGE_LABELS,
@@ -84,7 +79,6 @@ export function DealDrawer({
   expanded = false,
 }: DealDrawerProps) {
   const [deal, setDeal] = useState<Deal | null>(null);
-  const [isLocal, setIsLocal] = useState(false);
   const [internalEditing, setInternalEditing] = useState(false);
   const drawerRef = useRef<HTMLElement | null>(null);
 
@@ -96,13 +90,11 @@ export function DealDrawer({
   useEffect(() => {
     if (!initialDeal) {
       setDeal(null);
-      setIsLocal(false);
       setInternalEditing(false);
       return;
     }
-    const merged = getDealWithLocalOverrides(initialDeal.id, initialDeal);
-    setDeal(merged);
-    setIsLocal(hasLocalDealOverrides(initialDeal.id));
+    // Deal now comes from the database via server component — no localStorage merge needed
+    setDeal(initialDeal);
     setInternalEditing(false);
   }, [initialDeal]);
 
@@ -147,37 +139,48 @@ export function DealDrawer({
     onEditingChange?.(next);
   }, [isEditing, onEditingChange]);
 
+  /* ---------- API save helper ---------- */
+
+  const saveDealField = useCallback(
+    async (patch: Record<string, unknown>) => {
+      if (!deal) return;
+      try {
+        const res = await fetch(`/api/deals/${deal.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(patch),
+        });
+        if (res.ok) {
+          const updated = (await res.json()) as Deal;
+          setDeal(updated);
+        }
+      } catch (error) {
+        console.error("Failed to save deal:", error);
+      }
+    },
+    [deal],
+  );
+
   /* ---------- Field handlers ---------- */
 
   const handleReadinessChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       if (!deal) return;
       const value = e.target.value as ReadinessState;
-      const updated: Deal = { ...deal, readinessState: value, updatedAt: new Date().toISOString() };
-      setDeal(updated);
-      saveDealLocally(updated);
-      setIsLocal(true);
+      setDeal({ ...deal, readinessState: value, updatedAt: new Date().toISOString() });
+      saveDealField({ readinessState: value });
     },
-    [deal],
+    [deal, saveDealField],
   );
 
   const handleConstraintChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       if (!deal) return;
       const value = e.target.value as Constraint;
-      const updated: Deal = { ...deal, dominantConstraint: value, updatedAt: new Date().toISOString() };
-      setDeal(updated);
-      saveDealLocally(updated);
-      appendConstraintEvent({
-        entityType: "deal",
-        entityId: deal.id,
-        dominantConstraint: value,
-        changedAt: updated.updatedAt,
-        changeReason: "Edited in UI",
-      });
-      setIsLocal(true);
+      setDeal({ ...deal, dominantConstraint: value, updatedAt: new Date().toISOString() });
+      saveDealField({ dominantConstraint: value, changeReason: "Edited in UI" });
     },
-    [deal],
+    [deal, saveDealField],
   );
 
   const handleGateToggle = useCallback(
@@ -191,16 +194,11 @@ export function DealDrawer({
       const updatedEntries = entries.map((e, i) =>
         i === questionIndex ? { ...e, status: newStatus } : e,
       );
-      const updated: Deal = {
-        ...deal,
-        gateChecklist: { ...deal.gateChecklist, [stage]: updatedEntries },
-        updatedAt: new Date().toISOString(),
-      };
-      setDeal(updated);
-      saveDealLocally(updated);
-      setIsLocal(true);
+      const newChecklist = { ...deal.gateChecklist, [stage]: updatedEntries };
+      setDeal({ ...deal, gateChecklist: newChecklist, updatedAt: new Date().toISOString() });
+      saveDealField({ gateChecklist: newChecklist });
     },
-    [deal],
+    [deal, saveDealField],
   );
 
   const handleArtefactStatusCycle = useCallback(
@@ -215,16 +213,11 @@ export function DealDrawer({
       const updatedEntries = entries.map((e, i) =>
         i === artefactIndex ? { ...e, status: nextStatus } : e,
       );
-      const updated: Deal = {
-        ...deal,
-        artefacts: { ...deal.artefacts, [stage]: updatedEntries },
-        updatedAt: new Date().toISOString(),
-      };
-      setDeal(updated);
-      saveDealLocally(updated);
-      setIsLocal(true);
+      const newArtefacts = { ...deal.artefacts, [stage]: updatedEntries };
+      setDeal({ ...deal, artefacts: newArtefacts, updatedAt: new Date().toISOString() });
+      saveDealField({ artefacts: newArtefacts });
     },
-    [deal],
+    [deal, saveDealField],
   );
 
   const handleArtefactFieldChange = useCallback(
@@ -235,16 +228,11 @@ export function DealDrawer({
       const updatedEntries = entries.map((e, i) =>
         i === artefactIndex ? { ...e, [field]: value || undefined } : e,
       );
-      const updated: Deal = {
-        ...deal,
-        artefacts: { ...deal.artefacts, [stage]: updatedEntries },
-        updatedAt: new Date().toISOString(),
-      };
-      setDeal(updated);
-      saveDealLocally(updated);
-      setIsLocal(true);
+      const newArtefacts = { ...deal.artefacts, [stage]: updatedEntries };
+      setDeal({ ...deal, artefacts: newArtefacts, updatedAt: new Date().toISOString() });
+      saveDealField({ artefacts: newArtefacts });
     },
-    [deal],
+    [deal, saveDealField],
   );
 
   /* ---------- Escape: de-escalate editing → view → close ---------- */
@@ -638,16 +626,6 @@ export function DealDrawer({
 
       {/* Content body */}
       <div className={`flex-1 overflow-auto ${expanded ? "p-6" : "p-4"}`}>
-        {isLocal && (
-          <p
-            className="text-xs text-[#7A6B5A] py-2 px-3 border border-[#E8E6E3] bg-[#F5F3F0] mb-4"
-            role="status"
-            aria-live="polite"
-          >
-            Updated locally
-          </p>
-        )}
-
         {expanded ? (
           <div className="grid grid-cols-2 gap-8">
             <div>

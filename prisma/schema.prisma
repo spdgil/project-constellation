@@ -1,0 +1,289 @@
+// =============================================================================
+// Project Constellation — Prisma Schema
+// PRD §7.1 data model, mapped to PostgreSQL
+// =============================================================================
+
+generator client {
+  provider = "prisma-client"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// --- Enums ---
+
+enum DealStage {
+  definition
+  pre_feasibility     @map("pre-feasibility")
+  feasibility
+  structuring
+  transaction_close   @map("transaction-close")
+}
+
+enum ReadinessState {
+  no_viable_projects                    @map("no-viable-projects")
+  conceptual_interest                   @map("conceptual-interest")
+  feasibility_underway                  @map("feasibility-underway")
+  structurable_but_stalled              @map("structurable-but-stalled")
+  investable_with_minor_intervention    @map("investable-with-minor-intervention")
+  scaled_and_replicable                 @map("scaled-and-replicable")
+}
+
+enum Constraint {
+  revenue_certainty                     @map("revenue-certainty")
+  offtake_demand_aggregation            @map("offtake-demand-aggregation")
+  planning_and_approvals                @map("planning-and-approvals")
+  sponsor_capability                    @map("sponsor-capability")
+  early_risk_capital                    @map("early-risk-capital")
+  balance_sheet_constraints             @map("balance-sheet-constraints")
+  technology_risk                       @map("technology-risk")
+  coordination_failure                  @map("coordination-failure")
+  skills_and_workforce_constraint       @map("skills-and-workforce-constraint")
+  common_user_infrastructure_gap        @map("common-user-infrastructure-gap")
+}
+
+enum GateStatus {
+  pending
+  satisfied
+  not_applicable  @map("not-applicable")
+}
+
+enum ArtefactStatus {
+  not_started     @map("not-started")
+  in_progress     @map("in-progress")
+  complete
+}
+
+// --- Models ---
+
+/// LGA (Place) — PRD §7.1
+model Lga {
+  id                    String    @id
+  name                  String
+  geometryRef           String    @map("geometry_ref")
+  summary               String?
+  notes                 String[]  @default([])
+  repeatedConstraints   Constraint[] @map("repeated_constraints")
+
+  // Relations
+  deals                 DealLga[]
+  evidence              LgaEvidence[]
+  opportunityHypotheses LgaOpportunityHypothesis[]
+
+  @@map("lgas")
+}
+
+/// LGA-level opportunity hypothesis — PRD §6.3
+model LgaOpportunityHypothesis {
+  id                  String      @id @default(cuid())
+  name                String
+  summary             String?
+  dominantConstraint  Constraint? @map("dominant_constraint")
+  lgaId               String      @map("lga_id")
+
+  lga                 Lga         @relation(fields: [lgaId], references: [id], onDelete: Cascade)
+
+  @@map("lga_opportunity_hypotheses")
+}
+
+/// Evidence reference for LGAs
+model LgaEvidence {
+  id        String  @id @default(cuid())
+  label     String?
+  url       String?
+  pageRef   String? @map("page_ref")
+  lgaId     String  @map("lga_id")
+
+  lga       Lga     @relation(fields: [lgaId], references: [id], onDelete: Cascade)
+
+  @@map("lga_evidence")
+}
+
+/// Opportunity type (taxonomy item) — PRD §7.1
+model OpportunityType {
+  id                  String  @id
+  name                String
+  definition          String  @default("")
+  economicFunction    String  @default("") @map("economic_function")
+  typicalCapitalStack String  @default("") @map("typical_capital_stack")
+  typicalRisks        String  @default("") @map("typical_risks")
+
+  deals               Deal[]
+
+  @@map("opportunity_types")
+}
+
+/// Join table: Deal ↔ LGA (many-to-many)
+model DealLga {
+  dealId  String  @map("deal_id")
+  lgaId   String  @map("lga_id")
+
+  deal    Deal    @relation(fields: [dealId], references: [id], onDelete: Cascade)
+  lga     Lga     @relation(fields: [lgaId], references: [id], onDelete: Cascade)
+
+  @@id([dealId, lgaId])
+  @@map("deal_lgas")
+}
+
+/// Deal (project instance) — PRD §7.1
+model Deal {
+  id                  String          @id @default(cuid())
+  name                String
+  opportunityTypeId   String          @map("opportunity_type_id")
+  lat                 Float?
+  lng                 Float?
+  stage               DealStage
+  readinessState      ReadinessState  @map("readiness_state")
+  dominantConstraint  Constraint      @map("dominant_constraint")
+  summary             String
+  nextStep            String          @default("") @map("next_step")
+
+  // Rich fields
+  description         String?
+  investmentValue     String?         @map("investment_value")
+  economicImpact      String?         @map("economic_impact")
+  keyStakeholders     String[]        @default([]) @map("key_stakeholders")
+  risks               String[]        @default([])
+  strategicActions    String[]        @default([]) @map("strategic_actions")
+  infrastructureNeeds String[]        @default([]) @map("infrastructure_needs")
+  skillsImplications  String?         @map("skills_implications")
+  marketDrivers       String?         @map("market_drivers")
+
+  // Timestamps
+  createdAt           DateTime        @default(now()) @map("created_at")
+  updatedAt           DateTime        @updatedAt @map("updated_at")
+
+  // Relations
+  opportunityType     OpportunityType @relation(fields: [opportunityTypeId], references: [id])
+  lgas                DealLga[]
+  evidence            DealEvidence[]
+  notes               DealNote[]
+  gateChecklist       DealGateEntry[]
+  artefacts           DealArtefact[]
+  governmentPrograms  DealGovernmentProgram[]
+  timeline            DealTimelineMilestone[]
+  documents           DealDocument[]
+  constraintEvents    ConstraintEvent[]
+
+  @@index([opportunityTypeId])
+  @@index([stage])
+  @@index([updatedAt])
+  @@map("deals")
+}
+
+/// Evidence reference for deals — PRD §6.6
+model DealEvidence {
+  id        String  @id @default(cuid())
+  label     String?
+  url       String?
+  pageRef   String? @map("page_ref")
+  dealId    String  @map("deal_id")
+
+  deal      Deal    @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@map("deal_evidence")
+}
+
+/// Deal note — PRD §7.1
+model DealNote {
+  id        String   @id @default(cuid())
+  content   String
+  createdAt DateTime @default(now()) @map("created_at")
+  dealId    String   @map("deal_id")
+
+  deal      Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId])
+  @@map("deal_notes")
+}
+
+/// Gate checklist entry per deal per stage
+model DealGateEntry {
+  id        String     @id @default(cuid())
+  dealId    String     @map("deal_id")
+  stage     DealStage
+  question  String
+  status    GateStatus @default(pending)
+
+  deal      Deal       @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId, stage])
+  @@map("deal_gate_entries")
+}
+
+/// Artefact tracking per deal per stage
+model DealArtefact {
+  id        String         @id @default(cuid())
+  dealId    String         @map("deal_id")
+  stage     DealStage
+  name      String
+  status    ArtefactStatus @default(not_started)
+  summary   String?
+  url       String?
+
+  deal      Deal           @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId, stage])
+  @@map("deal_artefacts")
+}
+
+/// Government program reference for a deal
+model DealGovernmentProgram {
+  id          String  @id @default(cuid())
+  dealId      String  @map("deal_id")
+  name        String
+  description String?
+
+  deal        Deal    @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@map("deal_government_programs")
+}
+
+/// Timeline milestone for a deal
+model DealTimelineMilestone {
+  id      String  @id @default(cuid())
+  dealId  String  @map("deal_id")
+  label   String
+  date    String?
+
+  deal    Deal    @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@map("deal_timeline_milestones")
+}
+
+/// Attached document (stored as binary or path reference)
+model DealDocument {
+  id        String   @id @default(cuid())
+  dealId    String   @map("deal_id")
+  fileName  String   @map("file_name")
+  mimeType  String   @map("mime_type")
+  sizeBytes Int      @map("size_bytes")
+  /// File stored as binary in the database (for MVP; migrate to S3 for production)
+  fileData  Bytes    @map("file_data")
+  label     String?
+  addedAt   DateTime @default(now()) @map("added_at")
+
+  deal      Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId])
+  @@map("deal_documents")
+}
+
+/// Constraint change audit — PRD §7.1
+model ConstraintEvent {
+  id                  String     @id @default(cuid())
+  entityType          String     @map("entity_type")  // "deal" | "cluster"
+  entityId            String     @map("entity_id")
+  dominantConstraint  Constraint @map("dominant_constraint")
+  changedAt           DateTime   @default(now()) @map("changed_at")
+  changeReason        String     @map("change_reason")
+
+  // Optional relation to deal (if entityType = "deal")
+  deal                Deal?      @relation(fields: [entityId], references: [id], onDelete: Cascade)
+
+  @@index([entityId])
+  @@index([changedAt])
+  @@map("constraint_events")
+}

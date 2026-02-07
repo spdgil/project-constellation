@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type {
@@ -13,13 +13,7 @@ import type {
   GateStatus,
   ArtefactStatus,
 } from "@/lib/types";
-import {
-  getDealWithLocalOverrides,
-  hasLocalDealOverrides,
-  saveDealLocally,
-  deleteDealLocally,
-  appendConstraintEvent,
-} from "@/lib/deal-storage";
+// deal-storage is no longer needed — all mutations go through API routes
 import {
   READINESS_LABELS,
   STAGE_LABELS,
@@ -89,40 +83,9 @@ export function DealDetail({
 }: DealDetailProps) {
   const router = useRouter();
   const [deal, setDeal] = useState<Deal | null>(initialDeal);
-  const [isLocal, setIsLocal] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [notFound, setNotFound] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
-
-  /* Load local overrides on mount, or resolve fully local deals */
-  useEffect(() => {
-    if (initialDeal) {
-      // Deal exists in static data — merge any local overrides
-      const merged = getDealWithLocalOverrides(initialDeal.id, initialDeal);
-      setDeal(merged);
-      setIsLocal(hasLocalDealOverrides(initialDeal.id));
-    } else {
-      // Deal not in static data — check localStorage (AI-created deals)
-      const raw =
-        typeof window !== "undefined"
-          ? window.localStorage.getItem("project-constellation:deals")
-          : null;
-      if (raw) {
-        try {
-          const map = JSON.parse(raw) as Record<string, Deal>;
-          const localDeal = map[dealId];
-          if (localDeal) {
-            setDeal(localDeal);
-            setIsLocal(true);
-            return;
-          }
-        } catch {
-          // corrupt localStorage — fall through to notFound
-        }
-      }
-      setNotFound(true);
-    }
-  }, [initialDeal, dealId]);
 
   /* ---------- Editing toggle ---------- */
 
@@ -132,9 +95,13 @@ export function DealDetail({
 
   /* ---------- Delete handler ---------- */
 
-  const handleDelete = useCallback(() => {
-    deleteDealLocally(dealId);
-    router.push("/deals/list");
+  const handleDelete = useCallback(async () => {
+    try {
+      await fetch(`/api/deals/${dealId}`, { method: "DELETE" });
+      router.push("/deals/list");
+    } catch (error) {
+      console.error("Failed to delete deal:", error);
+    }
   }, [dealId, router]);
 
   /* ---------- Document handlers ---------- */
@@ -146,49 +113,70 @@ export function DealDetail({
       if (!deal || !files || files.length === 0) return;
       const newDocs: DealDocument[] = [...(deal.documents ?? [])];
       for (const f of Array.from(files)) {
-        const dataUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader();
-          reader.onload = () => resolve(reader.result as string);
-          reader.onerror = () => reject(new Error("Read failed"));
-          reader.readAsDataURL(f);
-        });
-        newDocs.push({
-          id: crypto.randomUUID?.() ?? `doc-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`,
-          fileName: f.name,
-          mimeType: f.type || "application/octet-stream",
-          sizeBytes: f.size,
-          dataUrl,
-          addedAt: new Date().toISOString(),
-        });
+        const formData = new FormData();
+        formData.append("file", f);
+        try {
+          const res = await fetch(`/api/deals/${deal.id}/documents`, {
+            method: "POST",
+            body: formData,
+          });
+          if (res.ok) {
+            const doc = (await res.json()) as {
+              id: string;
+              fileName: string;
+              mimeType: string;
+              sizeBytes: number;
+              label: string | null;
+              addedAt: string;
+            };
+            newDocs.push({
+              id: doc.id,
+              fileName: doc.fileName,
+              mimeType: doc.mimeType,
+              sizeBytes: doc.sizeBytes,
+              dataUrl: "", // Files are stored in DB, downloaded on demand
+              addedAt: doc.addedAt,
+              label: doc.label ?? undefined,
+            });
+          }
+        } catch (error) {
+          console.error("Failed to upload document:", error);
+        }
       }
-      const updated: Deal = { ...deal, documents: newDocs, updatedAt: new Date().toISOString() };
-      setDeal(updated);
-      saveDealLocally(updated);
-      setIsLocal(true);
+      setDeal({ ...deal, documents: newDocs, updatedAt: new Date().toISOString() });
     },
     [deal],
   );
 
   const handleRemoveDocument = useCallback(
-    (docId: string) => {
+    async (docId: string) => {
       if (!deal) return;
-      const newDocs = (deal.documents ?? []).filter((d) => d.id !== docId);
-      const updated: Deal = { ...deal, documents: newDocs, updatedAt: new Date().toISOString() };
-      setDeal(updated);
-      saveDealLocally(updated);
-      setIsLocal(true);
+      try {
+        await fetch(`/api/deals/${deal.id}/documents/${docId}`, {
+          method: "DELETE",
+        });
+        const newDocs = (deal.documents ?? []).filter((d) => d.id !== docId);
+        setDeal({ ...deal, documents: newDocs, updatedAt: new Date().toISOString() });
+      } catch (error) {
+        console.error("Failed to remove document:", error);
+      }
     },
     [deal],
   );
 
-  const handleDownloadDocument = useCallback((doc: DealDocument) => {
-    const a = document.createElement("a");
-    a.href = doc.dataUrl;
-    a.download = doc.fileName;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-  }, []);
+  const handleDownloadDocument = useCallback(
+    (doc: DealDocument) => {
+      if (!deal) return;
+      // Download from API
+      const a = document.createElement("a");
+      a.href = `/api/deals/${deal.id}/documents/${doc.id}`;
+      a.download = doc.fileName;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    },
+    [deal],
+  );
 
   const formatDocSize = (bytes: number) => {
     if (bytes < 1024) return `${bytes} B`;
@@ -196,37 +184,53 @@ export function DealDetail({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
+  /* ---------- API save helper ---------- */
+
+  const saveDealField = useCallback(
+    async (patch: Record<string, unknown>) => {
+      if (!deal) return;
+      setIsSaving(true);
+      try {
+        const res = await fetch(`/api/deals/${deal.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(patch),
+        });
+        if (res.ok) {
+          const updated = (await res.json()) as Deal;
+          setDeal(updated);
+        }
+      } catch (error) {
+        console.error("Failed to save deal:", error);
+      } finally {
+        setIsSaving(false);
+      }
+    },
+    [deal],
+  );
+
   /* ---------- Field handlers ---------- */
 
   const handleReadinessChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       if (!deal) return;
       const value = e.target.value as ReadinessState;
-      const updated: Deal = { ...deal, readinessState: value, updatedAt: new Date().toISOString() };
-      setDeal(updated);
-      saveDealLocally(updated);
-      setIsLocal(true);
+      // Optimistic update
+      setDeal({ ...deal, readinessState: value, updatedAt: new Date().toISOString() });
+      saveDealField({ readinessState: value });
     },
-    [deal],
+    [deal, saveDealField],
   );
 
   const handleConstraintChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
       if (!deal) return;
       const value = e.target.value as Constraint;
-      const updated: Deal = { ...deal, dominantConstraint: value, updatedAt: new Date().toISOString() };
-      setDeal(updated);
-      saveDealLocally(updated);
-      appendConstraintEvent({
-        entityType: "deal",
-        entityId: deal.id,
-        dominantConstraint: value,
-        changedAt: updated.updatedAt,
-        changeReason: "Edited in UI",
-      });
-      setIsLocal(true);
+      // Optimistic update
+      setDeal({ ...deal, dominantConstraint: value, updatedAt: new Date().toISOString() });
+      saveDealField({ dominantConstraint: value, changeReason: "Edited in UI" });
     },
-    [deal],
+    [deal, saveDealField],
   );
 
   const handleGateToggle = useCallback(
@@ -240,16 +244,12 @@ export function DealDetail({
       const updatedEntries = entries.map((e, i) =>
         i === questionIndex ? { ...e, status: newStatus } : e,
       );
-      const updated: Deal = {
-        ...deal,
-        gateChecklist: { ...deal.gateChecklist, [stage]: updatedEntries },
-        updatedAt: new Date().toISOString(),
-      };
-      setDeal(updated);
-      saveDealLocally(updated);
-      setIsLocal(true);
+      const newChecklist = { ...deal.gateChecklist, [stage]: updatedEntries };
+      // Optimistic update
+      setDeal({ ...deal, gateChecklist: newChecklist, updatedAt: new Date().toISOString() });
+      saveDealField({ gateChecklist: newChecklist });
     },
-    [deal],
+    [deal, saveDealField],
   );
 
   const handleArtefactStatusCycle = useCallback(
@@ -264,16 +264,12 @@ export function DealDetail({
       const updatedEntries = entries.map((e, i) =>
         i === artefactIndex ? { ...e, status: nextStatus } : e,
       );
-      const updated: Deal = {
-        ...deal,
-        artefacts: { ...deal.artefacts, [stage]: updatedEntries },
-        updatedAt: new Date().toISOString(),
-      };
-      setDeal(updated);
-      saveDealLocally(updated);
-      setIsLocal(true);
+      const newArtefacts = { ...deal.artefacts, [stage]: updatedEntries };
+      // Optimistic update
+      setDeal({ ...deal, artefacts: newArtefacts, updatedAt: new Date().toISOString() });
+      saveDealField({ artefacts: newArtefacts });
     },
-    [deal],
+    [deal, saveDealField],
   );
 
   const handleArtefactFieldChange = useCallback(
@@ -284,38 +280,18 @@ export function DealDetail({
       const updatedEntries = entries.map((e, i) =>
         i === artefactIndex ? { ...e, [field]: value || undefined } : e,
       );
-      const updated: Deal = {
-        ...deal,
-        artefacts: { ...deal.artefacts, [stage]: updatedEntries },
-        updatedAt: new Date().toISOString(),
-      };
-      setDeal(updated);
-      saveDealLocally(updated);
-      setIsLocal(true);
+      const newArtefacts = { ...deal.artefacts, [stage]: updatedEntries };
+      // Optimistic update
+      setDeal({ ...deal, artefacts: newArtefacts, updatedAt: new Date().toISOString() });
+      saveDealField({ artefacts: newArtefacts });
     },
-    [deal],
+    [deal, saveDealField],
   );
 
   const selectClass =
     "w-full h-9 px-3 border border-[#E8E6E3] bg-white text-[#2C2C2C] text-sm placeholder:text-[#9A9A9A] focus:border-[#7A6B5A] focus:ring-1 focus:ring-[#7A6B5A] focus:outline-none transition duration-300 ease-out";
 
   /* ---------- Render ---------- */
-
-  if (notFound) {
-    return (
-      <div className="space-y-6">
-        <Link
-          href="/deals/list"
-          className="text-sm text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A]"
-        >
-          &larr; Back to deals
-        </Link>
-        <div className="bg-[#FAF9F7] border border-dashed border-[#E8E6E3] p-12 text-center">
-          <p className="text-sm text-[#6B6B6B]">Deal not found.</p>
-        </div>
-      </div>
-    );
-  }
 
   if (!deal) {
     return (
@@ -347,21 +323,19 @@ export function DealDetail({
           &larr; Back to deals
         </Link>
         <div className="flex items-center gap-2">
-          {isLocal && (
+          {isSaving && (
             <span className="text-xs text-[#7A6B5A] px-2 py-1 border border-[#E8E6E3] bg-[#F5F3F0]">
-              Updated locally
+              Saving…
             </span>
           )}
-          {isLocal && (
-            <button
-              type="button"
-              onClick={() => setShowDeleteConfirm(true)}
-              aria-label="Delete deal"
-              className="h-9 px-3 text-sm border border-[#E8E6E3] bg-transparent text-red-600 hover:border-red-300 hover:bg-red-50 transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
-            >
-              Delete
-            </button>
-          )}
+          <button
+            type="button"
+            onClick={() => setShowDeleteConfirm(true)}
+            aria-label="Delete deal"
+            className="h-9 px-3 text-sm border border-[#E8E6E3] bg-transparent text-red-600 hover:border-red-300 hover:bg-red-50 transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
+          >
+            Delete
+          </button>
           <button
             type="button"
             onClick={toggleEditing}

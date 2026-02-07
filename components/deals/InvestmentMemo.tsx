@@ -4,12 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 
-import type { Deal, DealDocument, LGA, OpportunityType } from "@/lib/types";
-import {
-  saveDealLocally,
-  saveOpportunityTypeLocally,
-  getAllOpportunityTypes,
-} from "@/lib/deal-storage";
+import type { Deal, LGA, OpportunityType } from "@/lib/types";
 import {
   STAGE_LABELS,
   READINESS_LABELS,
@@ -101,8 +96,8 @@ export function InvestmentMemo({
   const [newOtName, setNewOtName] = useState("");
   const [newOtDefinition, setNewOtDefinition] = useState("");
 
-  /** All opportunity types including locally-created ones. */
-  const allOpportunityTypes = getAllOpportunityTypes(opportunityTypes);
+  /** All opportunity types (now loaded from DB via server component). */
+  const [allOpportunityTypes, setAllOpportunityTypes] = useState(opportunityTypes);
 
   /** Serialisable catalogue for the API request. */
   const otCatalogue = allOpportunityTypes.map((ot) => ({
@@ -324,47 +319,37 @@ export function InvestmentMemo({
     if (fileInputRef.current) fileInputRef.current.value = "";
   }, []);
 
-  /** Convert a File to a base64 data URL. */
-  const fileToDataUrl = useCallback(
-    (f: File): Promise<string> =>
-      new Promise((resolve, reject) => {
-        const reader = new FileReader();
-        reader.onload = () => resolve(reader.result as string);
-        reader.onerror = () => reject(new Error("Failed to read file"));
-        reader.readAsDataURL(f);
-      }),
-    []
-  );
-
   // --- Create deal handler ---
   const handleCreateDeal = useCallback(async () => {
     if (!result) return;
 
-    const id =
-      typeof crypto !== "undefined" && crypto.randomUUID
-        ? crypto.randomUUID()
-        : `deal-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
-
     const name = dealName.trim() || result.name || "Untitled Deal";
 
-    // Resolve opportunity type — create new if needed
+    // Resolve opportunity type — create new via API if needed
     let otId: string;
     if (isCreatingNewOt && newOtName.trim()) {
-      const newOtId = newOtName
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-|-$/g, "");
-      const newOt: OpportunityType = {
-        id: newOtId,
-        name: newOtName.trim(),
-        definition: newOtDefinition.trim() || "",
-        economicFunction: "",
-        typicalCapitalStack: "",
-        typicalRisks: "",
-      };
-      saveOpportunityTypeLocally(newOt);
-      otId = newOtId;
+      try {
+        const otRes = await fetch("/api/opportunity-types", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: newOtName.trim(),
+            definition: newOtDefinition.trim() || "",
+          }),
+        });
+        if (otRes.ok) {
+          const newOt = (await otRes.json()) as OpportunityType;
+          otId = newOt.id;
+          // Add to local list so it appears in the dropdown
+          setAllOpportunityTypes((prev) => [...prev, newOt]);
+        } else {
+          console.error("Failed to create opportunity type");
+          return;
+        }
+      } catch {
+        console.error("Failed to create opportunity type");
+        return;
+      }
     } else {
       otId = selectedOtId || allOpportunityTypes[0]?.id || "unknown";
     }
@@ -376,30 +361,10 @@ export function InvestmentMemo({
         .map((l) => l.trim())
         .filter(Boolean);
 
-    // Build documents array — store uploaded file
-    const documents: DealDocument[] = [];
-    if (file) {
-      try {
-        const dataUrl = await fileToDataUrl(file);
-        documents.push({
-          id: crypto.randomUUID?.() ?? `doc-${Date.now()}`,
-          fileName: file.name,
-          mimeType: file.type || "application/octet-stream",
-          sizeBytes: file.size,
-          dataUrl,
-          addedAt: new Date().toISOString(),
-          label: result.memoReference?.label || file.name,
-        });
-      } catch {
-        // If file read fails, still create the deal without the document
-      }
-    }
-
-    const newDeal: Deal = {
-      id,
+    // Create the deal via API
+    const dealBody = {
       name,
       opportunityTypeId: otId,
-      lgaIds: [],
       stage: result.stage,
       readinessState: result.readinessState,
       dominantConstraint: result.dominantConstraint,
@@ -429,19 +394,48 @@ export function InvestmentMemo({
           pageRef: result.memoReference.pageRef,
         },
       ],
-      notes: [],
-      gateChecklist: {},
-      artefacts: {},
-      documents,
-      updatedAt: new Date().toISOString(),
     };
 
-    saveDealLocally(newDeal);
-    setNewDealId(id);
-    setApplied(true);
+    try {
+      const res = await fetch("/api/deals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(dealBody),
+      });
+
+      if (!res.ok) {
+        const data = (await res.json().catch(() => ({}))) as { error?: string };
+        throw new Error(data.error ?? `Failed to create deal (${res.status})`);
+      }
+
+      const { id: newId } = (await res.json()) as { id: string };
+
+      // Upload document to the new deal if a file was uploaded
+      if (file) {
+        try {
+          const formData = new FormData();
+          formData.append("file", file);
+          formData.append("label", result.memoReference?.label || file.name);
+          await fetch(`/api/deals/${newId}/documents`, {
+            method: "POST",
+            body: formData,
+          });
+        } catch {
+          // Deal was created, document upload failed — not fatal
+          console.warn("Document upload failed, deal was still created.");
+        }
+      }
+
+      setNewDealId(newId);
+      setApplied(true);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Failed to create deal."
+      );
+    }
   }, [
     result, file, dealName, selectedOtId, isCreatingNewOt, newOtName,
-    newOtDefinition, allOpportunityTypes, fileToDataUrl,
+    newOtDefinition, allOpportunityTypes,
     draftSummary, draftDescription, draftNextStep, draftInvestmentValue,
     draftEconomicImpact, draftKeyStakeholders, draftRisks,
     draftStrategicActions, draftInfrastructureNeeds, draftSkillsImplications,

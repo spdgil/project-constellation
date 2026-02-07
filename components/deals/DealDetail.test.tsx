@@ -77,7 +77,7 @@ const mockDeal: Deal = {
 describe("DealDetail", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    localStorage.clear();
+    global.fetch = vi.fn();
   });
 
   it("renders the deal hero with name and badges", () => {
@@ -281,7 +281,17 @@ describe("DealDetail", () => {
     expect(screen.getByText("No documents attached yet.")).toBeInTheDocument();
   });
 
-  it("editing readiness state shows Updated locally badge", () => {
+  it("editing readiness state calls PATCH API", async () => {
+    // Mock the PATCH API response
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        ...mockDeal,
+        readinessState: "conceptual-interest",
+        updatedAt: new Date().toISOString(),
+      }),
+    });
+
     render(
       <DealDetail
         deal={mockDeal}
@@ -299,6 +309,12 @@ describe("DealDetail", () => {
       target: { value: "conceptual-interest" },
     });
 
-    expect(screen.getByText(/updated locally/i)).toBeInTheDocument();
+    // Verify API was called
+    expect(global.fetch).toHaveBeenCalledWith(
+      `/api/deals/${mockDeal.id}`,
+      expect.objectContaining({
+        method: "PATCH",
+      })
+    );
   });
 });

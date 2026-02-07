@@ -27,16 +27,7 @@ vi.mock("next/link", () => ({
   ),
 }));
 
-/* Mock deal-storage */
-const saveDealLocallyMock = vi.fn();
-const saveOpportunityTypeLocallyMock = vi.fn();
-vi.mock("@/lib/deal-storage", () => ({
-  getDealsWithLocalOverrides: (deals: Deal[]) => deals,
-  saveDealLocally: (...args: unknown[]) => saveDealLocallyMock(...args),
-  saveOpportunityTypeLocally: (...args: unknown[]) =>
-    saveOpportunityTypeLocallyMock(...args),
-  getAllOpportunityTypes: (base: unknown[]) => base,
-}));
+/* No more deal-storage mock — component now uses fetch API */
 
 /* Mock extract-text — avoids loading pdfjs-dist in tests */
 const mockExtractTextFromFile = vi.fn();
@@ -350,6 +341,7 @@ describe("InvestmentMemo", () => {
   it("allows editing the deal name before creating", async () => {
     mockExtractTextFromFile.mockResolvedValueOnce("Memo content.");
 
+    // First fetch: AI analysis
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
       json: async () => mockResult,
@@ -373,20 +365,38 @@ describe("InvestmentMemo", () => {
       target: { value: "My Custom Deal Name" },
     });
 
+    // Second fetch: POST /api/deals (create deal)
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ id: "new-deal-123" }),
+    });
+    // Third fetch: POST /api/deals/:id/documents (upload document)
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ id: "doc-1", fileName: "strategy.pdf" }),
+    });
+
     fireEvent.click(
       screen.getByRole("button", { name: /create deal/i })
     );
 
     await waitFor(() => {
-      expect(saveDealLocallyMock).toHaveBeenCalledTimes(1);
+      expect(screen.getByRole("link", { name: /open deal/i })).toBeInTheDocument();
     });
-    const savedDeal = saveDealLocallyMock.mock.calls[0][0] as Deal;
-    expect(savedDeal.name).toBe("My Custom Deal Name");
+
+    // Verify the deal creation API was called with the custom name
+    const dealCreateCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.find(
+      (call: unknown[]) => call[0] === "/api/deals" && (call[1] as RequestInit)?.method === "POST"
+    );
+    expect(dealCreateCall).toBeTruthy();
+    const body = JSON.parse((dealCreateCall![1] as RequestInit).body as string);
+    expect(body.name).toBe("My Custom Deal Name");
   });
 
-  it("creates a brand-new deal with generated ID", async () => {
+  it("creates a brand-new deal via API", async () => {
     mockExtractTextFromFile.mockResolvedValueOnce("Memo content.");
 
+    // First fetch: AI analysis
     (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
       ok: true,
       json: async () => mockResult,
@@ -408,40 +418,54 @@ describe("InvestmentMemo", () => {
       ).toBeInTheDocument();
     });
 
+    // Mock the deal creation API response
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({ id: "new-deal-abc" }),
+    });
+    // Mock the document upload API response
+    (global.fetch as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      ok: true,
+      json: async () => ({
+        id: "doc-1",
+        fileName: "strategy.pdf",
+        mimeType: "application/pdf",
+        sizeBytes: 100,
+        addedAt: new Date().toISOString(),
+      }),
+    });
+
     fireEvent.click(
       screen.getByRole("button", { name: /create deal/i })
     );
 
-    // handleCreateDeal is async (reads file as data URL), so wait for save
-    await waitFor(() => {
-      expect(saveDealLocallyMock).toHaveBeenCalledTimes(1);
-    });
-    const savedDeal = saveDealLocallyMock.mock.calls[0][0] as Deal;
-
-    expect(savedDeal.id).toBeTruthy();
-    expect(savedDeal.id).not.toBe("demo-flexilab");
-    expect(savedDeal.name).toBe("GW3 Minerals Processing Hub");
-    expect(savedDeal.stage).toBe("feasibility");
-    expect(savedDeal.dominantConstraint).toBe("early-risk-capital");
-    expect(savedDeal.investmentValue).toBe("$45M");
-    expect(savedDeal.evidence).toHaveLength(1);
-    expect(savedDeal.evidence[0].label).toBe("Investment Memo: strategy.pdf");
-    expect(savedDeal.opportunityTypeId).toBe("critical-minerals");
-    expect(savedDeal.lgaIds).toEqual([]);
-    // Document directory: uploaded file should be attached
-    expect(savedDeal.documents).toBeDefined();
-    expect(savedDeal.documents!.length).toBe(1);
-    expect(savedDeal.documents![0].fileName).toBe("strategy.pdf");
-
-    // "Open deal" link replaces the create button
+    // Wait for "Open deal" link to appear
     await waitFor(() => {
       expect(screen.getByRole("link", { name: /open deal/i })).toBeInTheDocument();
     });
+
     const openLink = screen.getByRole("link", { name: /open deal/i });
-    expect(openLink).toHaveAttribute(
-      "href",
-      expect.stringContaining("/deals/")
+    expect(openLink).toHaveAttribute("href", "/deals/new-deal-abc");
+
+    // Verify the deal creation API was called
+    const dealCreateCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.find(
+      (call: unknown[]) => call[0] === "/api/deals" && (call[1] as RequestInit)?.method === "POST"
     );
+    expect(dealCreateCall).toBeTruthy();
+    const body = JSON.parse((dealCreateCall![1] as RequestInit).body as string);
+    expect(body.name).toBe("GW3 Minerals Processing Hub");
+    expect(body.stage).toBe("feasibility");
+    expect(body.dominantConstraint).toBe("early-risk-capital");
+    expect(body.opportunityTypeId).toBe("critical-minerals");
+
+    // Verify document upload was called
+    const docUploadCall = (global.fetch as ReturnType<typeof vi.fn>).mock.calls.find(
+      (call: unknown[]) =>
+        typeof call[0] === "string" &&
+        call[0].includes("/documents") &&
+        (call[1] as RequestInit)?.method === "POST"
+    );
+    expect(docUploadCall).toBeTruthy();
   });
 
   it("highlights drop zone on drag over", () => {

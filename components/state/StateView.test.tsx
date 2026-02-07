@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, within } from "@testing-library/react";
 import { StateView } from "./StateView";
 import type { Deal, LGA, OpportunityType } from "@/lib/types";
-import { saveDealLocally } from "@/lib/deal-storage";
+// deal-storage is no longer used — data comes from the database
 
 const mockLgas: LGA[] = [
   { id: "mackay", name: "Mackay", geometryRef: "mackay", notes: [] },
@@ -66,7 +66,6 @@ const mockDeals: Deal[] = [
 describe("StateView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    localStorage.clear();
   });
 
   it("renders three collapsible sections", () => {
@@ -171,32 +170,16 @@ describe("StateView", () => {
     expect(screen.getByTestId("constraint-lga-isaac")).toBeInTheDocument();
   });
 
-  it("aggregates change when local edits are applied (readiness)", () => {
-    const { unmount } = render(
-      <StateView
-        opportunityTypes={mockOpportunityTypes}
-        deals={mockDeals}
-        lgas={mockLgas}
-      />
-    );
-
-    fireEvent.click(
-      screen.getByRole("button", { name: /pipeline summary by opportunity type/i })
-    );
-
-    expect(screen.getByTestId("readiness-critical-minerals-feasibility-underway")).toHaveTextContent("1");
-
-    unmount();
-    saveDealLocally({
-      ...mockDeals[0],
-      readinessState: "conceptual-interest",
-      updatedAt: new Date().toISOString(),
-    });
+  it("aggregates reflect updated deals prop (readiness)", () => {
+    const updatedDeals = [
+      { ...mockDeals[0], readinessState: "conceptual-interest" as const },
+      mockDeals[1],
+    ];
 
     render(
       <StateView
         opportunityTypes={mockOpportunityTypes}
-        deals={mockDeals}
+        deals={updatedDeals}
         lgas={mockLgas}
       />
     );
@@ -209,32 +192,16 @@ describe("StateView", () => {
     expect(screen.queryByTestId("readiness-critical-minerals-feasibility-underway")).not.toBeInTheDocument();
   });
 
-  it("aggregates change when local edits are applied (constraint)", () => {
-    const { unmount } = render(
-      <StateView
-        opportunityTypes={mockOpportunityTypes}
-        deals={mockDeals}
-        lgas={mockLgas}
-      />
-    );
-
-    fireEvent.click(
-      screen.getByRole("button", { name: /constraint summary by opportunity type/i })
-    );
-
-    expect(screen.getByTestId("constraint-critical-minerals-common-user-infrastructure-gap")).toHaveTextContent("1");
-
-    unmount();
-    saveDealLocally({
-      ...mockDeals[0],
-      dominantConstraint: "planning-and-approvals",
-      updatedAt: new Date().toISOString(),
-    });
+  it("aggregates reflect updated deals prop (constraint)", () => {
+    const updatedDeals = [
+      { ...mockDeals[0], dominantConstraint: "planning-and-approvals" as const },
+      mockDeals[1],
+    ];
 
     render(
       <StateView
         opportunityTypes={mockOpportunityTypes}
-        deals={mockDeals}
+        deals={updatedDeals}
         lgas={mockLgas}
       />
     );

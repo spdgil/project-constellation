@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen } from "@testing-library/react";
 import { OpportunityDetail } from "./OpportunityDetail";
 import type { Deal, LGA, OpportunityType } from "@/lib/types";
-import { saveDealLocally } from "@/lib/deal-storage";
+// deal-storage is no longer used — data comes from the database
 
 const mockLgas: LGA[] = [
   { id: "mackay", name: "Mackay", geometryRef: "mackay", notes: [] },
@@ -39,7 +39,7 @@ const mockDeals: Deal[] = [
 describe("OpportunityDetail", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    localStorage.clear();
+    // no localStorage to clear — data comes from the database
   });
 
   it("renders opportunity type definition and deals", () => {
@@ -106,19 +106,19 @@ describe("OpportunityDetail", () => {
     ).toBeInTheDocument();
   });
 
-  it("counts update when deal is edited locally (localStorage override)", () => {
-    const editedDeal: Deal = {
-      ...mockDeals[0],
-      readinessState: "conceptual-interest",
-      dominantConstraint: "planning-and-approvals",
-      updatedAt: new Date().toISOString(),
-    };
-    saveDealLocally(editedDeal);
+  it("reflects updated deals prop from database", () => {
+    const updatedDeals = [
+      {
+        ...mockDeals[0],
+        readinessState: "conceptual-interest" as const,
+        dominantConstraint: "planning-and-approvals" as const,
+      },
+    ];
 
     render(
       <OpportunityDetail
         opportunityType={mockOpportunityType}
-        deals={mockDeals}
+        deals={updatedDeals}
         lgas={mockLgas}
       />
     );
