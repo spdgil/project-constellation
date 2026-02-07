@@ -9,6 +9,9 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
+import { env } from "@/lib/env";
+import { logger } from "@/lib/logger";
+import { checkRateLimit, rateLimitKeyFromRequest } from "@/lib/rate-limit";
 import type { StrategyComponentId } from "@/lib/types";
 
 // =============================================================================
@@ -50,11 +53,11 @@ export interface StrategyExtractionResult {
 let openaiClient: OpenAI | null = null;
 
 function getOpenAIClient(): OpenAI {
-  if (!process.env.OPENAI_API_KEY) {
+  if (!env.OPENAI_API_KEY) {
     throw new Error("OPENAI_API_KEY environment variable is not set");
   }
   if (!openaiClient) {
-    openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    openaiClient = new OpenAI({ apiKey: env.OPENAI_API_KEY });
   }
   return openaiClient;
 }
@@ -204,6 +207,19 @@ function asStringArray(value: unknown): string[] {
 // =============================================================================
 
 export async function POST(request: Request) {
+  // Rate limit: 10 requests per minute per IP
+  const rlKey = rateLimitKeyFromRequest(request);
+  const rl = checkRateLimit(`strategy-extract:${rlKey}`, 10, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) },
+      },
+    );
+  }
+
   try {
     const body = (await request.json()) as StrategyExtractionRequest;
 
@@ -345,7 +361,7 @@ export async function POST(request: Request) {
       }
     }
 
-    console.error("[strategy-extract] Error:", error);
+    logger.error("Strategy extraction failed", { error: String(error) });
     return NextResponse.json(
       {
         error:

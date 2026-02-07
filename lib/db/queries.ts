@@ -119,7 +119,7 @@ function mapDeal(d: NonNullable<PrismaDealFull>): Deal {
     fileName: doc.fileName,
     mimeType: doc.mimeType,
     sizeBytes: doc.sizeBytes,
-    dataUrl: "", // Not included in list queries — fetch on demand
+    fileUrl: doc.fileUrl,
     addedAt: doc.addedAt.toISOString(),
     label: doc.label ?? undefined,
   }));
@@ -277,19 +277,19 @@ export async function loadConstraintEvents(entityId: string): Promise<Constraint
   }));
 }
 
-/** Get document file data (binary) for download. */
+/** Get document metadata (URL) for download/redirect. */
 export async function getDocumentData(
   docId: string
-): Promise<{ fileName: string; mimeType: string; data: Buffer } | null> {
+): Promise<{ fileName: string; mimeType: string; fileUrl: string } | null> {
   const doc = await prisma.dealDocument.findUnique({
     where: { id: docId },
-    select: { fileName: true, mimeType: true, fileData: true },
+    select: { fileName: true, mimeType: true, fileUrl: true },
   });
   if (!doc) return null;
   return {
     fileName: doc.fileName,
     mimeType: doc.mimeType,
-    data: Buffer.from(doc.fileData),
+    fileUrl: doc.fileUrl,
   };
 }
 

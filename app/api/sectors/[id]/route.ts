@@ -8,6 +8,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { PatchSectorSchema } from "@/lib/validations";
+import { logger } from "@/lib/logger";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -23,7 +24,7 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
     }
     return NextResponse.json(row);
   } catch (error) {
-    console.error(`GET /api/sectors/${id} error:`, error);
+    logger.error("GET /api/sectors/:id failed", { id, error: String(error) });
     return NextResponse.json(
       { error: "Failed to load sector opportunity" },
       { status: 500 },
@@ -74,7 +75,7 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
 
     return NextResponse.json(updated);
   } catch (error) {
-    console.error(`PATCH /api/sectors/${id} error:`, error);
+    logger.error("PATCH /api/sectors/:id failed", { id, error: String(error) });
     return NextResponse.json(
       { error: "Failed to update sector opportunity" },
       { status: 500 },

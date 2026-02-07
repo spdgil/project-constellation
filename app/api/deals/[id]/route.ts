@@ -7,6 +7,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { loadDealById } from "@/lib/db/queries";
+import { logger } from "@/lib/logger";
 import {
   stageToDb,
   readinessToDb,
@@ -28,7 +29,7 @@ export async function GET(_req: Request, context: RouteContext) {
     }
     return NextResponse.json(deal);
   } catch (error) {
-    console.error(`GET /api/deals/${id} error:`, error);
+    logger.error("GET /api/deals/:id failed", { id, error: String(error) });
     return NextResponse.json(
       { error: "Failed to load deal" },
       { status: 500 }
@@ -140,7 +141,7 @@ export async function PATCH(request: Request, context: RouteContext) {
     const updated = await loadDealById(id);
     return NextResponse.json(updated);
   } catch (error) {
-    console.error(`PATCH /api/deals/${id} error:`, error);
+    logger.error("PATCH /api/deals/:id failed", { id, error: String(error) });
     return NextResponse.json(
       { error: "Failed to update deal" },
       { status: 500 }
@@ -158,7 +159,7 @@ export async function DELETE(_req: Request, context: RouteContext) {
     await prisma.deal.delete({ where: { id } });
     return NextResponse.json({ deleted: true });
   } catch (error) {
-    console.error(`DELETE /api/deals/${id} error:`, error);
+    logger.error("DELETE /api/deals/:id failed", { id, error: String(error) });
     return NextResponse.json(
       { error: "Failed to delete deal" },
       { status: 500 }

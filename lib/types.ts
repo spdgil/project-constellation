@@ -132,8 +132,8 @@ export interface DealDocument {
   mimeType: string;
   /** File size in bytes */
   sizeBytes: number;
-  /** Base64-encoded file content (data URL) */
-  dataUrl: string;
+  /** Public URL of the file in Vercel Blob storage */
+  fileUrl: string;
   /** When the document was attached */
   addedAt: string;
   /** Optional user-provided label */

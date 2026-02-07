@@ -9,6 +9,9 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
+import { env } from "@/lib/env";
+import { logger } from "@/lib/logger";
+import { checkRateLimit, rateLimitKeyFromRequest } from "@/lib/rate-limit";
 import { prisma } from "@/lib/db/prisma";
 import { loadStrategyById } from "@/lib/db/queries";
 import { gradeLetterToDb } from "@/lib/db/enum-maps";
@@ -51,11 +54,11 @@ export interface StrategyGradeResult {
 let openaiClient: OpenAI | null = null;
 
 function getOpenAIClient(): OpenAI {
-  if (!process.env.OPENAI_API_KEY) {
+  if (!env.OPENAI_API_KEY) {
     throw new Error("OPENAI_API_KEY environment variable is not set");
   }
   if (!openaiClient) {
-    openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    openaiClient = new OpenAI({ apiKey: env.OPENAI_API_KEY });
   }
   return openaiClient;
 }
@@ -288,6 +291,19 @@ function validateGradingResponse(
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function POST(_request: Request, context: RouteContext) {
+  // Rate limit: 10 requests per minute per IP
+  const rlKey = rateLimitKeyFromRequest(_request);
+  const rl = checkRateLimit(`strategy-grade:${rlKey}`, 10, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) },
+      },
+    );
+  }
+
   const { id } = await context.params;
 
   try {
@@ -424,7 +440,7 @@ export async function POST(_request: Request, context: RouteContext) {
       }
     }
 
-    console.error(`[strategy-grade] Error for strategy ${id}:`, error);
+    logger.error("Strategy grading failed", { strategyId: id, error: String(error) });
     return NextResponse.json(
       {
         error:

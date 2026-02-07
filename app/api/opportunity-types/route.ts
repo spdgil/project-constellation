@@ -6,13 +6,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { loadOpportunityTypes } from "@/lib/db/queries";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
     const types = await loadOpportunityTypes();
     return NextResponse.json(types);
   } catch (error) {
-    console.error("GET /api/opportunity-types error:", error);
+    logger.error("GET /api/opportunity-types failed", { error: String(error) });
     return NextResponse.json(
       { error: "Failed to load opportunity types" },
       { status: 500 }
@@ -71,7 +72,7 @@ export async function POST(request: Request) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("POST /api/opportunity-types error:", error);
+    logger.error("POST /api/opportunity-types failed", { error: String(error) });
     return NextResponse.json(
       { error: "Failed to create opportunity type" },
       { status: 500 }

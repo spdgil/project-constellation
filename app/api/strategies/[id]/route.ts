@@ -7,6 +7,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { loadStrategyById } from "@/lib/db/queries";
+import { logger } from "@/lib/logger";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -22,7 +23,7 @@ export async function GET(_req: Request, context: RouteContext) {
     }
     return NextResponse.json(strategy);
   } catch (error) {
-    console.error(`GET /api/strategies/${id} error:`, error);
+    logger.error("GET /api/strategies/:id failed", { id, error: String(error) });
     return NextResponse.json(
       { error: "Failed to load strategy" },
       { status: 500 },
@@ -137,7 +138,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error(`PATCH /api/strategies/${id} error:`, error);
+    logger.error("PATCH /api/strategies/:id failed", { id, error: String(error) });
     return NextResponse.json(
       { error: "Failed to update strategy" },
       { status: 500 },
@@ -161,7 +162,7 @@ export async function DELETE(_req: Request, context: RouteContext) {
     await prisma.sectorDevelopmentStrategy.delete({ where: { id } });
     return NextResponse.json({ ok: true });
   } catch (error) {
-    console.error(`DELETE /api/strategies/${id} error:`, error);
+    logger.error("DELETE /api/strategies/:id failed", { id, error: String(error) });
     return NextResponse.json(
       { error: "Failed to delete strategy" },
       { status: 500 },

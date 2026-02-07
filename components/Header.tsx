@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useSession, signOut } from "next-auth/react";
 
 const NAV_ITEMS = [
   { href: "/", label: "Home" },
@@ -13,6 +14,7 @@ const NAV_ITEMS = [
 
 export function Header() {
   const pathname = usePathname();
+  const { data: session } = useSession();
 
   return (
     <header
@@ -20,11 +22,34 @@ export function Header() {
       role="banner"
     >
       <div className="mx-auto max-w-screen-2xl px-4 sm:px-6">
-        {/* App name — static identity label above the tabs */}
-        <div className="pt-3 pb-1">
+        {/* Top bar: app name + user */}
+        <div className="pt-3 pb-1 flex items-center justify-between">
           <span className="font-heading text-2xl text-[#2C2C2C]">
             The Constellation Development Facility
           </span>
+
+          {session?.user && (
+            <div className="flex items-center gap-3">
+              {session.user.image && (
+                <img
+                  src={session.user.image}
+                  alt=""
+                  className="w-7 h-7 rounded-full"
+                  referrerPolicy="no-referrer"
+                />
+              )}
+              <span className="text-sm text-[#6B6B6B] hidden sm:inline">
+                {session.user.name ?? session.user.email}
+              </span>
+              <button
+                type="button"
+                onClick={() => signOut({ callbackUrl: "/auth/signin" })}
+                className="text-xs text-[#9A9A9A] hover:text-[#2C2C2C] transition duration-200"
+              >
+                Sign out
+              </button>
+            </div>
+          )}
         </div>
 
         {/* Navigation tabs */}

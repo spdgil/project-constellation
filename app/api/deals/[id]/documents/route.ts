@@ -6,6 +6,8 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { validateUploadedFile } from "@/lib/validations";
+import { uploadToBlob } from "@/lib/blob-storage";
+import { logger } from "@/lib/logger";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -19,6 +21,7 @@ export async function GET(_req: Request, context: RouteContext) {
         fileName: true,
         mimeType: true,
         sizeBytes: true,
+        fileUrl: true,
         label: true,
         addedAt: true,
       },
@@ -31,12 +34,13 @@ export async function GET(_req: Request, context: RouteContext) {
         fileName: d.fileName,
         mimeType: d.mimeType,
         sizeBytes: d.sizeBytes,
+        fileUrl: d.fileUrl,
         label: d.label,
         addedAt: d.addedAt.toISOString(),
       }))
     );
   } catch (error) {
-    console.error(`GET /api/deals/${id}/documents error:`, error);
+    logger.error("GET /api/deals/:id/documents failed", { id, error: String(error) });
     return NextResponse.json(
       { error: "Failed to load documents" },
       { status: 500 }
@@ -70,9 +74,8 @@ export async function POST(request: Request, context: RouteContext) {
       return NextResponse.json({ error: fileError }, { status: 400 });
     }
 
-    // Read file as buffer
-    const arrayBuffer = await file.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    // Upload to Vercel Blob
+    const fileUrl = await uploadToBlob(file, { folder: `deals/${id}` });
 
     const doc = await prisma.dealDocument.create({
       data: {
@@ -80,7 +83,7 @@ export async function POST(request: Request, context: RouteContext) {
         fileName: file.name,
         mimeType: file.type || "application/octet-stream",
         sizeBytes: file.size,
-        fileData: buffer,
+        fileUrl,
         label: label || null,
       },
     });
@@ -91,13 +94,14 @@ export async function POST(request: Request, context: RouteContext) {
         fileName: doc.fileName,
         mimeType: doc.mimeType,
         sizeBytes: doc.sizeBytes,
+        fileUrl: doc.fileUrl,
         label: doc.label,
         addedAt: doc.addedAt.toISOString(),
       },
       { status: 201 }
     );
   } catch (error) {
-    console.error(`POST /api/deals/${id}/documents error:`, error);
+    logger.error("POST /api/deals/:id/documents failed", { id, error: String(error) });
     return NextResponse.json(
       { error: "Failed to upload document" },
       { status: 500 }

@@ -10,6 +10,11 @@ export default defineConfig({
     setupFiles: ["./tests/setup.ts"],
     include: ["**/*.{test,spec}.{ts,tsx}"],
     exclude: ["node_modules", ".next"],
+    env: {
+      // Dummy values for env validation in tests (no real connections made)
+      DATABASE_URL: "postgresql://test:test@localhost:5432/test",
+      OPENAI_API_KEY: "test-key",
+    },
   },
   resolve: {
     alias: {

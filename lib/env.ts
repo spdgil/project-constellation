@@ -5,10 +5,21 @@
 
 import { z } from "zod";
 
+/** Coerce empty string to undefined so optional vars work when set to "" in .env */
+const optionalString = z.preprocess(
+  (val) => (val === "" || val === undefined ? undefined : val),
+  z.string().min(1).optional(),
+);
+
 const serverEnvSchema = z.object({
   DATABASE_URL: z.string().min(1, "DATABASE_URL is required"),
-  OPENAI_API_KEY: z.string().min(1, "OPENAI_API_KEY is required").optional(),
-  NEXT_PUBLIC_MAPBOX_TOKEN: z.string().min(1, "NEXT_PUBLIC_MAPBOX_TOKEN is required").optional(),
+  OPENAI_API_KEY: optionalString,
+  NEXT_PUBLIC_MAPBOX_TOKEN: optionalString,
+  AUTH_SECRET: optionalString,
+  AUTH_GOOGLE_ID: optionalString,
+  AUTH_GOOGLE_SECRET: optionalString,
+  BLOB_READ_WRITE_TOKEN: optionalString,
+  SENTRY_DSN: optionalString,
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

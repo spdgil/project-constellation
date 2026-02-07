@@ -138,7 +138,7 @@ export function DealDetail({
               fileName: doc.fileName,
               mimeType: doc.mimeType,
               sizeBytes: doc.sizeBytes,
-              dataUrl: "", // Files are stored in DB, downloaded on demand
+              fileUrl: "", // Files stored in Vercel Blob, URL populated on fetch
               addedAt: doc.addedAt,
               label: doc.label ?? undefined,
             });

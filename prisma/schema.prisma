@@ -263,15 +263,15 @@ model DealTimelineMilestone {
   @@map("deal_timeline_milestones")
 }
 
-/// Attached document (stored as binary or path reference)
+/// Attached document (stored in Vercel Blob; URL reference in database)
 model DealDocument {
   id        String   @id @default(cuid())
   dealId    String   @map("deal_id")
   fileName  String   @map("file_name")
   mimeType  String   @map("mime_type")
   sizeBytes Int      @map("size_bytes")
-  /// File stored as binary in the database (for MVP; migrate to S3 for production)
-  fileData  Bytes    @map("file_data")
+  /// Public URL of the file in Vercel Blob storage
+  fileUrl   String   @map("file_url")
   label     String?
   addedAt   DateTime @default(now()) @map("added_at")
 
@@ -393,14 +393,15 @@ model SectorDevelopmentStrategy {
   @@map("sector_development_strategies")
 }
 
-/// Attached document for a strategy (stored as binary — MVP; migrate to S3 for production)
+/// Attached document for a strategy (stored in Vercel Blob; URL reference in database)
 model StrategyDocument {
   id          String   @id @default(cuid())
   strategyId  String   @map("strategy_id")
   fileName    String   @map("file_name")
   mimeType    String   @map("mime_type")
   sizeBytes   Int      @map("size_bytes")
-  fileData    Bytes    @map("file_data")
+  /// Public URL of the file in Vercel Blob storage
+  fileUrl     String   @map("file_url")
   label       String?
   addedAt     DateTime @default(now()) @map("added_at")
 

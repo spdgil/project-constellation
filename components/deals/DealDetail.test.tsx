@@ -245,7 +245,7 @@ describe("DealDetail", () => {
           fileName: "investment-memo.pdf",
           mimeType: "application/pdf",
           sizeBytes: 245760,
-          dataUrl: "data:application/pdf;base64,abc",
+          fileUrl: "https://example.com/investment-memo.pdf",
           addedAt: "2026-02-06T00:00:00.000Z",
           label: "Investment Memo Q1 2026",
         },

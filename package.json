@@ -10,23 +10,29 @@
     "test": "vitest",
     "test:run": "vitest run",
     "db:migrate": "prisma migrate dev",
+    "db:migrate:deploy": "prisma migrate deploy",
     "db:seed": "tsx --tsconfig prisma/tsconfig.seed.json prisma/seed.ts",
     "db:reset": "prisma migrate reset --force && tsx --tsconfig prisma/tsconfig.seed.json prisma/seed.ts",
     "seed:ingest": "tsx scripts/ingest-seeds.ts",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build",
     "prepare": "husky"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.3.0",
     "@prisma/client": "^7.3.0",
+    "@sentry/nextjs": "^10.38.0",
+    "@vercel/blob": "^2.2.0",
     "mapbox-gl": "^3.18.1",
     "next": "16.1.6",
+    "next-auth": "^5.0.0-beta.30",
     "openai": "^6.18.0",
     "pdfjs-dist": "^5.4.624",
     "pg": "^8.18.0",
     "prisma": "^7.3.0",
     "react": "19.2.3",
     "react-dom": "19.2.3",
-    "react-map-gl": "^8.1.0"
+    "react-map-gl": "^8.1.0",
+    "zod": "^4.3.6"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.2.0",
@@ -51,5 +57,9 @@
     "typescript": "~5.7.2",
     "vitest": "^4.0.0"
   },
-  "lint-staged": {}
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "eslint --fix"
+    ]
+  }
 }

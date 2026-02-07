@@ -14,6 +14,12 @@ jobs:
   quality:
     name: Lint, Type-check, Test, Build
     runs-on: ubuntu-latest
+    env:
+      # Dummy DATABASE_URL for Prisma generate/type-check (no real DB in CI)
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/constellation_ci"
+      # Suppress Sentry source map upload in CI
+      SENTRY_AUTH_TOKEN: ""
+
     steps:
       - uses: actions/checkout@v4
 
@@ -24,6 +30,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Generate Prisma client
+        run: npx prisma generate
 
       - name: Lint
         run: npm run lint

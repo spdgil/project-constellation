@@ -7,6 +7,8 @@
  */
 
 import { NextResponse } from "next/server";
+import { env } from "@/lib/env";
+import { logger } from "@/lib/logger";
 
 // Queensland bounding box (covers all 77 LGAs)
 const QLD_BBOX = "138,-29,154,-10";
@@ -35,9 +37,9 @@ export async function POST(request: Request) {
       );
     }
 
-    const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN;
+    const token = env.NEXT_PUBLIC_MAPBOX_TOKEN;
     if (!token) {
-      console.error("[geocode] NEXT_PUBLIC_MAPBOX_TOKEN not set");
+      logger.error("NEXT_PUBLIC_MAPBOX_TOKEN not set");
       return NextResponse.json(
         { lat: null, lng: null, confidence: null, matchedPlace: null },
         { status: 200 }
@@ -56,7 +58,7 @@ export async function POST(request: Request) {
     const res = await fetch(url);
 
     if (!res.ok) {
-      console.error(`[geocode] Mapbox API error: ${res.status}`);
+      logger.error("Mapbox API error", { status: res.status });
       return NextResponse.json(
         { lat: null, lng: null, confidence: null, matchedPlace: null },
         { status: 200 }
@@ -82,7 +84,7 @@ export async function POST(request: Request) {
     const result: GeocodeResult = { lat, lng, confidence, matchedPlace };
     return NextResponse.json(result);
   } catch (error) {
-    console.error("[geocode] Error:", error);
+    logger.error("Geocode error", { error: String(error) });
     return NextResponse.json(
       { lat: null, lng: null, confidence: null, matchedPlace: null },
       { status: 200 }

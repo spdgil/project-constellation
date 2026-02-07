@@ -6,13 +6,14 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { loadStrategies } from "@/lib/db/queries";
+import { logger } from "@/lib/logger";
 
 export async function GET() {
   try {
     const strategies = await loadStrategies();
     return NextResponse.json(strategies);
   } catch (error) {
-    console.error("GET /api/strategies error:", error);
+    logger.error("GET /api/strategies failed", { error: String(error) });
     return NextResponse.json(
       { error: "Failed to load strategies" },
       { status: 500 },
@@ -51,7 +52,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ id: strategy.id }, { status: 201 });
   } catch (error) {
-    console.error("POST /api/strategies error:", error);
+    logger.error("POST /api/strategies failed", { error: String(error) });
     return NextResponse.json(
       { error: "Failed to create strategy" },
       { status: 500 },

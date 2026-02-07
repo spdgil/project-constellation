@@ -6,6 +6,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { loadDeals } from "@/lib/db/queries";
+import { logger } from "@/lib/logger";
 import {
   stageToDb,
   readinessToDb,
@@ -21,7 +22,7 @@ export async function GET() {
     const deals = await loadDeals();
     return NextResponse.json(deals);
   } catch (error) {
-    console.error("GET /api/deals error:", error);
+    logger.error("GET /api/deals failed", { error: String(error) });
     return NextResponse.json(
       { error: "Failed to load deals" },
       { status: 500 }
@@ -127,7 +128,7 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ id: deal.id }, { status: 201 });
   } catch (error) {
-    console.error("POST /api/deals error:", error);
+    logger.error("POST /api/deals failed", { error: String(error) });
     return NextResponse.json(
       { error: "Failed to create deal" },
       { status: 500 }

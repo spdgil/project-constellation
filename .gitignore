@@ -56,4 +56,7 @@ prisma/migrations/**/migration_lock.toml
 # Sentry
 .sentryclirc
 
+# Large binary files
+*.pdf
+
 /lib/generated/prisma

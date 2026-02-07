@@ -8,6 +8,9 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
+import { env } from "@/lib/env";
+import { logger } from "@/lib/logger";
+import { checkRateLimit, rateLimitKeyFromRequest } from "@/lib/rate-limit";
 import { PATHWAY_STAGES } from "@/lib/pathway-data";
 import type {
   Constraint,
@@ -73,11 +76,11 @@ export interface MemoAnalysisResult {
 let openaiClient: OpenAI | null = null;
 
 function getOpenAIClient(): OpenAI {
-  if (!process.env.OPENAI_API_KEY) {
+  if (!env.OPENAI_API_KEY) {
     throw new Error("OPENAI_API_KEY environment variable is not set");
   }
   if (!openaiClient) {
-    openaiClient = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+    openaiClient = new OpenAI({ apiKey: env.OPENAI_API_KEY });
   }
   return openaiClient;
 }
@@ -372,6 +375,19 @@ function validateSuggestedOT(
 // =============================================================================
 
 export async function POST(request: Request) {
+  // Rate limit: 10 requests per minute per IP
+  const rlKey = rateLimitKeyFromRequest(request);
+  const rl = checkRateLimit(`analyse-memo:${rlKey}`, 10, 60_000);
+  if (!rl.allowed) {
+    return NextResponse.json(
+      { error: "Too many requests. Please try again later." },
+      {
+        status: 429,
+        headers: { "Retry-After": String(Math.ceil(rl.retryAfterMs / 1000)) },
+      },
+    );
+  }
+
   try {
     const body = (await request.json()) as MemoAnalysisRequest;
 
@@ -504,7 +520,7 @@ export async function POST(request: Request) {
       }
     }
 
-    console.error("[analyse-memo] Error:", error);
+    logger.error("Analyse memo failed", { error: String(error) });
     return NextResponse.json(
       {
         error:
