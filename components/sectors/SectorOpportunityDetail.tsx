@@ -164,26 +164,16 @@ export function SectorOpportunityDetail({
             </div>
           </section>
 
-          {/* Sections 2–10 as accordions with coloured number badges */}
+          {/* Sections 2–10 as accordions */}
           <div className="bg-white border border-t-0 border-[#E8E6E3] px-6">
             {SECTION_IDS.slice(1).map((sectionId) => {
               const content = so.sections[sectionId];
               if (!content) return null;
 
-              const sTheme = SECTION_THEME[sectionId] ?? "blue";
-              const sc = COLOUR_CLASSES[sTheme];
-
               return (
                 <AccordionSection
                   key={sectionId}
                   title={SECTOR_OPPORTUNITY_SECTION_NAMES[sectionId]}
-                  badge={
-                    <span
-                      className={`inline-flex items-center justify-center w-5 h-5 text-[10px] font-medium ${sc.tagBg} ${sc.tagText} border ${sc.tagBorder}`}
-                    >
-                      {sectionId}
-                    </span>
-                  }
                   defaultOpen={sectionId === "2"}
                 >
                   <div className="space-y-2">
