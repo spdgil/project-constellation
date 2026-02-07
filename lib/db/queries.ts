@@ -227,6 +227,19 @@ export async function loadDealById(id: string): Promise<Deal | null> {
   return row ? mapDeal(row) : null;
 }
 
+/** Load a single LGA by ID. */
+export async function loadLgaById(id: string): Promise<LGA | null> {
+  const row = await prisma.lga.findUnique({
+    where: { id },
+    include: {
+      evidence: true,
+      opportunityHypotheses: true,
+      deals: true,
+    },
+  });
+  return row ? mapLga(row) : null;
+}
+
 /** Load all LGAs with relations. */
 export async function loadLgas(): Promise<LGA[]> {
   const rows = await prisma.lga.findMany({

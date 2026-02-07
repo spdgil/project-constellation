@@ -71,24 +71,28 @@ export function MapCanvas({
     [initialView],
   );
 
-  /* Refs to keep handleLoad stable (no dependency-driven recreation).   */
+  /* Refs to keep handleLoad stable (no dependency-driven recreation).
+   * All mutable props that handleLoad reads go through refs so the
+   * callback identity NEVER changes — prevents react-map-gl from
+   * re-firing onLoad on every render.                                  */
   const hasFittedRef = useRef(false);
+  const mapLoadedRef = useRef(false);
   const boundariesRef = useRef(boundaries);
   boundariesRef.current = boundaries;
+  const initialFitBoundsRef = useRef(initialFitBounds);
+  initialFitBoundsRef.current = initialFitBounds;
 
-  /** On load: resize then fit to explicit bounds or LGA data extent.
-   *  Uses refs so the callback identity never changes — prevents
-   *  react-map-gl from re-firing onLoad on every render.              */
-  const handleLoad = useCallback(() => {
+  /** Try to fit the map to the best available bounds. Called from
+   *  handleLoad (on first map load) and from an effect when
+   *  initialFitBounds arrives after mount.                             */
+  const fitIfReady = useCallback(() => {
     const map = mapRef.current;
-    if (!map) return;
-    map.resize();
+    if (!map || hasFittedRef.current) return;
 
-    if (hasFittedRef.current) return;
-
-    /* Fit to caller-provided bounds (e.g. Queensland outline). */
-    if (initialFitBounds) {
-      map.fitBounds(initialFitBounds, { padding: 24, duration: 0 });
+    /* Fit to caller-provided bounds (e.g. Queensland outline, LGA bbox). */
+    const explicitBounds = initialFitBoundsRef.current;
+    if (explicitBounds) {
+      map.fitBounds(explicitBounds, { padding: 24, duration: 0 });
       hasFittedRef.current = true;
       return;
     }
@@ -123,8 +127,25 @@ export function MapCanvas({
       { padding: 48, duration: 0 },
     );
     hasFittedRef.current = true;
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initialFitBounds, fitBoundsOnLoad]);
+  }, [fitBoundsOnLoad]);
+
+  /** On load: resize then attempt initial fit. Fully ref-based so the
+   *  callback identity is stable across renders.                       */
+  const handleLoad = useCallback(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    map.resize();
+    mapLoadedRef.current = true;
+    fitIfReady();
+  }, [fitIfReady]);
+
+  /** When initialFitBounds arrives *after* the map has already loaded
+   *  (e.g. async boundary fetch), try fitting again.                   */
+  useEffect(() => {
+    if (mapLoadedRef.current && initialFitBounds && !hasFittedRef.current) {
+      fitIfReady();
+    }
+  }, [initialFitBounds, fitIfReady]);
 
   /* ------------------------------------------------------------------ */
   /* Click handler: LGA fill layer → select; empty → deselect           */

@@ -207,7 +207,7 @@ function LgaCard({
 
   return (
     <Link
-      href={`/lga/map?lga=${lga.id}`}
+      href={`/lga/${lga.id}`}
       className="group flex flex-col bg-white border border-[#E8E6E3] border-t-[3px] border-t-[#7A6B5A] hover:border-[#7A6B5A] transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
     >
       {/* Card header */}
