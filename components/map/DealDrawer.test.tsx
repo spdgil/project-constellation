@@ -94,6 +94,41 @@ describe("DealDrawer", () => {
     expect(screen.queryByText(/updated locally/i)).not.toBeInTheDocument();
   });
 
+  it("defaults to view mode with static text instead of dropdowns", () => {
+    render(
+      <DealDrawer
+        deal={mockDeal}
+        opportunityTypes={mockOpportunityTypes}
+        lgas={mockLgas}
+        onClose={vi.fn()}
+      />
+    );
+
+    // View mode: no select dropdowns for readiness/constraint
+    expect(screen.queryByRole("combobox", { name: /readiness state/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: /dominant constraint/i })).not.toBeInTheDocument();
+    // Toggle button shows "Edit"
+    expect(screen.getByTestId("mode-toggle")).toHaveTextContent("Edit");
+  });
+
+  it("toggle switches to edit mode showing dropdowns and checkboxes", () => {
+    render(
+      <DealDrawer
+        deal={mockDeal}
+        opportunityTypes={mockOpportunityTypes}
+        lgas={mockLgas}
+        onClose={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByTestId("mode-toggle"));
+
+    expect(screen.getByTestId("mode-toggle")).toHaveTextContent("Editing");
+    expect(screen.getByRole("combobox", { name: /readiness state/i })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: /dominant constraint/i })).toBeInTheDocument();
+    expect(screen.getAllByTestId(/^gate-checkbox-/).length).toBe(3);
+  });
+
   it("editing readiness state updates UI and shows Updated locally", () => {
     render(
       <DealDrawer
@@ -103,6 +138,8 @@ describe("DealDrawer", () => {
         onClose={vi.fn()}
       />
     );
+
+    fireEvent.click(screen.getByTestId("mode-toggle"));
 
     const readinessSelect = screen.getByRole("combobox", {
       name: /readiness state/i,
@@ -126,6 +163,8 @@ describe("DealDrawer", () => {
         onClose={vi.fn()}
       />
     );
+
+    fireEvent.click(screen.getByTestId("mode-toggle"));
 
     const constraintSelect = screen.getByRole("combobox", {
       name: /dominant constraint/i,
@@ -151,6 +190,8 @@ describe("DealDrawer", () => {
       />
     );
 
+    fireEvent.click(screen.getByTestId("mode-toggle"));
+
     const readinessSelect = screen.getByRole("combobox", {
       name: /readiness state/i,
     });
@@ -170,10 +211,8 @@ describe("DealDrawer", () => {
       />
     );
 
-    const readinessSelectAgain = screen.getByRole("combobox", {
-      name: /readiness state/i,
-    });
-    expect(readinessSelectAgain).toHaveValue("structurable-but-stalled");
+    // Re-opened in view mode, shows the persisted value as a badge
+    expect(screen.getByText("Structurable but stalled")).toBeInTheDocument();
     expect(screen.getByText(/updated locally/i)).toBeInTheDocument();
   });
 
@@ -245,7 +284,7 @@ describe("DealDrawer", () => {
     expect(container.firstChild).toBeNull();
   });
 
-  it("renders gate checklist with checkboxes and progress", () => {
+  it("renders gate checklist in view mode with progress and status icons", () => {
     render(
       <DealDrawer
         deal={mockDeal}
@@ -261,12 +300,11 @@ describe("DealDrawer", () => {
     expect(screen.getByText("Clearance in Principle")).toBeInTheDocument();
     expect(screen.getByText("Additionality")).toBeInTheDocument();
 
-    const checkboxes = screen.getAllByTestId(/^gate-checkbox-/);
-    expect(checkboxes).toHaveLength(3);
-    checkboxes.forEach((cb) => expect(cb).not.toBeChecked());
+    // View mode: no checkboxes
+    expect(screen.queryAllByTestId(/^gate-checkbox-/)).toHaveLength(0);
   });
 
-  it("toggling a gate checkbox updates progress and persists locally", () => {
+  it("edit mode shows gate checkboxes that toggle and persist", () => {
     render(
       <DealDrawer
         deal={mockDeal}
@@ -276,17 +314,20 @@ describe("DealDrawer", () => {
       />
     );
 
-    const firstCheckbox = screen.getByTestId("gate-checkbox-0");
-    expect(firstCheckbox).not.toBeChecked();
+    fireEvent.click(screen.getByTestId("mode-toggle"));
 
-    fireEvent.click(firstCheckbox);
+    const checkboxes = screen.getAllByTestId(/^gate-checkbox-/);
+    expect(checkboxes).toHaveLength(3);
+    checkboxes.forEach((cb) => expect(cb).not.toBeChecked());
 
-    expect(firstCheckbox).toBeChecked();
+    fireEvent.click(checkboxes[0]);
+
+    expect(checkboxes[0]).toBeChecked();
     expect(screen.getByText("1 of 3 satisfied")).toBeInTheDocument();
     expect(screen.getByText(/updated locally/i)).toBeInTheDocument();
   });
 
-  it("renders artefacts with status badges", () => {
+  it("renders artefacts with status badges in view mode", () => {
     render(
       <DealDrawer
         deal={mockDeal}
@@ -300,12 +341,16 @@ describe("DealDrawer", () => {
     expect(screen.getByText("Pre-feasibility Study")).toBeInTheDocument();
     expect(screen.getByText("Integrated Safeguards Data Sheet")).toBeInTheDocument();
 
-    const statusButtons = screen.getAllByTestId(/^artefact-status-/);
-    expect(statusButtons).toHaveLength(2);
-    expect(statusButtons[0]).toHaveTextContent("Not started");
+    const statusBadges = screen.getAllByTestId(/^artefact-status-/);
+    expect(statusBadges).toHaveLength(2);
+    expect(statusBadges[0]).toHaveTextContent("Not started");
+
+    // View mode: no summary/URL fields
+    expect(screen.queryByTestId("artefact-summary-0")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("artefact-url-0")).not.toBeInTheDocument();
   });
 
-  it("cycling artefact status advances through not-started → in-progress → complete", () => {
+  it("cycling artefact status in edit mode advances through not-started → in-progress → complete", () => {
     render(
       <DealDrawer
         deal={mockDeal}
@@ -314,6 +359,8 @@ describe("DealDrawer", () => {
         onClose={vi.fn()}
       />
     );
+
+    fireEvent.click(screen.getByTestId("mode-toggle"));
 
     const statusBtn = screen.getByTestId("artefact-status-0");
     expect(statusBtn).toHaveTextContent("Not started");
@@ -330,7 +377,7 @@ describe("DealDrawer", () => {
     expect(screen.getByText(/updated locally/i)).toBeInTheDocument();
   });
 
-  it("artefact summary and URL fields are editable", () => {
+  it("shows View full detail link to deal detail page", () => {
     render(
       <DealDrawer
         deal={mockDeal}
@@ -339,6 +386,23 @@ describe("DealDrawer", () => {
         onClose={vi.fn()}
       />
     );
+
+    const link = screen.getByTestId("view-full-detail");
+    expect(link).toBeInTheDocument();
+    expect(link).toHaveAttribute("href", "/deals/demo-flexilab");
+  });
+
+  it("artefact summary and URL fields are editable in edit mode", () => {
+    render(
+      <DealDrawer
+        deal={mockDeal}
+        opportunityTypes={mockOpportunityTypes}
+        lgas={mockLgas}
+        onClose={vi.fn()}
+      />
+    );
+
+    fireEvent.click(screen.getByTestId("mode-toggle"));
 
     const summaryField = screen.getByTestId("artefact-summary-0") as HTMLTextAreaElement;
     expect(summaryField.value).toBe("");

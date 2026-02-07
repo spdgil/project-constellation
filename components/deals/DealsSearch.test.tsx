@@ -3,6 +3,12 @@ import { render, screen, fireEvent, within } from "@testing-library/react";
 import { DealsSearch } from "./DealsSearch";
 import type { Deal, LGA, OpportunityType } from "@/lib/types";
 
+/* Mock next/navigation */
+const pushMock = vi.fn();
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: pushMock }),
+}));
+
 const mockLgas: LGA[] = [
   { id: "mackay", name: "Mackay", geometryRef: "mackay", notes: [] },
   { id: "isaac", name: "Isaac", geometryRef: "isaac", notes: [] },
@@ -186,7 +192,7 @@ describe("DealsSearch", () => {
     expect(screen.getByText("No deals match your filters.")).toBeInTheDocument();
   });
 
-  it("opening a deal from search opens the Deal drawer", () => {
+  it("clicking a deal navigates to the deal detail page", () => {
     render(
       <DealsSearch
         deals={mockDeals}
@@ -195,18 +201,13 @@ describe("DealsSearch", () => {
       />
     );
 
-    expect(screen.queryByRole("dialog", { name: /deal details/i })).not.toBeInTheDocument();
-
     const list = screen.getByTestId("deals-results-list");
     fireEvent.click(within(list).getByText("RCOE FlexiLab pilot"));
 
-    const drawer = screen.getByRole("dialog", { name: /deal details/i });
-    expect(drawer).toBeInTheDocument();
-    expect(within(drawer).getByText("RCOE FlexiLab pilot")).toBeInTheDocument();
-    expect(within(drawer).getByText("Secure offtake.")).toBeInTheDocument();
+    expect(pushMock).toHaveBeenCalledWith("/deals/demo-flexilab");
   });
 
-  it("keyboard Enter on highlighted result opens deal drawer", () => {
+  it("keyboard Enter on highlighted result navigates to deal detail page", () => {
     render(
       <DealsSearch
         deals={mockDeals}
@@ -219,12 +220,10 @@ describe("DealsSearch", () => {
     input.focus();
     fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
 
-    const drawer = screen.getByRole("dialog", { name: /deal details/i });
-    expect(drawer).toBeInTheDocument();
-    expect(within(drawer).getByText("RCOE FlexiLab pilot")).toBeInTheDocument();
+    expect(pushMock).toHaveBeenCalledWith("/deals/demo-flexilab");
   });
 
-  it("keyboard ArrowDown then Enter opens second deal", () => {
+  it("keyboard ArrowDown then Enter navigates to second deal", () => {
     render(
       <DealsSearch
         deals={mockDeals}
@@ -238,9 +237,7 @@ describe("DealsSearch", () => {
     fireEvent.keyDown(input, { key: "ArrowDown", code: "ArrowDown" });
     fireEvent.keyDown(input, { key: "Enter", code: "Enter" });
 
-    const drawer = screen.getByRole("dialog", { name: /deal details/i });
-    expect(drawer).toBeInTheDocument();
-    expect(within(drawer).getByText("Solar farm proposal")).toBeInTheDocument();
+    expect(pushMock).toHaveBeenCalledWith("/deals/solar-project");
   });
 
   it("shows gate progress indicator in list items", () => {

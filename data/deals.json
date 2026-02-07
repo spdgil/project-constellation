@@ -10,32 +10,59 @@
     "readinessState": "feasibility-underway",
     "dominantConstraint": "common-user-infrastructure-gap",
     "summary": "Paget: training, innovation, demonstration; Stage 2 Future Industries Hub supported with Queensland Government funding, focus including incubating new industries such as critical minerals processing.",
+    "description": "The Resources Centre of Excellence is a world-class facility located in the Greater Whitsunday region driving cutting-edge research, technology, education, and industry collaboration. Stage 2 — the Future Industries Hub — is focused on incubating new industries including critical minerals processing, with $5.7 million in Queensland Government funding under the Queensland Resources Industry Development Plan.\n\nThe facility includes the FlexiLab critical minerals pilot processing plant, underground coal mine simulator, and supporting infrastructure. It serves as a sector-agnostic innovation platform connecting METS businesses with emerging opportunities across the seven priority diversification sectors identified in the GW3 strategy.",
     "nextStep": "Finalise Stage 2 scope and common-user access model.",
+    "investmentValue": "$5.7m Queensland Government funding (Stage 2)",
+    "economicImpact": "Part of $30-42bn Australian critical minerals pipeline; supports region's 700+ METS businesses",
+    "keyStakeholders": ["Queensland Government (Dept of State Development)", "Resources Centre of Excellence", "GW3", "Local Buying Foundation"],
+    "risks": [
+      "Geographic perception barrier — METS businesses perceive critical minerals as relevant only to the North West Minerals Province",
+      "Capital constraints for scaling pilot demonstrations to commercial operations",
+      "Talent attraction challenges — negative association with mining deters school leavers and graduates"
+    ],
+    "strategicActions": [
+      "Promote critical minerals opportunities to local METS businesses, especially early exploration and planning services",
+      "Connect regional skills to North West Minerals Province development needs",
+      "Progress common-user infrastructure partnerships to pilot, expand, and relocate processing capabilities"
+    ],
+    "infrastructureNeeds": ["Paget Industrial Estate (415+ hectares, 23% vacant)", "Copperstring 2.0 ($5bn transmission project)", "Port of Mackay"],
+    "skillsImplications": "Downstream processing requires reskilling in battery production value chain, robotics, automation, metallurgical and chemical processes, and electrochemistry. Marketing campaigns needed in schools, TAFE, and universities to reposition METS as essential to decarbonisation.",
+    "marketDrivers": "Global critical minerals market doubled to ~$400bn (2022). IEA forecasts 100-300% demand increase by 2040; lithium demand 40x higher. Australian pipeline valued at $30-42bn. Battery storage demand to increase tenfold by 2030.",
+    "governmentPrograms": [
+      {"name": "Queensland Resources Industry Development Plan", "description": "Growth and diversification through new economy minerals"},
+      {"name": "Queensland METS 10-Year Roadmap", "description": "Emerging opportunities for METS sector"},
+      {"name": "Clean Economy Jobs Act 2024", "description": "Legislated renewable energy and emissions targets"}
+    ],
+    "timeline": [
+      {"label": "Stage 2 Future Industries Hub funding secured"},
+      {"label": "FlexiLab construction phase underway"},
+      {"label": "Common-user access model finalisation", "date": "2025"}
+    ],
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.20"}],
     "notes": [],
     "updatedAt": "2026-02-06T00:00:00.000Z",
     "gateChecklist": {
       "definition": [
-        { "question": "Strategic Suitability", "status": "satisfied" },
-        { "question": "Legal Viability", "status": "satisfied" },
-        { "question": "Government Commitment", "status": "satisfied" }
+        {"question": "Strategic Suitability", "status": "satisfied"},
+        {"question": "Legal Viability", "status": "satisfied"},
+        {"question": "Government Commitment", "status": "satisfied"}
       ],
       "pre-feasibility": [
-        { "question": "Preliminary Feasibility", "status": "pending" },
-        { "question": "Clearance in Principle", "status": "pending" },
-        { "question": "Additionality", "status": "pending" }
+        {"question": "Preliminary Feasibility", "status": "pending"},
+        {"question": "Clearance in Principle", "status": "pending"},
+        {"question": "Additionality", "status": "pending"}
       ]
     },
     "artefacts": {
       "definition": [
-        { "name": "Project Concept Note (PCN)", "status": "complete" },
-        { "name": "Legal and Regulatory Assessment Report", "status": "complete" },
-        { "name": "Project Information Document", "status": "complete" }
+        {"name": "Project Concept Note (PCN)", "status": "complete"},
+        {"name": "Legal and Regulatory Assessment Report", "status": "complete"},
+        {"name": "Project Information Document", "status": "complete"}
       ],
       "pre-feasibility": [
-        { "name": "Pre-feasibility Study", "status": "not-started" },
-        { "name": "Integrated Safeguards Data Sheet", "status": "not-started" },
-        { "name": "\"Clearance in Principle\" Decision Note", "status": "not-started" }
+        {"name": "Pre-feasibility Study", "status": "not-started"},
+        {"name": "Integrated Safeguards Data Sheet", "status": "not-started"},
+        {"name": "\"Clearance in Principle\" Decision Note", "status": "not-started"}
       ]
     }
   },
@@ -50,32 +77,59 @@
     "readinessState": "feasibility-underway",
     "dominantConstraint": "common-user-infrastructure-gap",
     "summary": "Pilot processing facility in Paget supported with Queensland Government funding; interest from companies.",
+    "description": "One of Australia's first commercial common-user facilities for critical minerals processing, tailings reprocessing, and precious metals. The FlexiLab is part of the Resources Centre of Excellence in Paget, supported by $5.7 million in Queensland Government funding. Currently in its construction phase with high levels of industry interest from junior miners and established resources companies.\n\nThe facility addresses a critical gap in the Australian critical minerals value chain — the ability to pilot and demonstrate processing technologies at commercial scale without requiring individual companies to invest in dedicated infrastructure. This common-user model is designed to de-risk entry for METS businesses seeking to diversify into critical minerals processing.",
     "nextStep": "Secure offtake and finalise common-user access terms.",
+    "investmentValue": "$5.7m Queensland Government funding (shared with Future Industries Hub)",
+    "economicImpact": "Downstream refining and processing could generate an additional $140bn in GDP nationally between 2022-2040",
+    "keyStakeholders": ["Queensland Government", "Resources Centre of Excellence", "Mining3", "Austmine", "Junior critical minerals miners"],
+    "risks": [
+      "Difficulty scaling from pilot to commercial stage — significant additional investment required",
+      "METS businesses face opportunity costs diverting from strong coal pipeline revenue",
+      "Skills gaps in metallurgical and chemical processes, electrochemistry, and battery production"
+    ],
+    "strategicActions": [
+      "Progress common-user infrastructure partnerships for critical minerals processing",
+      "Map specific skills gaps and explore micro-credentialling and transferable skills pathways with TAFE and universities",
+      "Attract overseas talent where domestic supply is insufficient"
+    ],
+    "infrastructureNeeds": ["Paget Industrial Estate", "Copperstring 2.0 (NEM connection to NWMP)", "Resources Centre of Excellence campus"],
+    "skillsImplications": "Requires reskilling in battery production value chain, robotics, automation, metallurgical and chemical processes. NWMP deposits estimated at $500bn create sustained demand for processing skills.",
+    "marketDrivers": "Global critical minerals required for energy transition valued at $2.5 trillion+ by 2050. Queensland battery storage demand to increase tenfold by 2030, potentially generating up to $1.3bn economic activity.",
+    "governmentPrograms": [
+      {"name": "Queensland Resources Industry Development Plan"},
+      {"name": "Federal Climate Change Bill 2022", "description": "43% emissions reduction by 2030, net zero by 2050"},
+      {"name": "$29.5bn federal climate spending commitment to 2030"}
+    ],
+    "timeline": [
+      {"label": "Queensland Government funding secured"},
+      {"label": "Construction phase underway"},
+      {"label": "Target: common-user operations commence", "date": "2025"}
+    ],
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.37"}],
     "notes": [],
     "updatedAt": "2026-02-06T00:00:00.000Z",
     "gateChecklist": {
       "definition": [
-        { "question": "Strategic Suitability", "status": "satisfied" },
-        { "question": "Legal Viability", "status": "satisfied" },
-        { "question": "Government Commitment", "status": "satisfied" }
+        {"question": "Strategic Suitability", "status": "satisfied"},
+        {"question": "Legal Viability", "status": "satisfied"},
+        {"question": "Government Commitment", "status": "satisfied"}
       ],
       "pre-feasibility": [
-        { "question": "Preliminary Feasibility", "status": "pending" },
-        { "question": "Clearance in Principle", "status": "pending" },
-        { "question": "Additionality", "status": "pending" }
+        {"question": "Preliminary Feasibility", "status": "pending"},
+        {"question": "Clearance in Principle", "status": "pending"},
+        {"question": "Additionality", "status": "pending"}
       ]
     },
     "artefacts": {
       "definition": [
-        { "name": "Project Concept Note (PCN)", "status": "complete" },
-        { "name": "Legal and Regulatory Assessment Report", "status": "complete" },
-        { "name": "Project Information Document", "status": "complete" }
+        {"name": "Project Concept Note (PCN)", "status": "complete"},
+        {"name": "Legal and Regulatory Assessment Report", "status": "complete"},
+        {"name": "Project Information Document", "status": "complete"}
       ],
       "pre-feasibility": [
-        { "name": "Pre-feasibility Study", "status": "not-started" },
-        { "name": "Integrated Safeguards Data Sheet", "status": "not-started" },
-        { "name": "\"Clearance in Principle\" Decision Note", "status": "not-started" }
+        {"name": "Pre-feasibility Study", "status": "not-started"},
+        {"name": "Integrated Safeguards Data Sheet", "status": "not-started"},
+        {"name": "\"Clearance in Principle\" Decision Note", "status": "not-started"}
       ]
     }
   },
@@ -88,22 +142,49 @@
     "readinessState": "conceptual-interest",
     "dominantConstraint": "planning-and-approvals",
     "summary": "Pumped hydro concept for the region; major project in renewable pipeline.",
+    "description": "Copenhagen Infrastructure Partners' proposed 1,400 MW Capricornia Energy Hub, located approximately 80km west of Mackay near Eungella Dam. The $2.5 billion pumped hydro energy storage project features a 750 MW pump/generation facility and represents one of the largest renewable energy investments in the Greater Whitsunday region.\n\nConstruction is expected to commence after 2025, creating approximately 600 jobs during construction and 65 regional operations jobs ongoing. The project addresses the critical need for dispatchable energy storage to support Queensland's transition to 70% renewables by 2032 and 80% by 2035.",
     "nextStep": "Advance feasibility and planning pathway.",
+    "investmentValue": "$2.5bn (Copenhagen Infrastructure Partners)",
+    "economicImpact": "~600 construction jobs, 65 ongoing regional operations jobs. Part of $162bn Queensland renewable energy pipeline.",
+    "keyStakeholders": ["Copenhagen Infrastructure Partners", "Queensland Government", "Renewable energy proponents"],
+    "risks": [
+      "METS businesses are waiting for critical mass of operational renewable assets before engaging",
+      "Limited awareness of construction-phase opportunities in transmission and pumped hydro",
+      "Specialised electrical trades gap — substation isolation, grid-scale energy storage skills not widely available"
+    ],
+    "strategicActions": [
+      "Collate and communicate the pipeline of renewable projects and METS-relevant skills requirements",
+      "Identify and define skills requirements and gaps for pumped hydro and transmission projects",
+      "Advocate for procurement processes that favour local businesses by breaking contracts into smaller packages"
+    ],
+    "infrastructureNeeds": ["Eungella Dam area", "Transmission grid connection", "Local road and transport infrastructure upgrades"],
+    "skillsImplications": "Construction phase requires earthmoving, tunnelling, and fabrication — transferable from mining. Operations require specialised electrical commissioning, substation installation, and grid-scale energy storage system skills not currently available in the region.",
+    "marketDrivers": "Queensland Energy and Jobs Plan requires $62bn total capital investment to 2035. 30+ solar, wind, and battery projects proposed in the region with 9+ GW collective generation capacity. ~$1bn already invested in 500+ MW of large-scale renewables since 2015.",
+    "governmentPrograms": [
+      {"name": "Queensland Energy and Jobs Plan", "description": "$62bn capital investment to 2035; 80% renewables by 2035"},
+      {"name": "Renewable Transformation Act 2024", "description": "70% renewables by 2032, 80% by 2035, net zero by 2050"},
+      {"name": "Queensland Future Energy Jobs Guide"}
+    ],
+    "timeline": [
+      {"label": "Project concept announced"},
+      {"label": "Construction expected to commence", "date": "After 2025"},
+      {"label": "Operational target", "date": "2028-2030"}
+    ],
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.41"}],
     "notes": [],
     "updatedAt": "2026-02-06T00:00:00.000Z",
     "gateChecklist": {
       "definition": [
-        { "question": "Strategic Suitability", "status": "pending" },
-        { "question": "Legal Viability", "status": "pending" },
-        { "question": "Government Commitment", "status": "pending" }
+        {"question": "Strategic Suitability", "status": "pending"},
+        {"question": "Legal Viability", "status": "pending"},
+        {"question": "Government Commitment", "status": "pending"}
       ]
     },
     "artefacts": {
       "definition": [
-        { "name": "Project Concept Note (PCN)", "status": "not-started" },
-        { "name": "Legal and Regulatory Assessment Report", "status": "not-started" },
-        { "name": "Project Information Document", "status": "not-started" }
+        {"name": "Project Concept Note (PCN)", "status": "not-started"},
+        {"name": "Legal and Regulatory Assessment Report", "status": "not-started"},
+        {"name": "Project Information Document", "status": "not-started"}
       ]
     }
   },
@@ -116,22 +197,51 @@
     "readinessState": "conceptual-interest",
     "dominantConstraint": "planning-and-approvals",
     "summary": "Pumped hydro concept referenced for the region; significant investment pipeline.",
+    "description": "Queensland Hydro's proposed 5,000 MW Pioneer-Burdekin Pumped Hydro Energy Storage project, located approximately 75km west of Mackay. If developed, it would be the largest project of its kind in the world, with an initial cost estimate exceeding $12 billion. The Queensland Government indicated in February 2024 that costs will be higher than originally estimated.\n\nThe project would create over 3,000 jobs during construction, with delivery planned by 2035. It is currently in the early investigation and detailed technical study stage. The project is a centrepiece of Queensland's Energy and Jobs Plan and would provide massive dispatchable storage capacity to underpin the state's renewable energy transition.",
     "nextStep": "Scope regional participation and procurement opportunities.",
+    "investmentValue": "$12bn+ (Queensland Government, costs rising)",
+    "economicImpact": "3,000+ construction jobs. Part of Queensland's $62bn energy transition investment to 2035. Would be the largest pumped hydro project in the world.",
+    "keyStakeholders": ["Queensland Hydro", "Queensland Government", "Local METS businesses"],
+    "risks": [
+      "Pioneer-Burdekin PHES requires specialist skills not currently available in the region or widely in Australia",
+      "Cost escalation — Queensland Government indicated costs will exceed initial $12bn estimate",
+      "Local manufacturing not being explored — significant opportunity for components but uncertain local procurement commitment",
+      "METS businesses see only O&M phase and are waiting for critical mass before engaging"
+    ],
+    "strategicActions": [
+      "Identify and define skills requirements and gaps specifically for pumped hydro construction",
+      "Encourage METS reskilling and upskilling for renewable energy construction and operations",
+      "Work with stakeholders on electrical services upskilling pathways",
+      "Support advanced manufacturing transition including big data, analytics, robotics, and automation"
+    ],
+    "infrastructureNeeds": ["Transmission grid upgrades", "Road and transport infrastructure west of Mackay", "Worker accommodation for remote construction site"],
+    "skillsImplications": "Would require specialist pumped hydro skills not currently available in region or widely in Australia. Construction phase requires earthmoving, tunnelling, and fabrication transferable from mining. 319 skills identified as being in shortage across Australia's energy transition.",
+    "marketDrivers": "Queensland Government has estimated close to $8bn in further investment in the Greater Whitsunday region out to 2040. Pioneer-Burdekin is a centrepiece of the Energy and Jobs Plan. Global pumped hydro market growing as grid-scale storage becomes critical.",
+    "governmentPrograms": [
+      {"name": "Queensland Energy and Jobs Plan", "description": "Centrepiece project of the state energy transition"},
+      {"name": "Clean Economy Jobs Act 2024"},
+      {"name": "Renewable Transformation Act 2024"}
+    ],
+    "timeline": [
+      {"label": "Early investigation and detailed technical study stage"},
+      {"label": "Cost estimate revised upward", "date": "Feb 2024"},
+      {"label": "Target delivery", "date": "2035"}
+    ],
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.41"}],
     "notes": [],
     "updatedAt": "2026-02-06T00:00:00.000Z",
     "gateChecklist": {
       "definition": [
-        { "question": "Strategic Suitability", "status": "pending" },
-        { "question": "Legal Viability", "status": "pending" },
-        { "question": "Government Commitment", "status": "pending" }
+        {"question": "Strategic Suitability", "status": "pending"},
+        {"question": "Legal Viability", "status": "pending"},
+        {"question": "Government Commitment", "status": "pending"}
       ]
     },
     "artefacts": {
       "definition": [
-        { "name": "Project Concept Note (PCN)", "status": "not-started" },
-        { "name": "Legal and Regulatory Assessment Report", "status": "not-started" },
-        { "name": "Project Information Document", "status": "not-started" }
+        {"name": "Project Concept Note (PCN)", "status": "not-started"},
+        {"name": "Legal and Regulatory Assessment Report", "status": "not-started"},
+        {"name": "Project Information Document", "status": "not-started"}
       ]
     }
   },
@@ -146,32 +256,57 @@
     "readinessState": "feasibility-underway",
     "dominantConstraint": "skills-and-workforce-constraint",
     "summary": "METS business diversifying into commercial solar solutions and products; awareness and specialised electrical capabilities noted as gaps.",
+    "description": "Linked Group Services is a Paget-based company that has successfully diversified from mining electrical contracting into commercial solar energy solutions. The company locally manufactures solar carport solutions, portable solar generators (EcoG3N, EcoSkid), and portable buildings, demonstrating the METS-to-renewables diversification pathway.\n\nThis case study represents a practical model for how METS businesses can leverage existing electrical and fabrication skills to capture renewable energy opportunities. However, scaling requires addressing awareness gaps and developing specialised electrical capabilities for grid-scale installations.",
     "nextStep": "Build construction-phase capability and procurement pathways.",
+    "investmentValue": "Private investment (METS business diversification)",
+    "economicImpact": "Demonstrates METS-to-renewables diversification pathway. Part of regional 9+ GW renewable pipeline.",
+    "keyStakeholders": ["Linked Group Services", "Local METS businesses", "Renewable energy proponents"],
+    "risks": [
+      "Specialised electrical trades gap — commissioning, substation isolation, grid-scale energy storage systems",
+      "Limited awareness among METS businesses of construction-phase opportunities in renewables",
+      "High costs versus international suppliers creating uncertainty around local manufacturing viability"
+    ],
+    "strategicActions": [
+      "Collate and communicate pipeline of renewable projects and METS-relevant skills requirements",
+      "Work with stakeholders on electrical services upskilling",
+      "Advocate for procurement processes favouring local businesses"
+    ],
+    "infrastructureNeeds": ["Paget Industrial Estate manufacturing capacity", "Grid connection points for testing"],
+    "skillsImplications": "Awareness and specialised electrical capabilities identified as primary gaps. Electrical commissioning, substation isolation and installation, and grid-scale energy storage system skills not currently widely available in the region.",
+    "marketDrivers": "~$8bn in further renewable investment expected in Greater Whitsunday to 2040. 30+ solar, wind and battery projects proposed regionally. Queensland targets 80% renewables by 2035.",
+    "governmentPrograms": [
+      {"name": "Queensland Energy and Jobs Plan"},
+      {"name": "Queensland Future Energy Jobs Guide"}
+    ],
+    "timeline": [
+      {"label": "Diversification from mining electrical contracting underway"},
+      {"label": "Solar carport and portable generator products in market"}
+    ],
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.41"}],
     "notes": [],
     "updatedAt": "2026-02-06T00:00:00.000Z",
     "gateChecklist": {
       "definition": [
-        { "question": "Strategic Suitability", "status": "satisfied" },
-        { "question": "Legal Viability", "status": "satisfied" },
-        { "question": "Government Commitment", "status": "satisfied" }
+        {"question": "Strategic Suitability", "status": "satisfied"},
+        {"question": "Legal Viability", "status": "satisfied"},
+        {"question": "Government Commitment", "status": "satisfied"}
       ],
       "pre-feasibility": [
-        { "question": "Preliminary Feasibility", "status": "pending" },
-        { "question": "Clearance in Principle", "status": "pending" },
-        { "question": "Additionality", "status": "pending" }
+        {"question": "Preliminary Feasibility", "status": "pending"},
+        {"question": "Clearance in Principle", "status": "pending"},
+        {"question": "Additionality", "status": "pending"}
       ]
     },
     "artefacts": {
       "definition": [
-        { "name": "Project Concept Note (PCN)", "status": "complete" },
-        { "name": "Legal and Regulatory Assessment Report", "status": "complete" },
-        { "name": "Project Information Document", "status": "complete" }
+        {"name": "Project Concept Note (PCN)", "status": "complete"},
+        {"name": "Legal and Regulatory Assessment Report", "status": "complete"},
+        {"name": "Project Information Document", "status": "complete"}
       ],
       "pre-feasibility": [
-        { "name": "Pre-feasibility Study", "status": "not-started" },
-        { "name": "Integrated Safeguards Data Sheet", "status": "not-started" },
-        { "name": "\"Clearance in Principle\" Decision Note", "status": "not-started" }
+        {"name": "Pre-feasibility Study", "status": "not-started"},
+        {"name": "Integrated Safeguards Data Sheet", "status": "not-started"},
+        {"name": "\"Clearance in Principle\" Decision Note", "status": "not-started"}
       ]
     }
   },
@@ -186,32 +321,61 @@
     "readinessState": "feasibility-underway",
     "dominantConstraint": "offtake-demand-aggregation",
     "summary": "Biocommodities pilot plant and sugar cogeneration; established bioenergy case studies.",
+    "description": "Located at Nordzucker Mackay Sugar's Racecourse Mill, the QUT Renewable Biocommodities Pilot Plant converts biomass into biofuels, green chemicals, and bioproducts. It is currently undergoing a $16 million upgrade co-invested by State and Federal Governments, QUT, and the Food and Beverage Accelerator, with planned completion in late 2024.\n\nOnce upgraded, it will become Australia's only facility capable of demonstrating synthetic biology processes at full scale. The adjacent Racecourse Cogeneration Plant already produces enough renewable energy to power approximately 30% of Mackay using bagasse. The Mackay State Development Area (907 hectares, declared February 2024) has been established to support this emerging biocommodity industry.",
     "nextStep": "Clarify market drivers and offtake for sustainable aviation fuels pathway.",
+    "investmentValue": "$16m upgrade (State, Federal, QUT, Food & Beverage Accelerator co-investment)",
+    "economicImpact": "Part of forecast $726bn global bioenergy market by 2050. Australian SAF industry could be worth $3bn annually and create 15,600 jobs by 2050. Potential $10bn annual GDP contribution to Australia's economy by early 2030s.",
+    "keyStakeholders": ["Queensland University of Technology (QUT)", "Nordzucker Mackay Sugar Limited", "Queensland Government", "Food and Beverage Accelerator", "Mercurius (technology partner)"],
+    "risks": [
+      "Feedstock competition perception — METS businesses view bioenergy through lens of agricultural competition, unaware of contemporary by-product processes",
+      "Limited understanding of sustainable aviation fuel demand drivers among METS businesses",
+      "METS aligned only to construction and O&M; niche bioenergy skills (microbiology, biochemistry) not held by METS",
+      "Profitability perception — association with agriculture deters METS engagement"
+    ],
+    "strategicActions": [
+      "Develop tools and strategies to deliver bioenergy opportunity information to METS businesses",
+      "Facilitate engagement between METS and SAF/biofuels proponents",
+      "Identify and promote successful local case studies demonstrating commercial viability",
+      "Continue to monitor and communicate bioenergy sector opportunities across the value chain"
+    ],
+    "infrastructureNeeds": ["Mackay State Development Area (907 hectares, declared Feb 2024)", "Racecourse Mill site", "Nordzucker sugar processing infrastructure"],
+    "skillsImplications": "Broad skills gap — METS aligned to construction and O&M only. Niche bioenergy skills needed: microbiology, biochemistry, agricultural science, biomass production and management. Feedstock and land availability could become barriers as volumes increase.",
+    "marketDrivers": "Global bioenergy market forecast at $726bn by 2050 (net zero scenario). Australian SAF industry could generate $3bn annually by 2050. Mercurius Rising Pilot Project using patented REACH technology to convert feedstocks into renewable drop-in fuels.",
+    "governmentPrograms": [
+      {"name": "Queensland Biofutures 10-Year Roadmap 2016-2026", "description": "Greater Whitsunday positioned as biofutures hub"},
+      {"name": "Mackay State Development Area", "description": "907 hectares declared Feb 2024 for biocommodity industry"},
+      {"name": "Queensland Industry Partnership Program", "description": "Supporting Pilot Plant operations"}
+    ],
+    "timeline": [
+      {"label": "Mackay SDA declared (907 hectares)", "date": "Feb 2024"},
+      {"label": "$16m Pilot Plant upgrade completion", "date": "Late 2024"},
+      {"label": "Full-scale synthetic biology demonstration capability operational"}
+    ],
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.45"}],
     "notes": [],
     "updatedAt": "2026-02-06T00:00:00.000Z",
     "gateChecklist": {
       "definition": [
-        { "question": "Strategic Suitability", "status": "satisfied" },
-        { "question": "Legal Viability", "status": "satisfied" },
-        { "question": "Government Commitment", "status": "satisfied" }
+        {"question": "Strategic Suitability", "status": "satisfied"},
+        {"question": "Legal Viability", "status": "satisfied"},
+        {"question": "Government Commitment", "status": "satisfied"}
       ],
       "pre-feasibility": [
-        { "question": "Preliminary Feasibility", "status": "pending" },
-        { "question": "Clearance in Principle", "status": "pending" },
-        { "question": "Additionality", "status": "pending" }
+        {"question": "Preliminary Feasibility", "status": "pending"},
+        {"question": "Clearance in Principle", "status": "pending"},
+        {"question": "Additionality", "status": "pending"}
       ]
     },
     "artefacts": {
       "definition": [
-        { "name": "Project Concept Note (PCN)", "status": "complete" },
-        { "name": "Legal and Regulatory Assessment Report", "status": "complete" },
-        { "name": "Project Information Document", "status": "complete" }
+        {"name": "Project Concept Note (PCN)", "status": "complete"},
+        {"name": "Legal and Regulatory Assessment Report", "status": "complete"},
+        {"name": "Project Information Document", "status": "complete"}
       ],
       "pre-feasibility": [
-        { "name": "Pre-feasibility Study", "status": "not-started" },
-        { "name": "Integrated Safeguards Data Sheet", "status": "not-started" },
-        { "name": "\"Clearance in Principle\" Decision Note", "status": "not-started" }
+        {"name": "Pre-feasibility Study", "status": "not-started"},
+        {"name": "Integrated Safeguards Data Sheet", "status": "not-started"},
+        {"name": "\"Clearance in Principle\" Decision Note", "status": "not-started"}
       ]
     }
   },
@@ -226,52 +390,79 @@
     "readinessState": "structurable-but-stalled",
     "dominantConstraint": "offtake-demand-aggregation",
     "summary": "Sugar-to-ethanol precinct; established bioenergy presence; stakeholder perceptions on feedstock and demand drivers.",
+    "description": "Australia's largest sugarcane-to-ethanol producer, the Wilmar Sarina Distillery produces approximately 60 million litres of ethanol annually. The facility represents an established bioenergy presence in the region and a potential platform for newer biofuels pathways including sustainable aviation fuels.\n\nWhile the distillery is operationally mature, its progression to new biofuel products is constrained by stakeholder perceptions around feedstock competition with agriculture and limited understanding of demand drivers for next-generation biofuels in aviation and shipping sectors where electrification is not viable.",
     "nextStep": "Secure offtake and articulate value chain for newer biofuels.",
+    "investmentValue": "Established production facility (~60m litres ethanol/year)",
+    "economicImpact": "Existing major employer. SAF expansion could capture portion of $3bn annual Australian SAF industry by 2050.",
+    "keyStakeholders": ["Wilmar Sugar", "Queensland Government", "Greater Whitsunday Biofutures Leaders Group"],
+    "risks": [
+      "Feedstock competition perception between biofuels and agriculture",
+      "Limited understanding of SAF demand drivers among regional stakeholders",
+      "Association with agriculture (perceived as low profitability) deters METS engagement",
+      "Feedstock and land availability could become barriers as production volumes increase"
+    ],
+    "strategicActions": [
+      "Deliver bioenergy opportunity information to METS businesses demonstrating the demand case",
+      "Facilitate engagement between METS businesses and SAF/biofuels proponents",
+      "Promote Wilmar as a successful case study demonstrating bioenergy commercial viability"
+    ],
+    "infrastructureNeeds": ["Sarina Distillery site and surrounding precinct", "Sugarcane feedstock supply chain", "Mackay State Development Area (for expansion)"],
+    "skillsImplications": "Production operations skills are established. Expansion into newer biofuels requires additional skills in biochemistry, biomass management, and advanced process operations. METS construction and maintenance capabilities are transferable.",
+    "marketDrivers": "Global bioenergy market forecast at $726bn by 2050. Australia could generate 26,200 new jobs in bioenergy by early 2030s. Aviation and shipping sectors require liquid fuels where electrification is not viable.",
+    "governmentPrograms": [
+      {"name": "Queensland Biofutures 10-Year Roadmap 2016-2026"},
+      {"name": "Mackay State Development Area"}
+    ],
+    "timeline": [
+      {"label": "Established ethanol production (~60m litres/year)"},
+      {"label": "SAF pathway and next-generation biofuels exploration underway"},
+      {"label": "Offtake agreement target for newer biofuels"}
+    ],
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.45"}],
     "notes": [],
     "updatedAt": "2026-02-06T00:00:00.000Z",
     "gateChecklist": {
       "definition": [
-        { "question": "Strategic Suitability", "status": "satisfied" },
-        { "question": "Legal Viability", "status": "satisfied" },
-        { "question": "Government Commitment", "status": "satisfied" }
+        {"question": "Strategic Suitability", "status": "satisfied"},
+        {"question": "Legal Viability", "status": "satisfied"},
+        {"question": "Government Commitment", "status": "satisfied"}
       ],
       "pre-feasibility": [
-        { "question": "Preliminary Feasibility", "status": "satisfied" },
-        { "question": "Clearance in Principle", "status": "satisfied" },
-        { "question": "Additionality", "status": "satisfied" }
+        {"question": "Preliminary Feasibility", "status": "satisfied"},
+        {"question": "Clearance in Principle", "status": "satisfied"},
+        {"question": "Additionality", "status": "satisfied"}
       ],
       "feasibility": [
-        { "question": "Commercial Viability", "status": "satisfied" },
-        { "question": "ESG Compliance", "status": "satisfied" },
-        { "question": "Fiscal Affordability", "status": "satisfied" }
+        {"question": "Commercial Viability", "status": "satisfied"},
+        {"question": "ESG Compliance", "status": "satisfied"},
+        {"question": "Fiscal Affordability", "status": "satisfied"}
       ],
       "structuring": [
-        { "question": "Market Appetite", "status": "pending" },
-        { "question": "Creditworthiness", "status": "pending" },
-        { "question": "Endorsement", "status": "pending" }
+        {"question": "Market Appetite", "status": "pending"},
+        {"question": "Creditworthiness", "status": "pending"},
+        {"question": "Endorsement", "status": "pending"}
       ]
     },
     "artefacts": {
       "definition": [
-        { "name": "Project Concept Note (PCN)", "status": "complete" },
-        { "name": "Legal and Regulatory Assessment Report", "status": "complete" },
-        { "name": "Project Information Document", "status": "complete" }
+        {"name": "Project Concept Note (PCN)", "status": "complete"},
+        {"name": "Legal and Regulatory Assessment Report", "status": "complete"},
+        {"name": "Project Information Document", "status": "complete"}
       ],
       "pre-feasibility": [
-        { "name": "Pre-feasibility Study", "status": "complete" },
-        { "name": "Integrated Safeguards Data Sheet", "status": "complete" },
-        { "name": "\"Clearance in Principle\" Decision Note", "status": "complete" }
+        {"name": "Pre-feasibility Study", "status": "complete"},
+        {"name": "Integrated Safeguards Data Sheet", "status": "complete"},
+        {"name": "\"Clearance in Principle\" Decision Note", "status": "complete"}
       ],
       "feasibility": [
-        { "name": "Detailed Feasibility Report", "status": "complete" },
-        { "name": "Environmental and Social Impact Assessment (ESIA)", "status": "complete" },
-        { "name": "Financial Model and VfM Report", "status": "complete" }
+        {"name": "Detailed Feasibility Report", "status": "complete"},
+        {"name": "Environmental and Social Impact Assessment (ESIA)", "status": "complete"},
+        {"name": "Financial Model and VfM Report", "status": "complete"}
       ],
       "structuring": [
-        { "name": "Risk Allocation Matrix", "status": "not-started" },
-        { "name": "Draft Concession/Project Agreements", "status": "not-started" },
-        { "name": "Bid/Tender Documents", "status": "not-started" }
+        {"name": "Risk Allocation Matrix", "status": "not-started"},
+        {"name": "Draft Concession/Project Agreements", "status": "not-started"},
+        {"name": "Bid/Tender Documents", "status": "not-started"}
       ]
     }
   },
@@ -284,22 +475,51 @@
     "readinessState": "conceptual-interest",
     "dominantConstraint": "sponsor-capability",
     "summary": "Future foods biohub business case partnership; pilot plant upgrades enabling synthetic biology demonstration; food-grade certification and process capability highlighted as constraints.",
+    "description": "The proposed $300 million Future Foods BioHub facility in the Mackay State Development Area would provide industry-led anchor infrastructure for commercial-scale biomanufacturing of innovative food products. The Queensland Government contributed $528,000 towards the business case, with over $1 million in total funding for development.\n\nCauldron Ferm, a key partner, plans to build the Asia-Pacific region's largest network of precision fermentation facilities. A key factor in choosing Mackay was the strong mining and METS capability — particularly fabrication of fermentation vessels, maintenance, quality control, industrial cleaning, and automation. The company is currently mapping skills and service requirements for future operations.",
     "nextStep": "Establish certification pathways and process capability building.",
+    "investmentValue": "$300m proposed facility; $528k QLD Government business case contribution; $1m+ total development funding",
+    "economicImpact": "Part of forecast $700bn global biomanufacturing market by 2040. Australia's potential: $29bn annually and 50,000 new jobs by 2040. Queensland sector could contribute $4bn+ to gross state product by 2035.",
+    "keyStakeholders": ["Cauldron Ferm", "Queensland Government", "QUT", "Food and Beverage Accelerator", "Greater Whitsunday Biofutures Leaders Group"],
+    "risks": [
+      "Food-grade certification gap — existing METS equipment used for mining products cannot service food applications without certification",
+      "Limited technical understanding of precision fermentation and biomanufacturing for food (in its infancy in Australia)",
+      "Process operators will outnumber scientists; METS businesses don't understand how to transfer mining optimisation capabilities",
+      "Controlled environment operations differ fundamentally from typical METS working environments"
+    ],
+    "strategicActions": [
+      "Identify food-grade skills requirements and streamline certification pathways",
+      "Map specific skills needs and gaps; explore micro-credentialling and transferable skills pathways with TAFE and universities",
+      "Develop customised training modules leveraging expertise of industry, universities, and TAFE",
+      "Facilitate opportunities to increase METS understanding of biomanufacturing processes"
+    ],
+    "infrastructureNeeds": ["Mackay State Development Area", "QUT Pilot Plant (shared infrastructure)", "Precision fermentation vessel manufacturing capacity"],
+    "skillsImplications": "High alignment in fabrication of fermentation vessels, maintenance/repair, quality control, industrial cleaning, robotics and automation. Limited alignment in microbiology, biochemistry, bioprocess engineering, food safety and regulatory compliance. $363m in private capital invested in Australian biomanufacturing companies 2021-2023.",
+    "marketDrivers": "Global biomanufacturing market forecast at $700bn by 2040 (up from $11.8bn in 2021). 80% of private investment in agriculture and food. Cauldron Ferm chose Mackay specifically for METS capability alignment.",
+    "governmentPrograms": [
+      {"name": "Mackay State Development Area", "description": "Declared Feb 2024; 907 hectares for significant industry"},
+      {"name": "Queensland Biofutures 10-Year Roadmap 2016-2026"},
+      {"name": "Queensland New Industry Development Strategy", "description": "Identifies emerging industries for decarbonisation"}
+    ],
+    "timeline": [
+      {"label": "$528k QLD Government business case contribution secured"},
+      {"label": "Cauldron Ferm mapping skills and service requirements"},
+      {"label": "BioHub facility target construction", "date": "TBD"}
+    ],
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.49"}],
     "notes": [],
     "updatedAt": "2026-02-06T00:00:00.000Z",
     "gateChecklist": {
       "definition": [
-        { "question": "Strategic Suitability", "status": "pending" },
-        { "question": "Legal Viability", "status": "pending" },
-        { "question": "Government Commitment", "status": "pending" }
+        {"question": "Strategic Suitability", "status": "pending"},
+        {"question": "Legal Viability", "status": "pending"},
+        {"question": "Government Commitment", "status": "pending"}
       ]
     },
     "artefacts": {
       "definition": [
-        { "name": "Project Concept Note (PCN)", "status": "not-started" },
-        { "name": "Legal and Regulatory Assessment Report", "status": "not-started" },
-        { "name": "Project Information Document", "status": "not-started" }
+        {"name": "Project Concept Note (PCN)", "status": "not-started"},
+        {"name": "Legal and Regulatory Assessment Report", "status": "not-started"},
+        {"name": "Project Information Document", "status": "not-started"}
       ]
     }
   },
@@ -314,32 +534,60 @@
     "readinessState": "feasibility-underway",
     "dominantConstraint": "coordination-failure",
     "summary": "Circular program associated with Resources Centre of Excellence; mining value chain; limited circular systems thinking and mine site control practices noted.",
+    "description": "A first-of-its-kind national pilot program between the Resources Centre of Excellence and BHP Mitsubishi Alliance to understand the scope for integrating circular economy principles across the entire mining value chain — from pit to port. The program includes a comprehensive material flow analysis of all mining waste to identify impact hotspots and catalytic circular opportunities.\n\nA follow-on phase will support businesses to implement recommendations. The program is complemented by the $4 million Queensland Circular Economy (Industry-Research) Program implemented through the Resources Centre of Excellence to support development of business solutions using circular economy principles.",
     "nextStep": "Align stakeholders and navigate regulatory and site-control barriers.",
+    "investmentValue": "$4m Queensland Circular Economy Program (through RCOE)",
+    "economicImpact": "Part of $6.5 trillion+ global circular economy value by 2030. Australia: $1.8tn in direct benefits over two decades. Mining tailings reprocessing: $4.9tn global opportunity.",
+    "keyStakeholders": ["Resources Centre of Excellence", "BHP Mitsubishi Alliance (BMA)", "Queensland Government", "enviroMETS Queensland", "C-Res"],
+    "risks": [
+      "Lack of circular systems thinking — businesses focused on recycling rather than lifecycle thinking",
+      "Uncertain downstream demand for product-as-a-service models and circular value propositions",
+      "Stringent mine site waste compliance restricts reuse and repurposing of waste materials",
+      "Knowledge gaps on waste material uses and regulation around waste management"
+    ],
+    "strategicActions": [
+      "Communicate regional circular economy findings to METS businesses; increase lifecycle thinking skills",
+      "Work with stakeholders to identify demand for alternative circular business models",
+      "Advocate for adapting waste management regulations to enable innovative repurposing while maintaining environmental standards",
+      "Partner with stakeholders to link METS businesses with information on waste material uses"
+    ],
+    "infrastructureNeeds": ["Resources Centre of Excellence", "BHP Mitsubishi Alliance mine sites", "Paget Industrial Estate for circular processing"],
+    "skillsImplications": "METS businesses need capability uplift from basic recycling to full lifecycle thinking. Off-road tyres represent significant opportunity — Greater Whitsunday is one of the highest off-road tyre generating regions nationally. 80% of a product's environmental impact is locked in during design and manufacturing stages.",
+    "marketDrivers": "Australia's circularity rate is only 4% (half the global average) — significant untapped potential. Global circular economy transaction revenue ~$490bn in 2022. Could save 165 million tonnes CO2/year by 2040.",
+    "governmentPrograms": [
+      {"name": "Queensland Circular Economy Program", "description": "$4m through Resources Centre of Excellence"},
+      {"name": "Queensland waste management regulations (under review)"}
+    ],
+    "timeline": [
+      {"label": "Pit to Port pilot program initiated"},
+      {"label": "Material flow analysis phase underway"},
+      {"label": "Follow-on business implementation support phase"}
+    ],
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.53"}],
     "notes": [],
     "updatedAt": "2026-02-06T00:00:00.000Z",
     "gateChecklist": {
       "definition": [
-        { "question": "Strategic Suitability", "status": "satisfied" },
-        { "question": "Legal Viability", "status": "satisfied" },
-        { "question": "Government Commitment", "status": "satisfied" }
+        {"question": "Strategic Suitability", "status": "satisfied"},
+        {"question": "Legal Viability", "status": "satisfied"},
+        {"question": "Government Commitment", "status": "satisfied"}
       ],
       "pre-feasibility": [
-        { "question": "Preliminary Feasibility", "status": "pending" },
-        { "question": "Clearance in Principle", "status": "pending" },
-        { "question": "Additionality", "status": "pending" }
+        {"question": "Preliminary Feasibility", "status": "pending"},
+        {"question": "Clearance in Principle", "status": "pending"},
+        {"question": "Additionality", "status": "pending"}
       ]
     },
     "artefacts": {
       "definition": [
-        { "name": "Project Concept Note (PCN)", "status": "complete" },
-        { "name": "Legal and Regulatory Assessment Report", "status": "complete" },
-        { "name": "Project Information Document", "status": "complete" }
+        {"name": "Project Concept Note (PCN)", "status": "complete"},
+        {"name": "Legal and Regulatory Assessment Report", "status": "complete"},
+        {"name": "Project Information Document", "status": "complete"}
       ],
       "pre-feasibility": [
-        { "name": "Pre-feasibility Study", "status": "not-started" },
-        { "name": "Integrated Safeguards Data Sheet", "status": "not-started" },
-        { "name": "\"Clearance in Principle\" Decision Note", "status": "not-started" }
+        {"name": "Pre-feasibility Study", "status": "not-started"},
+        {"name": "Integrated Safeguards Data Sheet", "status": "not-started"},
+        {"name": "\"Clearance in Principle\" Decision Note", "status": "not-started"}
       ]
     }
   },
@@ -354,32 +602,61 @@
     "readinessState": "feasibility-underway",
     "dominantConstraint": "planning-and-approvals",
     "summary": "Supply chain adjacency to Bowen Orbital Spaceport; licensing noted; gaps in accreditation and procurement pathways including ISO standards.",
+    "description": "Valmar Engineering is a Greater Whitsunday company established in 2013 with sugar and mining fabrication experience. Since September 2023, Valmar has been fabricating the transport erector and associated components to take the 30-tonne Gilmour Space rocket from horizontal to vertical position for launch at the Bowen Orbital Spaceport.\n\nThe Bowen Orbital Spaceport — co-funded by the Australian and Queensland Governments and Gilmour Space Technologies — was granted a launch facility licence in March 2024. It is one of only three dedicated orbital launch sites globally, located near Bowen due to proximity to the equator, low population density, and existing infrastructure including a deep-sea port, long runway, and road/rail network. Over 30,000 satellites globally are awaiting launch, creating a severe bottleneck in launch capacity.",
     "nextStep": "Secure accreditation and procurement pathways.",
+    "investmentValue": "Government co-funded spaceport; Valmar contract for transport erector components",
+    "economicImpact": "Global space economy estimated at $2.6tn by 2035. Australian Space Agency target: triple to $12bn/year and create 20,000 additional jobs by 2030. Queensland potential: $3.5-6bn annually by 2036.",
+    "keyStakeholders": ["Gilmour Space Technologies", "Australian Space Agency", "Valmar Engineering", "Queensland Government", "Australian Government", "SmartSat CRC"],
+    "risks": [
+      "Limited demand visibility — METS businesses see limited short-term market (small number of launches planned)",
+      "Skills transfer uncertainty — STEM and safety design competencies applicable but transition pathway not well understood",
+      "Certification and compliance barrier — ISO accreditations perceived as major barrier to entry",
+      "Scale mismatch — space manufacturing is much smaller scale than mining; quality demands extremely high"
+    ],
+    "strategicActions": [
+      "Develop stakeholder engagement plans connecting METS businesses to space opportunities",
+      "Identify skills and qualifications for enhancing existing METS capabilities for space",
+      "Enhance and promote procurement requirements and opportunities in the space sector",
+      "Map accreditation pathways modelled on defence supply chain entry processes"
+    ],
+    "infrastructureNeeds": ["Bowen Orbital Spaceport", "Fabrication facilities (Paget)", "Deep-sea port at Bowen", "Bowen airport runway"],
+    "skillsImplications": "319 skills required in the space industry; 310 identified as being in shortage (SmartSat CRC). High alignment: manufacturing, heavy equipment maintenance, electrical trades, mechanical and fabrication skills. Limited alignment: spacecraft mechanism design, crew habitation structures, debris shield design.",
+    "marketDrivers": "Over 30,000 satellites awaiting launch globally — severe bottleneck in launch capacity. Space economy growing from $915bn (2023) to $2.6tn by 2035. 50% of world's top 10 aerospace companies have Queensland presence.",
+    "governmentPrograms": [
+      {"name": "Australian Space Agency targets", "description": "Triple space economy to $12bn/year and +20,000 jobs by 2030"},
+      {"name": "Bowen Orbital Spaceport licence", "description": "Launch facility licence granted March 2024"},
+      {"name": "Queensland space industry development"}
+    ],
+    "timeline": [
+      {"label": "Valmar began fabrication for Gilmour Space", "date": "Sept 2023"},
+      {"label": "Bowen Orbital Spaceport launch licence granted", "date": "March 2024"},
+      {"label": "Initial launches expected from Bowen"}
+    ],
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.57"}],
     "notes": [],
     "updatedAt": "2026-02-06T00:00:00.000Z",
     "gateChecklist": {
       "definition": [
-        { "question": "Strategic Suitability", "status": "satisfied" },
-        { "question": "Legal Viability", "status": "satisfied" },
-        { "question": "Government Commitment", "status": "satisfied" }
+        {"question": "Strategic Suitability", "status": "satisfied"},
+        {"question": "Legal Viability", "status": "satisfied"},
+        {"question": "Government Commitment", "status": "satisfied"}
       ],
       "pre-feasibility": [
-        { "question": "Preliminary Feasibility", "status": "pending" },
-        { "question": "Clearance in Principle", "status": "pending" },
-        { "question": "Additionality", "status": "pending" }
+        {"question": "Preliminary Feasibility", "status": "pending"},
+        {"question": "Clearance in Principle", "status": "pending"},
+        {"question": "Additionality", "status": "pending"}
       ]
     },
     "artefacts": {
       "definition": [
-        { "name": "Project Concept Note (PCN)", "status": "complete" },
-        { "name": "Legal and Regulatory Assessment Report", "status": "complete" },
-        { "name": "Project Information Document", "status": "complete" }
+        {"name": "Project Concept Note (PCN)", "status": "complete"},
+        {"name": "Legal and Regulatory Assessment Report", "status": "complete"},
+        {"name": "Project Information Document", "status": "complete"}
       ],
       "pre-feasibility": [
-        { "name": "Pre-feasibility Study", "status": "not-started" },
-        { "name": "Integrated Safeguards Data Sheet", "status": "not-started" },
-        { "name": "\"Clearance in Principle\" Decision Note", "status": "not-started" }
+        {"name": "Pre-feasibility Study", "status": "not-started"},
+        {"name": "Integrated Safeguards Data Sheet", "status": "not-started"},
+        {"name": "\"Clearance in Principle\" Decision Note", "status": "not-started"}
       ]
     }
   },
@@ -392,22 +669,51 @@
     "readinessState": "conceptual-interest",
     "dominantConstraint": "coordination-failure",
     "summary": "External example included in PDF; post-mining land use; lack of clarity on who carries ongoing risk; need for regional strategic planning frameworks.",
+    "description": "An external reference case study from New South Wales included in the GW3 strategy. The Veolia Woodlawn Eco Precinct is a 6,000-hectare former zinc and copper mine site near Canberra that has been converted into a bioenergy plant, 48.3 MW wind farm, 2.5 MW solar farm, plus agriculture, aquaculture, and horticulture operations.\n\nThis model demonstrates the potential for post-mining land use in the Greater Whitsunday region, where peak Bowen Basin mine closure periods are expected around 2040 and 2070. Australian mine closure and remediation expenditure is estimated at $4-8 billion annually from 2023 to 2040, with approximately 1,000 mines expected to close globally by 2032.",
     "nextStep": "Establish governance and risk allocation clarity.",
+    "investmentValue": "Reference case; regional opportunity estimated at $4-8bn annually (Australia-wide mine closure expenditure)",
+    "economicImpact": "Australian environmental remediation technology/services market: $800m (2020), estimated to grow to $3bn by 2040. 25% of METS businesses nationally already offer mine closure solutions.",
+    "keyStakeholders": ["Queensland Government (Office of the Mine Rehabilitation Commissioner)", "enviroMETS Queensland", "Glencore", "BHP", "Indigenous and community stakeholders"],
+    "risks": [
+      "Queensland mine closure regulation mandated rehabilitation only (grazing/native vegetation), not incentivising alternate land uses",
+      "Unclear which party carries ongoing risk for post-mining uses after rehabilitation",
+      "METS businesses need understanding of environmental, social, and community constraints",
+      "Scaling pilot approaches to commercial viability requires significant government support",
+      "Limited METS skills in ecological restoration, biodiversity conservation, and hydrology"
+    ],
+    "strategicActions": [
+      "Advocate for clear regulations supporting economic diversification in post-mining land use",
+      "Connect METS businesses to information on new economic models and legislative compliance",
+      "Develop regional strategic planning framework with Indigenous, community, research, government, investment, and industry stakeholders",
+      "Collaborate on proposals for targeted government incentive schemes to encourage innovative post-mining outcomes"
+    ],
+    "infrastructureNeeds": ["Bowen Basin mine sites (approaching closure)", "Rehabilitation and monitoring infrastructure", "Regional strategic planning framework"],
+    "skillsImplications": "Limited METS skills in ecological restoration, biodiversity conservation, hydrology, and assessment of alternate land use. Best practice emphasises proactive action during mine operation including progressive rehabilitation, regular monitoring, and planning services.",
+    "marketDrivers": "Peak Bowen Basin mine closure periods expected around 2040 and 2070. ~1,000 mines expected to close globally by 2032. Alternative land uses being explored include renewable energy, agriculture, recreation/tourism, aquaculture, industrial parks, and manufacturing.",
+    "governmentPrograms": [
+      {"name": "Queensland Office of the Mine Rehabilitation Commissioner", "description": "Technical studies on post-mining land use in the Bowen Basin"},
+      {"name": "Glencore Newlands Coal Mine closure (2023)", "description": "Example of decades-old mine closing near Glenden"}
+    ],
+    "timeline": [
+      {"label": "Glencore Newlands mine closure (reference case)", "date": "2023"},
+      {"label": "Peak Bowen Basin mine closure (first wave)", "date": "2040"},
+      {"label": "Peak Bowen Basin mine closure (second wave)", "date": "2070"}
+    ],
     "evidence": [{"label": "Greater Whitsunday METS Strategy", "pageRef": "p.61"}],
     "notes": [],
     "updatedAt": "2026-02-06T00:00:00.000Z",
     "gateChecklist": {
       "definition": [
-        { "question": "Strategic Suitability", "status": "pending" },
-        { "question": "Legal Viability", "status": "pending" },
-        { "question": "Government Commitment", "status": "pending" }
+        {"question": "Strategic Suitability", "status": "pending"},
+        {"question": "Legal Viability", "status": "pending"},
+        {"question": "Government Commitment", "status": "pending"}
       ]
     },
     "artefacts": {
       "definition": [
-        { "name": "Project Concept Note (PCN)", "status": "not-started" },
-        { "name": "Legal and Regulatory Assessment Report", "status": "not-started" },
-        { "name": "Project Information Document", "status": "not-started" }
+        {"name": "Project Concept Note (PCN)", "status": "not-started"},
+        {"name": "Legal and Regulatory Assessment Report", "status": "not-started"},
+        {"name": "Project Information Document", "status": "not-started"}
       ]
     }
   }

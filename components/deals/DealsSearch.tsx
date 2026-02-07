@@ -2,6 +2,7 @@
 
 import { useMemo, useEffect, useCallback, useRef, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type { Deal, DealStage, LGA, OpportunityType } from "@/lib/types";
 import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
 import { filterDealsByQuery } from "@/lib/deals-search";
@@ -10,7 +11,6 @@ import { dealLgaNames } from "@/lib/opportunities";
 import { STAGE_LABELS, READINESS_LABELS } from "@/lib/labels";
 import { STAGE_COLOUR_CLASSES, READINESS_COLOUR_CLASSES } from "@/lib/stage-colours";
 import { getStageGateChecklist } from "@/lib/deal-pathway-utils";
-import { DealDrawer } from "@/components/map/DealDrawer";
 
 const STAGE_OPTIONS: DealStage[] = [
   "definition",
@@ -32,8 +32,8 @@ export function DealsSearch({
   lgas,
 }: DealsSearchProps) {
   const deals = useDealsWithOverrides(baseDeals);
+  const router = useRouter();
   const [query, setQuery] = useState("");
-  const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const listRef = useRef<HTMLUListElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -64,9 +64,6 @@ export function DealsSearch({
     () => filterDealsByQuery(deals, query, opportunityTypes, lgas, filters),
     [deals, query, opportunityTypes, lgas, filters],
   );
-  const selectedDeal = selectedDealId
-    ? deals.find((d) => d.id === selectedDealId) ?? null
-    : null;
 
   useEffect(() => {
     setHighlightedIndex(0);
@@ -74,25 +71,19 @@ export function DealsSearch({
 
   useEffect(() => {
     if (highlightedIndex < 0) setHighlightedIndex(0);
-    if (highlightedIndex >= filtered.length) setHighlightedIndex(Math.max(0, filtered.length - 1));
+    if (highlightedIndex >= filtered.length)
+      setHighlightedIndex(Math.max(0, filtered.length - 1));
   }, [highlightedIndex, filtered.length]);
 
-  const selectDeal = useCallback(
+  const navigateToDeal = useCallback(
     (deal: Deal) => {
-      setSelectedDealId(deal.id);
+      router.push(`/deals/${deal.id}`);
     },
-    []
+    [router],
   );
 
   const handleKeyDown = useCallback(
     (e: React.KeyboardEvent) => {
-      if (e.key === "Escape") {
-        if (selectedDealId) {
-          setSelectedDealId(null);
-          e.preventDefault();
-        }
-        return;
-      }
       if (e.key === "ArrowDown") {
         e.preventDefault();
         setHighlightedIndex((i) => Math.min(i + 1, filtered.length - 1));
@@ -105,16 +96,16 @@ export function DealsSearch({
       }
       if (e.key === "Enter" && filtered[highlightedIndex]) {
         e.preventDefault();
-        selectDeal(filtered[highlightedIndex]);
+        navigateToDeal(filtered[highlightedIndex]);
         return;
       }
     },
-    [filtered, highlightedIndex, selectDeal, selectedDealId]
+    [filtered, highlightedIndex, navigateToDeal],
   );
 
   useEffect(() => {
     const el = listRef.current?.querySelector(
-      `[data-deal-result-index="${highlightedIndex}"]`
+      `[data-deal-result-index="${highlightedIndex}"]`,
     );
     if (el && typeof (el as HTMLElement).scrollIntoView === "function") {
       (el as HTMLElement).scrollIntoView({ block: "nearest", behavior: "smooth" });
@@ -122,9 +113,78 @@ export function DealsSearch({
   }, [highlightedIndex]);
 
   const getOpportunityTypeName = (deal: Deal) =>
-    opportunityTypes.find((o) => o.id === deal.opportunityTypeId)?.name ?? deal.opportunityTypeId;
+    opportunityTypes.find((o) => o.id === deal.opportunityTypeId)?.name ??
+    deal.opportunityTypeId;
 
-  const selectClassName = "h-9 px-2 border border-[#E8E6E3] bg-white text-[#2C2C2C] text-sm focus:border-[#7A6B5A] focus:ring-1 focus:ring-[#7A6B5A] focus:outline-none transition duration-300 ease-out";
+  const selectClassName =
+    "h-9 px-2 border border-[#E8E6E3] bg-white text-[#2C2C2C] text-sm focus:border-[#7A6B5A] focus:ring-1 focus:ring-[#7A6B5A] focus:outline-none transition duration-300 ease-out";
+
+  /* ---------- List item ---------- */
+
+  const renderListItem = (deal: Deal, index: number) => {
+    const isHighlighted = index === highlightedIndex;
+    const lgaNames = dealLgaNames(deal, lgas).join(", ");
+    const otName = getOpportunityTypeName(deal);
+    const gateEntries = getStageGateChecklist(deal.gateChecklist ?? {}, deal.stage);
+    const gateSatisfied = gateEntries.filter((e) => e.status === "satisfied").length;
+    const gateTotal = gateEntries.length;
+    const allGates = gateSatisfied === gateTotal && gateTotal > 0;
+    return (
+      <li
+        key={deal.id}
+        role="option"
+        id={`deals-result-${deal.id}`}
+        data-deal-result-index={index}
+        aria-selected={isHighlighted}
+        tabIndex={-1}
+        className={[
+          "p-3 text-left cursor-pointer transition duration-300 ease-out",
+          "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]",
+          isHighlighted
+            ? "border border-[#E8E6E3] bg-[#F5F3F0]"
+            : "border border-transparent hover:bg-[#F5F3F0]",
+        ].join(" ")}
+        onClick={() => navigateToDeal(deal)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            navigateToDeal(deal);
+          }
+        }}
+      >
+        <p className="text-sm text-[#2C2C2C] leading-relaxed font-medium">
+          {deal.name}
+        </p>
+        <p className="text-xs text-[#6B6B6B] mt-1">
+          {otName} · {lgaNames || "\u2014"}
+        </p>
+        <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+          <span
+            className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 ${STAGE_COLOUR_CLASSES[deal.stage]}`}
+          >
+            {STAGE_LABELS[deal.stage]}
+          </span>
+          <span
+            className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 ${READINESS_COLOUR_CLASSES[deal.readinessState]}`}
+          >
+            {READINESS_LABELS[deal.readinessState]}
+          </span>
+          {gateTotal > 0 && (
+            <span
+              className={`text-[10px] tracking-wider px-1.5 py-0.5 ${
+                allGates
+                  ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
+                  : "bg-[#F5F3F0] text-[#6B6B6B] border border-[#E8E6E3]"
+              }`}
+              data-testid="gate-progress"
+            >
+              {gateSatisfied}/{gateTotal} gates
+            </span>
+          )}
+        </div>
+      </li>
+    );
+  };
 
   return (
     <div className="flex flex-col gap-4" data-testid="deals-search">
@@ -232,101 +292,26 @@ export function DealsSearch({
         </div>
       </div>
 
-      {/* Results grid: list + drawer */}
-      <div className={`grid gap-6 ${selectedDeal ? "md:grid-cols-2" : ""}`}>
-        <div className="min-w-0">
-          <ul
-            ref={listRef}
-            id="deals-results-list"
-            role="listbox"
-            aria-label="Deal search results"
-            className="list-none p-0 m-0 space-y-1 max-h-[60vh] overflow-auto border border-[#E8E6E3] bg-[#FFFFFF]"
-            onKeyDown={handleKeyDown}
-            data-testid="deals-results-list"
-          >
-            {filtered.length === 0 ? (
-              <li className="p-4 text-sm text-[#6B6B6B]">
-                {hasActiveFilters ? "No deals match your filters." : "No deals available."}
-              </li>
-            ) : (
-              filtered.map((deal, index) => {
-                const isHighlighted = index === highlightedIndex;
-                const isSelected = deal.id === selectedDealId;
-                const lgaNames = dealLgaNames(deal, lgas).join(", ");
-                const otName = getOpportunityTypeName(deal);
-                const gateEntries = getStageGateChecklist(deal.gateChecklist ?? {}, deal.stage);
-                const gateSatisfied = gateEntries.filter((e) => e.status === "satisfied").length;
-                const gateTotal = gateEntries.length;
-                const allGates = gateSatisfied === gateTotal && gateTotal > 0;
-                return (
-                  <li
-                    key={deal.id}
-                    role="option"
-                    id={`deals-result-${deal.id}`}
-                    data-deal-result-index={index}
-                    aria-selected={isHighlighted}
-                    tabIndex={-1}
-                    className={[
-                      "p-3 text-left cursor-pointer transition duration-300 ease-out",
-                      "focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]",
-                      isSelected
-                        ? "border-l-2 border-l-[#2C2C2C] bg-[#F5F3F0] border-y border-r border-y-[#E8E6E3] border-r-transparent"
-                        : isHighlighted
-                          ? "border border-[#E8E6E3] bg-[#F5F3F0]"
-                          : "border border-transparent hover:bg-[#F5F3F0]",
-                    ].join(" ")}
-                    onClick={() => selectDeal(deal)}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        selectDeal(deal);
-                      }
-                    }}
-                  >
-                    <p className="text-sm text-[#2C2C2C] leading-relaxed font-medium">
-                      {deal.name}
-                    </p>
-                    <p className="text-xs text-[#6B6B6B] mt-1">
-                      {otName} · {lgaNames || "—"}
-                    </p>
-                    <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                      <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 ${STAGE_COLOUR_CLASSES[deal.stage]}`}>
-                        {STAGE_LABELS[deal.stage]}
-                      </span>
-                      <span className={`text-[10px] uppercase tracking-wider px-1.5 py-0.5 ${READINESS_COLOUR_CLASSES[deal.readinessState]}`}>
-                        {READINESS_LABELS[deal.readinessState]}
-                      </span>
-                      {gateTotal > 0 && (
-                        <span
-                          className={`text-[10px] tracking-wider px-1.5 py-0.5 ${
-                            allGates
-                              ? "bg-emerald-50 text-emerald-700 border border-emerald-200"
-                              : "bg-[#F5F3F0] text-[#6B6B6B] border border-[#E8E6E3]"
-                          }`}
-                          data-testid="gate-progress"
-                        >
-                          {gateSatisfied}/{gateTotal} gates
-                        </span>
-                      )}
-                    </div>
-                  </li>
-                );
-              })
-            )}
-          </ul>
-        </div>
-
-        {selectedDeal && (
-          <div className="min-w-0">
-            <DealDrawer
-              deal={selectedDeal}
-              opportunityTypes={opportunityTypes}
-              lgas={lgas}
-              onClose={() => setSelectedDealId(null)}
-            />
-          </div>
+      {/* Results list */}
+      <ul
+        ref={listRef}
+        id="deals-results-list"
+        role="listbox"
+        aria-label="Deal search results"
+        className="list-none p-0 m-0 space-y-1 max-h-[60vh] overflow-auto border border-[#E8E6E3] bg-[#FFFFFF]"
+        onKeyDown={handleKeyDown}
+        data-testid="deals-results-list"
+      >
+        {filtered.length === 0 ? (
+          <li className="p-4 text-sm text-[#6B6B6B]">
+            {hasActiveFilters
+              ? "No deals match your filters."
+              : "No deals available."}
+          </li>
+        ) : (
+          filtered.map((deal, index) => renderListItem(deal, index))
         )}
-      </div>
+      </ul>
     </div>
   );
 }

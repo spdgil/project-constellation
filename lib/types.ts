@@ -111,6 +111,18 @@ export interface Note {
   createdAt: string;
 }
 
+/** Government program or funding reference */
+export interface GovernmentProgram {
+  name: string;
+  description?: string;
+}
+
+/** Timeline milestone */
+export interface TimelineMilestone {
+  label: string;
+  date?: string;
+}
+
 /** Deal (project instance) — PRD §7.1 */
 export interface Deal {
   id: string;
@@ -131,6 +143,31 @@ export interface Deal {
   gateChecklist: Partial<Record<DealStage, DealGateEntry[]>>;
   /** Artefact/document tracking per stage (populated up to current stage) */
   artefacts: Partial<Record<DealStage, DealArtefact[]>>;
+
+  /* --- Rich fields (optional, populated from strategy documents) --- */
+
+  /** Long-form description (2-3 paragraphs) */
+  description?: string;
+  /** Estimated investment amount or funding secured */
+  investmentValue?: string;
+  /** Economic impact summary */
+  economicImpact?: string;
+  /** Named organisations involved */
+  keyStakeholders?: string[];
+  /** Specific risks and challenges */
+  risks?: string[];
+  /** Recommended strategic actions */
+  strategicActions?: string[];
+  /** Supporting infrastructure requirements */
+  infrastructureNeeds?: string[];
+  /** Workforce and skills implications */
+  skillsImplications?: string;
+  /** Market drivers and demand signals */
+  marketDrivers?: string;
+  /** Related government policies and funding programs */
+  governmentPrograms?: GovernmentProgram[];
+  /** Key milestones and timeline events */
+  timeline?: TimelineMilestone[];
 }
 
 /** Constraint change audit — PRD §7.1 */

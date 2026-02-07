@@ -1,0 +1,645 @@
+"use client";
+
+import { useCallback, useEffect, useState } from "react";
+import Link from "next/link";
+import type {
+  Deal,
+  LGA,
+  OpportunityType,
+  ReadinessState,
+  Constraint,
+  GateStatus,
+  ArtefactStatus,
+} from "@/lib/types";
+import {
+  getDealWithLocalOverrides,
+  hasLocalDealOverrides,
+  saveDealLocally,
+  appendConstraintEvent,
+} from "@/lib/deal-storage";
+import {
+  READINESS_LABELS,
+  STAGE_LABELS,
+  CONSTRAINT_LABELS,
+  ARTEFACT_STATUS_LABELS,
+} from "@/lib/labels";
+import {
+  STAGE_COLOUR_CLASSES,
+  READINESS_COLOUR_CLASSES,
+  ARTEFACT_STATUS_COLOUR_CLASSES,
+} from "@/lib/stage-colours";
+import { getStageGateChecklist, getStageArtefacts } from "@/lib/deal-pathway-utils";
+import { PATHWAY_STAGES } from "@/lib/pathway-data";
+import { formatDate } from "@/lib/format";
+import { AccordionSection } from "@/components/ui/AccordionSection";
+import { DealHero } from "./DealHero";
+import { DealSidebar } from "./DealSidebar";
+
+const ARTEFACT_STATUS_CYCLE: ArtefactStatus[] = ["not-started", "in-progress", "complete"];
+
+const READINESS_OPTIONS: ReadinessState[] = [
+  "no-viable-projects",
+  "conceptual-interest",
+  "feasibility-underway",
+  "structurable-but-stalled",
+  "investable-with-minor-intervention",
+  "scaled-and-replicable",
+];
+
+const CONSTRAINT_OPTIONS: Constraint[] = [
+  "revenue-certainty",
+  "offtake-demand-aggregation",
+  "planning-and-approvals",
+  "sponsor-capability",
+  "early-risk-capital",
+  "balance-sheet-constraints",
+  "technology-risk",
+  "coordination-failure",
+  "skills-and-workforce-constraint",
+  "common-user-infrastructure-gap",
+];
+
+export interface DealDetailProps {
+  deal: Deal;
+  opportunityTypes: OpportunityType[];
+  lgas: LGA[];
+  allDeals: Deal[];
+}
+
+/**
+ * Full-page deal detail view.
+ * Hero summary, accordion sections, and contextual sidebar.
+ * Supports view and edit modes.
+ */
+export function DealDetail({
+  deal: initialDeal,
+  opportunityTypes,
+  lgas,
+  allDeals,
+}: DealDetailProps) {
+  const [deal, setDeal] = useState<Deal>(initialDeal);
+  const [isLocal, setIsLocal] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+
+  /* Load local overrides on mount */
+  useEffect(() => {
+    const merged = getDealWithLocalOverrides(initialDeal.id, initialDeal);
+    setDeal(merged);
+    setIsLocal(hasLocalDealOverrides(initialDeal.id));
+  }, [initialDeal]);
+
+  /* ---------- Editing toggle ---------- */
+
+  const toggleEditing = useCallback(() => {
+    setIsEditing((prev) => !prev);
+  }, []);
+
+  /* ---------- Field handlers ---------- */
+
+  const handleReadinessChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const value = e.target.value as ReadinessState;
+      const updated: Deal = { ...deal, readinessState: value, updatedAt: new Date().toISOString() };
+      setDeal(updated);
+      saveDealLocally(updated);
+      setIsLocal(true);
+    },
+    [deal],
+  );
+
+  const handleConstraintChange = useCallback(
+    (e: React.ChangeEvent<HTMLSelectElement>) => {
+      const value = e.target.value as Constraint;
+      const updated: Deal = { ...deal, dominantConstraint: value, updatedAt: new Date().toISOString() };
+      setDeal(updated);
+      saveDealLocally(updated);
+      appendConstraintEvent({
+        entityType: "deal",
+        entityId: deal.id,
+        dominantConstraint: value,
+        changedAt: updated.updatedAt,
+        changeReason: "Edited in UI",
+      });
+      setIsLocal(true);
+    },
+    [deal],
+  );
+
+  const handleGateToggle = useCallback(
+    (questionIndex: number) => {
+      const stage = deal.stage;
+      const entries = getStageGateChecklist(deal.gateChecklist ?? {}, stage);
+      const entry = entries[questionIndex];
+      if (!entry) return;
+      const newStatus: GateStatus = entry.status === "satisfied" ? "pending" : "satisfied";
+      const updatedEntries = entries.map((e, i) =>
+        i === questionIndex ? { ...e, status: newStatus } : e,
+      );
+      const updated: Deal = {
+        ...deal,
+        gateChecklist: { ...deal.gateChecklist, [stage]: updatedEntries },
+        updatedAt: new Date().toISOString(),
+      };
+      setDeal(updated);
+      saveDealLocally(updated);
+      setIsLocal(true);
+    },
+    [deal],
+  );
+
+  const handleArtefactStatusCycle = useCallback(
+    (artefactIndex: number) => {
+      const stage = deal.stage;
+      const entries = getStageArtefacts(deal.artefacts ?? {}, stage);
+      const entry = entries[artefactIndex];
+      if (!entry) return;
+      const currentIdx = ARTEFACT_STATUS_CYCLE.indexOf(entry.status);
+      const nextStatus = ARTEFACT_STATUS_CYCLE[(currentIdx + 1) % ARTEFACT_STATUS_CYCLE.length];
+      const updatedEntries = entries.map((e, i) =>
+        i === artefactIndex ? { ...e, status: nextStatus } : e,
+      );
+      const updated: Deal = {
+        ...deal,
+        artefacts: { ...deal.artefacts, [stage]: updatedEntries },
+        updatedAt: new Date().toISOString(),
+      };
+      setDeal(updated);
+      saveDealLocally(updated);
+      setIsLocal(true);
+    },
+    [deal],
+  );
+
+  const handleArtefactFieldChange = useCallback(
+    (artefactIndex: number, field: "summary" | "url", value: string) => {
+      const stage = deal.stage;
+      const entries = getStageArtefacts(deal.artefacts ?? {}, stage);
+      const updatedEntries = entries.map((e, i) =>
+        i === artefactIndex ? { ...e, [field]: value || undefined } : e,
+      );
+      const updated: Deal = {
+        ...deal,
+        artefacts: { ...deal.artefacts, [stage]: updatedEntries },
+        updatedAt: new Date().toISOString(),
+      };
+      setDeal(updated);
+      saveDealLocally(updated);
+      setIsLocal(true);
+    },
+    [deal],
+  );
+
+  /* ---------- Derived data ---------- */
+
+  const gateEntries = getStageGateChecklist(deal.gateChecklist ?? {}, deal.stage);
+  const gateSatisfied = gateEntries.filter((e) => e.status === "satisfied").length;
+  const gateTotal = gateEntries.length;
+  const allGatesSatisfied = gateSatisfied === gateTotal && gateTotal > 0;
+
+  const artefactEntries = getStageArtefacts(deal.artefacts ?? {}, deal.stage);
+  const artefactComplete = artefactEntries.filter((e) => e.status === "complete").length;
+  const pathwayStage = PATHWAY_STAGES.find((s) => s.id === deal.stage);
+
+  const selectClass =
+    "w-full h-9 px-3 border border-[#E8E6E3] bg-white text-[#2C2C2C] text-sm placeholder:text-[#9A9A9A] focus:border-[#7A6B5A] focus:ring-1 focus:ring-[#7A6B5A] focus:outline-none transition duration-300 ease-out";
+
+  /* ---------- Render ---------- */
+
+  return (
+    <div className="space-y-6">
+      {/* Top bar */}
+      <div className="flex items-center justify-between gap-4">
+        <Link
+          href="/deals/list"
+          className="text-sm text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
+        >
+          &larr; Back to deals
+        </Link>
+        <div className="flex items-center gap-2">
+          {isLocal && (
+            <span className="text-xs text-[#7A6B5A] px-2 py-1 border border-[#E8E6E3] bg-[#F5F3F0]">
+              Updated locally
+            </span>
+          )}
+          <button
+            type="button"
+            onClick={toggleEditing}
+            aria-label={isEditing ? "Switch to view mode" : "Switch to edit mode"}
+            data-testid="mode-toggle"
+            className={`h-9 px-3 text-sm border transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7] ${
+              isEditing
+                ? "border-[#2C2C2C] bg-[#2C2C2C] text-white hover:bg-[#444]"
+                : "border-[#E8E6E3] bg-transparent text-[#2C2C2C] hover:border-[#9A9A9A]"
+            }`}
+          >
+            {isEditing ? "Editing" : "Edit"}
+          </button>
+        </div>
+      </div>
+
+      {/* Two-column grid: main + sidebar */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Main content (2/3) */}
+        <div className="lg:col-span-2 space-y-0">
+          {/* Hero card */}
+          <DealHero deal={deal} opportunityTypes={opportunityTypes} lgas={lgas} />
+
+          {/* Edit-mode overrides for classification */}
+          {isEditing && (
+            <div className="bg-white border border-t-0 border-[#E8E6E3] p-6 space-y-4">
+              <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] font-medium">
+                Classification (editable)
+              </p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label
+                    htmlFor="deal-readiness"
+                    className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1 block"
+                  >
+                    Readiness state
+                  </label>
+                  <select
+                    id="deal-readiness"
+                    value={deal.readinessState}
+                    onChange={handleReadinessChange}
+                    className={selectClass}
+                  >
+                    {READINESS_OPTIONS.map((v) => (
+                      <option key={v} value={v}>
+                        {READINESS_LABELS[v]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label
+                    htmlFor="deal-constraint"
+                    className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1 block"
+                  >
+                    Dominant constraint
+                  </label>
+                  <select
+                    id="deal-constraint"
+                    value={deal.dominantConstraint}
+                    onChange={handleConstraintChange}
+                    className={selectClass}
+                  >
+                    {CONSTRAINT_OPTIONS.map((v) => (
+                      <option key={v} value={v}>
+                        {CONSTRAINT_LABELS[v]}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Accordion sections */}
+          <div className="bg-white border border-t-0 border-[#E8E6E3] px-6 pb-2">
+            {/* Gate Checklist */}
+            <AccordionSection
+              title="Gate checklist"
+              badge={`${gateSatisfied}/${gateTotal}`}
+              defaultOpen
+            >
+              {isEditing ? (
+                <fieldset className="space-y-2">
+                  <legend className="sr-only">
+                    Gate checklist for {STAGE_LABELS[deal.stage]} stage
+                  </legend>
+                  {gateEntries.map((entry, idx) => {
+                    const desc = pathwayStage?.gateChecklist.find(
+                      (g) => g.question === entry.question,
+                    )?.description;
+                    return (
+                      <label
+                        key={entry.question}
+                        className="flex items-start gap-2 cursor-pointer group"
+                      >
+                        <input
+                          type="checkbox"
+                          checked={entry.status === "satisfied"}
+                          onChange={() => handleGateToggle(idx)}
+                          aria-label={`${entry.question}: ${entry.status}`}
+                          className="mt-0.5 h-4 w-4 accent-emerald-600 cursor-pointer"
+                          data-testid={`gate-checkbox-${idx}`}
+                        />
+                        <span className="flex-1 min-w-0">
+                          <span
+                            className={`text-sm leading-relaxed block ${
+                              entry.status === "satisfied"
+                                ? "text-emerald-700 line-through"
+                                : "text-[#2C2C2C]"
+                            }`}
+                          >
+                            {entry.question}
+                          </span>
+                          {desc && (
+                            <span className="text-[10px] text-[#9A9A9A] leading-snug block mt-0.5">
+                              {desc}
+                            </span>
+                          )}
+                        </span>
+                      </label>
+                    );
+                  })}
+                </fieldset>
+              ) : (
+                <ul className="space-y-1.5 list-none p-0 m-0">
+                  {gateEntries.map((entry) => (
+                    <li key={entry.question} className="flex items-start gap-2">
+                      <span
+                        className={`shrink-0 mt-0.5 text-sm ${
+                          entry.status === "satisfied" ? "text-emerald-600" : "text-[#C8C4BF]"
+                        }`}
+                        aria-hidden="true"
+                      >
+                        {entry.status === "satisfied" ? "\u2713" : "\u2015"}
+                      </span>
+                      <span
+                        className={`text-sm leading-relaxed ${
+                          entry.status === "satisfied" ? "text-emerald-700" : "text-[#2C2C2C]"
+                        }`}
+                      >
+                        {entry.question}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </AccordionSection>
+
+            {/* Artefacts & Documents */}
+            <AccordionSection
+              title="Artefacts and documents"
+              badge={`${artefactComplete}/${artefactEntries.length}`}
+            >
+              <div className="space-y-3">
+                {artefactEntries.map((entry, idx) => (
+                  <div
+                    key={entry.name}
+                    className="border border-[#E8E6E3] bg-[#FAF9F7] p-3 space-y-2"
+                  >
+                    <div className="flex items-start justify-between gap-2">
+                      <p className="text-sm text-[#2C2C2C] leading-relaxed flex-1 min-w-0">
+                        {entry.name}
+                      </p>
+                      {isEditing ? (
+                        <button
+                          type="button"
+                          onClick={() => handleArtefactStatusCycle(idx)}
+                          aria-label={`${entry.name} status: ${ARTEFACT_STATUS_LABELS[entry.status]}. Click to change.`}
+                          className={`shrink-0 text-[10px] uppercase tracking-wider px-1.5 py-0.5 cursor-pointer transition duration-300 ease-out hover:opacity-80 ${ARTEFACT_STATUS_COLOUR_CLASSES[entry.status]}`}
+                          data-testid={`artefact-status-${idx}`}
+                        >
+                          {ARTEFACT_STATUS_LABELS[entry.status]}
+                        </button>
+                      ) : (
+                        <span
+                          className={`shrink-0 text-[10px] uppercase tracking-wider px-1.5 py-0.5 ${ARTEFACT_STATUS_COLOUR_CLASSES[entry.status]}`}
+                          data-testid={`artefact-status-${idx}`}
+                        >
+                          {ARTEFACT_STATUS_LABELS[entry.status]}
+                        </span>
+                      )}
+                    </div>
+                    {isEditing ? (
+                      <>
+                        <div>
+                          <label
+                            htmlFor={`artefact-summary-${idx}`}
+                            className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1 block"
+                          >
+                            Summary
+                          </label>
+                          <textarea
+                            id={`artefact-summary-${idx}`}
+                            value={entry.summary ?? ""}
+                            onChange={(e) =>
+                              handleArtefactFieldChange(idx, "summary", e.target.value)
+                            }
+                            placeholder="Describe the document..."
+                            rows={2}
+                            className="w-full px-2 py-1.5 border border-[#E8E6E3] bg-white text-[#2C2C2C] text-xs placeholder:text-[#9A9A9A] focus:border-[#7A6B5A] focus:ring-1 focus:ring-[#7A6B5A] focus:outline-none transition duration-300 ease-out resize-y"
+                          />
+                        </div>
+                        <div>
+                          <label
+                            htmlFor={`artefact-url-${idx}`}
+                            className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1 block"
+                          >
+                            Document link
+                          </label>
+                          <input
+                            type="url"
+                            id={`artefact-url-${idx}`}
+                            value={entry.url ?? ""}
+                            onChange={(e) =>
+                              handleArtefactFieldChange(idx, "url", e.target.value)
+                            }
+                            placeholder="https://..."
+                            className="w-full h-8 px-2 border border-[#E8E6E3] bg-white text-[#2C2C2C] text-xs placeholder:text-[#9A9A9A] focus:border-[#7A6B5A] focus:ring-1 focus:ring-[#7A6B5A] focus:outline-none transition duration-300 ease-out"
+                          />
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        {entry.summary && (
+                          <p className="text-xs text-[#2C2C2C] leading-relaxed">{entry.summary}</p>
+                        )}
+                        {entry.url && (
+                          <a
+                            href={entry.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-xs text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A] break-all"
+                          >
+                            {entry.url}
+                          </a>
+                        )}
+                      </>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </AccordionSection>
+
+            {/* Risks & Challenges */}
+            {deal.risks && deal.risks.length > 0 && (
+              <AccordionSection title="Risks and challenges" badge={`${deal.risks.length}`}>
+                <ul className="space-y-2 list-none p-0 m-0">
+                  {deal.risks.map((risk, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="shrink-0 mt-0.5 text-sm text-[#B54A4A]" aria-hidden="true">
+                        &bull;
+                      </span>
+                      <span className="text-sm text-[#2C2C2C] leading-relaxed">{risk}</span>
+                    </li>
+                  ))}
+                </ul>
+              </AccordionSection>
+            )}
+
+            {/* Strategic Actions */}
+            {deal.strategicActions && deal.strategicActions.length > 0 && (
+              <AccordionSection title="Strategic actions">
+                <ul className="space-y-2 list-none p-0 m-0">
+                  {deal.strategicActions.map((action, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span className="shrink-0 mt-0.5 text-sm text-[#7A6B5A]" aria-hidden="true">
+                        &rarr;
+                      </span>
+                      <span className="text-sm text-[#2C2C2C] leading-relaxed">{action}</span>
+                    </li>
+                  ))}
+                </ul>
+              </AccordionSection>
+            )}
+
+            {/* Infrastructure & Market Context */}
+            {(deal.infrastructureNeeds?.length || deal.marketDrivers || deal.skillsImplications) && (
+              <AccordionSection title="Infrastructure and market">
+                <div className="space-y-4">
+                  {deal.infrastructureNeeds && deal.infrastructureNeeds.length > 0 && (
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
+                        Infrastructure needs
+                      </p>
+                      <ul className="space-y-1 list-none p-0 m-0">
+                        {deal.infrastructureNeeds.map((item, i) => (
+                          <li key={i} className="text-sm text-[#2C2C2C] leading-relaxed">
+                            {item}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {deal.skillsImplications && (
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
+                        Skills implications
+                      </p>
+                      <p className="text-sm text-[#2C2C2C] leading-relaxed">
+                        {deal.skillsImplications}
+                      </p>
+                    </div>
+                  )}
+                  {deal.marketDrivers && (
+                    <div>
+                      <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
+                        Market drivers
+                      </p>
+                      <p className="text-sm text-[#2C2C2C] leading-relaxed">
+                        {deal.marketDrivers}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </AccordionSection>
+            )}
+
+            {/* Government Programs & Funding */}
+            {deal.governmentPrograms && deal.governmentPrograms.length > 0 && (
+              <AccordionSection title="Government programs and funding">
+                <ul className="space-y-2 list-none p-0 m-0">
+                  {deal.governmentPrograms.map((prog, i) => (
+                    <li key={i} className="text-sm text-[#2C2C2C] leading-relaxed">
+                      <span className="font-medium">{prog.name}</span>
+                      {prog.description && (
+                        <span className="text-[#6B6B6B]"> &mdash; {prog.description}</span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </AccordionSection>
+            )}
+
+            {/* Timeline */}
+            {deal.timeline && deal.timeline.length > 0 && (
+              <AccordionSection title="Timeline">
+                <ul className="space-y-2 list-none p-0 m-0">
+                  {deal.timeline.map((milestone, i) => (
+                    <li key={i} className="flex items-start gap-3">
+                      {milestone.date ? (
+                        <span className="shrink-0 text-xs text-[#6B6B6B] w-20">
+                          {milestone.date}
+                        </span>
+                      ) : (
+                        <span className="shrink-0 text-xs text-[#9A9A9A] w-20">&mdash;</span>
+                      )}
+                      <span className="text-sm text-[#2C2C2C] leading-relaxed">
+                        {milestone.label}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </AccordionSection>
+            )}
+
+            {/* Evidence & References */}
+            <AccordionSection title="Evidence and references">
+              <div className="space-y-3">
+                {deal.evidence.length === 0 ? (
+                  <p className="text-xs text-[#9A9A9A] leading-relaxed">None</p>
+                ) : (
+                  <ul className="list-none p-0 m-0 space-y-1">
+                    {deal.evidence.map((e, i) => (
+                      <li key={i} className="text-xs text-[#2C2C2C] leading-relaxed">
+                        {e.label ?? e.pageRef ?? "\u2014"}
+                        {e.pageRef && e.label ? ` (${e.pageRef})` : ""}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            </AccordionSection>
+
+            {/* Notes & Activity */}
+            <AccordionSection
+              title="Notes and activity"
+              badge={deal.notes.length > 0 ? `${deal.notes.length}` : undefined}
+            >
+              <div className="space-y-3">
+                {deal.notes.length === 0 ? (
+                  <p className="text-xs text-[#9A9A9A] leading-relaxed">No notes yet</p>
+                ) : (
+                  <ul className="list-none p-0 m-0 space-y-2">
+                    {deal.notes.map((n) => (
+                      <li key={n.id} className="text-xs text-[#2C2C2C] leading-relaxed">
+                        <span className="text-[10px] text-[#9A9A9A] block">
+                          {formatDate(n.createdAt)}
+                        </span>
+                        {n.content}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <div>
+                  <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
+                    Last updated
+                  </p>
+                  <p className="text-xs text-[#9A9A9A] leading-relaxed">
+                    {formatDate(deal.updatedAt)}
+                  </p>
+                </div>
+              </div>
+            </AccordionSection>
+          </div>
+        </div>
+
+        {/* Sidebar (1/3) */}
+        <div className="lg:col-span-1">
+          <div className="lg:sticky lg:top-6">
+            <DealSidebar
+              deal={deal}
+              opportunityTypes={opportunityTypes}
+              lgas={lgas}
+              allDeals={allDeals}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

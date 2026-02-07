@@ -106,7 +106,7 @@ describe("StateView", () => {
     expect(
       screen.getByRole("button", { name: /pipeline summary by opportunity type/i })
     ).toHaveAttribute("aria-expanded", "false");
-    expect(screen.queryByTestId("pipeline-by-ot")).not.toBeVisible();
+    expect(screen.queryByTestId("pipeline-by-ot")).not.toBeInTheDocument();
   });
 
   it("expanding pipeline section shows counts by readiness", () => {
