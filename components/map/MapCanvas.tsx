@@ -139,13 +139,6 @@ export function MapCanvas({
     fitIfReady();
   }, [fitIfReady]);
 
-  /** When initialFitBounds arrives *after* the map has already loaded
-   *  (e.g. async boundary fetch), try fitting again.                   */
-  useEffect(() => {
-    if (mapLoadedRef.current && initialFitBounds && !hasFittedRef.current) {
-      fitIfReady();
-    }
-  }, [initialFitBounds, fitIfReady]);
 
   /* ------------------------------------------------------------------ */
   /* Click handler: LGA fill layer → select; empty → deselect           */
@@ -177,9 +170,19 @@ export function MapCanvas({
   );
 
   /* ------------------------------------------------------------------ */
-  /* Fly to the selected LGA's bounds when selection changes            */
+  /* Fly to the selected LGA's bounds when selection changes.           */
+  /* Skip when initialFitBounds is provided — the LGA is already framed */
+  /* by fitIfReady, so a duplicate fly-to would fight the initial fit.  */
   /* ------------------------------------------------------------------ */
+  const prevSelectedRef = useRef(selectedLgaId);
   useEffect(() => {
+    /* Skip on first render — initialFitBounds already handles framing */
+    if (prevSelectedRef.current === selectedLgaId && initialFitBounds) {
+      prevSelectedRef.current = selectedLgaId;
+      return;
+    }
+    prevSelectedRef.current = selectedLgaId;
+
     const map = mapRef.current;
     if (!map || !selectedLgaId) return;
 
@@ -209,7 +212,7 @@ export function MapCanvas({
       ],
       { padding: 60, duration: 800, maxZoom: 11 },
     );
-  }, [selectedLgaId, boundaries]);
+  }, [selectedLgaId, boundaries, initialFitBounds]);
 
   /* ------------------------------------------------------------------ */
   /* Missing-token fallback                                             */
@@ -258,7 +261,6 @@ export function MapCanvas({
         onClick={handleMapClick}
         onLoad={handleLoad}
         cursor="pointer"
-        reuseMaps
         {...(maxBounds ? { maxBounds } : {})}
       >
         <NavigationControl position="top-right" showCompass={false} />

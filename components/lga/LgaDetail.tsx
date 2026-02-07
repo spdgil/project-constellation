@@ -254,16 +254,20 @@ export function LgaDetail({
             className="h-[400px] bg-[#FAF9F7] border border-t-0 border-[#E8E6E3] overflow-hidden"
             data-testid="lga-map"
           >
-            <MapCanvas
-              boundaries={boundaries}
-              selectedLgaId={lga.id}
-              onSelectLga={noop}
-              deals={deals}
-              dealPositions={dealPositions}
-              selectedDealId={null}
-              onSelectDeal={handleSelectDeal}
-              initialFitBounds={lgaBounds}
-            />
+            {lgaBounds ? (
+              <MapCanvas
+                boundaries={boundaries}
+                selectedLgaId={lga.id}
+                onSelectLga={noop}
+                deals={deals}
+                dealPositions={dealPositions}
+                selectedDealId={null}
+                onSelectDeal={handleSelectDeal}
+                initialFitBounds={lgaBounds}
+              />
+            ) : (
+              <div className="h-full w-full bg-[#FAF9F7] animate-pulse" />
+            )}
           </div>
 
           {/* Accordion sections */}
