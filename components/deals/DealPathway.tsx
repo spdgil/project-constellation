@@ -18,15 +18,10 @@ export function DealPathway() {
 
   return (
     <div className="flex flex-col gap-4">
-      {/* Compact heading */}
-      <div>
-        <h1 className="font-heading text-2xl font-normal leading-[1.3] text-[#2C2C2C]">
-          Deal Development Pathway
-        </h1>
-        <p className="mt-1 text-sm text-[#6B6B6B]">
-          Five stages from enabling environment through to financial close, each resolving key uncertainties to mobilise private capital.
-        </p>
-      </div>
+      <p className="text-sm text-[#6B6B6B] leading-relaxed max-w-2xl">
+        Five stages from enabling environment through to financial close, each
+        resolving key uncertainties to mobilise private capital.
+      </p>
 
       {/* Sticky pipeline stepper */}
       <div className="sticky top-0 z-10 bg-[#FAF9F7] -mx-1 px-1 py-2">

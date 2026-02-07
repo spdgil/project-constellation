@@ -534,17 +534,10 @@ export function InvestmentMemo({
 
   return (
     <div className="space-y-8">
-      {/* Header */}
-      <div>
-        <h2 className="font-heading text-xl font-normal text-[#2C2C2C] mb-1">
-          New Deal from Document
-        </h2>
-        <p className="text-sm text-[#6B6B6B] leading-relaxed max-w-prose">
-          Upload an investment memo or strategy document. AI will extract a
-          deal name, determine the stage, and populate all fields
-          automatically.
-        </p>
-      </div>
+      <p className="text-sm text-[#6B6B6B] leading-relaxed max-w-2xl">
+        Upload an investment memo or strategy document. AI will extract the
+        deal details and populate all fields automatically.
+      </p>
 
       {/* Two-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">

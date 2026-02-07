@@ -49,6 +49,17 @@ vi.mock("@/lib/db/queries", () => ({
         typicalRisks: "",
       },
     ]),
+  loadSectorOpportunities: () =>
+    Promise.resolve([
+      {
+        id: "critical-minerals-vcs",
+        name: "Critical Minerals Value Chain Services",
+        version: "1",
+        tags: [],
+        sections: {},
+        sources: [],
+      },
+    ]),
 }));
 
 vi.mock("next/navigation", () => ({

@@ -100,13 +100,11 @@ describe("DealsSearch", () => {
         deals={mockDeals}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
+        sectorCount={mockOpportunityTypes.length}
       />
     );
 
     expect(screen.getByTestId("deals-search")).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: /deals/i })
-    ).toBeInTheDocument();
     const input = screen.getByTestId("deals-search-input");
     expect(input).toBeInTheDocument();
     expect(input.getAttribute("placeholder")).toMatch(/search deals/i);
@@ -125,6 +123,7 @@ describe("DealsSearch", () => {
         deals={mockDeals}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
+        sectorCount={mockOpportunityTypes.length}
       />
     );
 
@@ -138,6 +137,7 @@ describe("DealsSearch", () => {
         deals={mockDeals}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
+        sectorCount={mockOpportunityTypes.length}
       />
     );
 
@@ -155,6 +155,7 @@ describe("DealsSearch", () => {
         deals={mockDeals}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
+        sectorCount={mockOpportunityTypes.length}
       />
     );
 
@@ -172,6 +173,7 @@ describe("DealsSearch", () => {
         deals={mockDeals}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
+        sectorCount={mockOpportunityTypes.length}
       />
     );
 
@@ -189,6 +191,7 @@ describe("DealsSearch", () => {
         deals={mockDeals}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
+        sectorCount={mockOpportunityTypes.length}
       />
     );
 
@@ -204,6 +207,7 @@ describe("DealsSearch", () => {
         deals={mockDeals}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
+        sectorCount={mockOpportunityTypes.length}
       />
     );
 
@@ -218,10 +222,11 @@ describe("DealsSearch", () => {
         deals={mockDeals}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
+        sectorCount={mockOpportunityTypes.length}
       />
     );
 
     expect(screen.getByTestId("summary-bar")).toBeInTheDocument();
-    expect(screen.getByText("Total deals")).toBeInTheDocument();
+    expect(screen.getByText("Active deals")).toBeInTheDocument();
   });
 });

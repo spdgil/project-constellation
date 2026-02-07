@@ -134,9 +134,7 @@ describe("InvestmentMemo", () => {
       />
     );
 
-    expect(
-      screen.getByRole("heading", { name: /new deal from document/i })
-    ).toBeInTheDocument();
+    expect(screen.getByText(/upload an investment memo/i)).toBeInTheDocument();
     expect(screen.getByTestId("drop-zone")).toBeInTheDocument();
 
     // No deal selector

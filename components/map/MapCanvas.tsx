@@ -350,17 +350,21 @@ export function MapCanvas({
   );
 }
 
-/** Walk nested GeoJSON coordinate arrays. */
+/** Walk nested GeoJSON coordinate arrays (iterative to avoid stack overflow). */
 function walkCoords(
   coords: unknown,
   fn: (lng: number, lat: number) => void,
 ): void {
-  if (!Array.isArray(coords)) return;
-  if (typeof coords[0] === "number") {
-    fn(coords[0] as number, coords[1] as number);
-    return;
-  }
-  for (const c of coords) {
-    walkCoords(c, fn);
+  const stack: unknown[] = [coords];
+  while (stack.length > 0) {
+    const current = stack.pop();
+    if (!Array.isArray(current)) continue;
+    if (typeof current[0] === "number") {
+      fn(current[0] as number, current[1] as number);
+    } else {
+      for (let i = current.length - 1; i >= 0; i--) {
+        stack.push(current[i]);
+      }
+    }
   }
 }

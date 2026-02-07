@@ -16,6 +16,7 @@ import {
   OPP_TYPE_COLOUR,
   formatAUD,
 } from "@/lib/colour-system";
+import { PipelineSummaryBar } from "@/components/ui/PipelineSummaryBar";
 
 const STAGE_OPTIONS: DealStage[] = [
   "definition",
@@ -29,12 +30,15 @@ export interface DealsSearchProps {
   deals: Deal[];
   opportunityTypes: OpportunityType[];
   lgas: LGA[];
+  /** Number of sector opportunities — drives the "Sectors" metric in the summary bar */
+  sectorCount: number;
 }
 
 export function DealsSearch({
   deals: baseDeals,
   opportunityTypes,
   lgas,
+  sectorCount,
 }: DealsSearchProps) {
   const deals = useDealsWithOverrides(baseDeals);
   const [query, setQuery] = useState("");
@@ -67,7 +71,7 @@ export function DealsSearch({
   );
 
   /* Aggregate stats across ALL deals (unfiltered) for summary bar */
-  const globalStats = useMemo(() => {
+  const pipelineStats = useMemo(() => {
     let investment = 0;
     let impact = 0;
     let jobs = 0;
@@ -89,55 +93,15 @@ export function DealsSearch({
   return (
     <div className="flex flex-col gap-6" data-testid="deals-search">
       {/* ------------------------------------------------------------------ */}
-      {/* Header                                                              */}
-      {/* ------------------------------------------------------------------ */}
-      <div className="flex items-start justify-between gap-4">
-        <div>
-          <h1 className="font-heading text-2xl font-normal leading-[1.3] text-[#2C2C2C]">
-            Deals
-          </h1>
-          <p className="mt-1 text-sm text-[#6B6B6B] leading-relaxed max-w-2xl">
-            Active deals across all sector opportunities, tracked through the
-            investment pathway from definition to transaction close.
-          </p>
-        </div>
-        <Link
-          href="/"
-          className="shrink-0 text-sm text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
-        >
-          Back to home
-        </Link>
-      </div>
-
-      {/* ------------------------------------------------------------------ */}
       {/* Summary stats bar                                                   */}
       {/* ------------------------------------------------------------------ */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3" data-testid="summary-bar">
-        <SummaryCard
-          label="Total deals"
-          value={String(deals.length)}
-          sub="across all sectors"
-          colour="blue"
-        />
-        <SummaryCard
-          label="Investment"
-          value={globalStats.investment > 0 ? formatAUD(globalStats.investment) : "—"}
-          sub="total deal value"
-          colour="amber"
-        />
-        <SummaryCard
-          label="Economic impact"
-          value={globalStats.impact > 0 ? formatAUD(globalStats.impact) : "—"}
-          sub="projected GDP contribution"
-          colour="emerald"
-        />
-        <SummaryCard
-          label="Jobs identified"
-          value={globalStats.jobs > 0 ? globalStats.jobs.toLocaleString() : "—"}
-          sub="across active deals"
-          colour="emerald"
-        />
-      </div>
+      <PipelineSummaryBar
+        sectorCount={sectorCount}
+        dealCount={deals.length}
+        investment={pipelineStats.investment}
+        impact={pipelineStats.impact}
+        jobs={pipelineStats.jobs}
+      />
 
       {/* ------------------------------------------------------------------ */}
       {/* Search + filter bar                                                 */}
@@ -250,33 +214,6 @@ export function DealsSearch({
 /* -------------------------------------------------------------------------- */
 /* Sub-components                                                              */
 /* -------------------------------------------------------------------------- */
-
-function SummaryCard({
-  label,
-  value,
-  sub,
-  colour,
-}: {
-  label: string;
-  value: string;
-  sub: string;
-  colour: ColourFamily;
-}) {
-  const c = COLOUR_CLASSES[colour];
-  return (
-    <div
-      className={`bg-white border border-[#E8E6E3] border-l-[3px] ${c.borderLeft} px-4 py-3 space-y-0.5`}
-    >
-      <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] font-medium">
-        {label}
-      </p>
-      <p className={`text-xl font-heading font-normal ${c.text}`}>
-        {value}
-      </p>
-      <p className="text-[11px] text-[#9A9A9A]">{sub}</p>
-    </div>
-  );
-}
 
 function DealCard({
   deal,

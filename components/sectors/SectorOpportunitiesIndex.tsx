@@ -11,6 +11,7 @@ import {
   formatAUD,
   humaniseTag,
 } from "@/lib/colour-system";
+import { PipelineSummaryBar } from "@/components/ui/PipelineSummaryBar";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                       */
@@ -128,38 +129,13 @@ export function SectorOpportunitiesIndex({
       {/* ------------------------------------------------------------------ */}
       {/* Summary metrics bar                                                 */}
       {/* ------------------------------------------------------------------ */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-3" data-testid="summary-bar">
-        <SummaryCard
-          label="Sectors"
-          value={String(sectorOpportunities.length)}
-          sub="priority opportunities"
-          colour="violet"
-        />
-        <SummaryCard
-          label="Active deals"
-          value={String(totalDeals)}
-          sub="across all sectors"
-          colour="blue"
-        />
-        <SummaryCard
-          label="Investment"
-          value={formatAUD(globalStats.investment)}
-          sub="total deal value"
-          colour="amber"
-        />
-        <SummaryCard
-          label="Economic impact"
-          value={formatAUD(globalStats.impact)}
-          sub="projected GDP contribution"
-          colour="emerald"
-        />
-        <SummaryCard
-          label="Jobs identified"
-          value={globalStats.jobs > 0 ? globalStats.jobs.toLocaleString() : "—"}
-          sub="across active deals"
-          colour="emerald"
-        />
-      </div>
+      <PipelineSummaryBar
+        sectorCount={sectorOpportunities.length}
+        dealCount={totalDeals}
+        investment={globalStats.investment}
+        impact={globalStats.impact}
+        jobs={globalStats.jobs}
+      />
 
       {/* ------------------------------------------------------------------ */}
       {/* Search + filter bar                                                 */}
@@ -240,33 +216,6 @@ export function SectorOpportunitiesIndex({
 /* -------------------------------------------------------------------------- */
 /* Sub-components                                                              */
 /* -------------------------------------------------------------------------- */
-
-function SummaryCard({
-  label,
-  value,
-  sub,
-  colour,
-}: {
-  label: string;
-  value: string;
-  sub: string;
-  colour: ColourFamily;
-}) {
-  const c = COLOUR_CLASSES[colour];
-  return (
-    <div
-      className={`bg-white border border-[#E8E6E3] border-l-[3px] ${c.borderLeft} px-4 py-3 space-y-0.5`}
-    >
-      <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] font-medium">
-        {label}
-      </p>
-      <p className={`text-xl font-heading font-normal ${c.text}`}>
-        {value}
-      </p>
-      <p className="text-[11px] text-[#9A9A9A]">{sub}</p>
-    </div>
-  );
-}
 
 function SectorCard({
   sectorOpportunity: so,

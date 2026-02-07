@@ -8,11 +8,8 @@ import type { Deal } from "@/lib/types";
 import type { GeoJSONFeatureCollection } from "@/lib/types";
 import type { DealGeoPosition } from "@/components/map/MapCanvas";
 import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
-import {
-  type ColourFamily,
-  COLOUR_CLASSES,
-  formatAUD,
-} from "@/lib/colour-system";
+import { formatAUD } from "@/lib/colour-system";
+import { SummaryCard } from "@/components/ui/SummaryCard";
 
 /* Lazy-load MapCanvas — avoids shipping Mapbox JS on first paint */
 const MapCanvas = dynamic(
@@ -194,31 +191,6 @@ export function HomeView({ deals: baseDeals }: HomeViewProps) {
 /* ====================================================================== */
 /* Sub-components                                                         */
 /* ====================================================================== */
-
-function SummaryCard({
-  label,
-  value,
-  sub,
-  colour,
-}: {
-  label: string;
-  value: string;
-  sub: string;
-  colour: ColourFamily;
-}) {
-  const c = COLOUR_CLASSES[colour];
-  return (
-    <div
-      className={`bg-white border border-[#E8E6E3] border-l-[3px] ${c.borderLeft} px-4 py-3 space-y-0.5`}
-    >
-      <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] font-medium">
-        {label}
-      </p>
-      <p className={`text-xl font-heading font-normal ${c.text}`}>{value}</p>
-      <p className="text-[11px] text-[#9A9A9A]">{sub}</p>
-    </div>
-  );
-}
 
 function NavLink({ href, label, sub }: { href: string; label: string; sub: string }) {
   return (

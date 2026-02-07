@@ -24,6 +24,7 @@ export interface PageData {
   lgas: LGA[];
   deals: Deal[];
   opportunityTypes: OpportunityType[];
+  sectorOpportunities: SectorOpportunity[];
 }
 
 export interface PageDataWithStrategies extends PageData {
@@ -32,15 +33,16 @@ export interface PageDataWithStrategies extends PageData {
   strategyGrades: StrategyGrade[];
 }
 
-/** Load core page data (LGAs, deals, opportunity types) from the database. */
+/** Load core page data (LGAs, deals, opportunity types, sector opportunities) from the database. */
 export async function loadPageData(pageName: string): Promise<PageData> {
   try {
-    const [lgas, deals, opportunityTypes] = await Promise.all([
+    const [lgas, deals, opportunityTypes, sectorOpportunities] = await Promise.all([
       loadLgas(),
       loadDeals(),
       loadOpportunityTypes(),
+      loadSectorOpportunities(),
     ]);
-    return { lgas, deals, opportunityTypes };
+    return { lgas, deals, opportunityTypes, sectorOpportunities };
   } catch (error) {
     throw new Error(
       `Failed to load ${pageName} data: ${error instanceof Error ? error.message : String(error)}`,

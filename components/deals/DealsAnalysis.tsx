@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import Link from "next/link";
+
 import type { Deal, DealStage, Constraint, ReadinessState, LGA, OpportunityType } from "@/lib/types";
 import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
 import { STAGE_LABELS, READINESS_LABELS, CONSTRAINT_LABELS } from "@/lib/labels";
@@ -248,18 +248,10 @@ export function DealsAnalysis({ deals: baseDeals, opportunityTypes, lgas }: Deal
 
   return (
     <div className="flex flex-col gap-6" data-testid="deals-analysis">
-      {/* Header */}
-      <div className="flex items-center justify-between gap-4">
-        <h1 className="font-heading text-2xl font-normal leading-[1.3] text-[#2C2C2C]">
-          Deal analysis
-        </h1>
-        <Link
-          href="/"
-          className="text-sm text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
-        >
-          Back to home
-        </Link>
-      </div>
+      <p className="text-sm text-[#6B6B6B] leading-relaxed max-w-2xl">
+        Pipeline-wide analysis of deal stages, gate progress, and readiness
+        distribution.
+      </p>
 
       {/* Top-line stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3" data-testid="summary-stats">

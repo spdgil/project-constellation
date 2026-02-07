@@ -124,9 +124,7 @@ describe("DealsAnalysis", () => {
     );
 
     expect(screen.getByTestId("deals-analysis")).toBeInTheDocument();
-    expect(
-      screen.getByRole("heading", { name: /deal analysis/i })
-    ).toBeInTheDocument();
+    expect(screen.getByText(/pipeline-wide analysis/i)).toBeInTheDocument();
 
     const stats = screen.getByTestId("summary-stats");
     expect(within(stats).getByText("3")).toBeInTheDocument(); // total deals
