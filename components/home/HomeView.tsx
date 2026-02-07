@@ -1,17 +1,11 @@
 "use client";
 
-import { useMemo, useState } from "react";
-import dynamic from "next/dynamic";
+import { useMemo } from "react";
 import Link from "next/link";
 import type { Deal, LGA, OpportunityType, ReadinessState, Constraint } from "@/lib/types";
 import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
 import { READINESS_LABELS, CONSTRAINT_LABELS } from "@/lib/labels";
-
-// Lazy-load MapView — avoids shipping Mapbox JS unless the Map tab is opened.
-const MapView = dynamic(
-  () => import("@/components/map/MapView").then((m) => m.MapView),
-  { ssr: false, loading: () => <div className="h-[600px] bg-[#FAF9F7] animate-pulse" /> },
-);
+import { formatAUD } from "@/lib/colour-system";
 
 /* ====================================================================== */
 /* Readiness colour palette — follows DESIGN_SYSTEM.md §Colour Families   */
@@ -37,14 +31,6 @@ const READINESS_ORDER: ReadinessState[] = [
 ];
 
 /* ====================================================================== */
-/* Tabs                                                                   */
-/* ====================================================================== */
-
-const TABS = ["overview", "map"] as const;
-type Tab = (typeof TABS)[number];
-const TAB_LABELS: Record<Tab, string> = { overview: "Overview", map: "Map" };
-
-/* ====================================================================== */
 /* Props                                                                  */
 /* ====================================================================== */
 
@@ -52,8 +38,6 @@ export interface HomeViewProps {
   opportunityTypes: OpportunityType[];
   deals: Deal[];
   lgas: LGA[];
-  /** Pre-selected tab (e.g. "map" when redirected from /map). */
-  initialTab?: Tab;
 }
 
 /* ====================================================================== */
@@ -64,52 +48,12 @@ export function HomeView({
   opportunityTypes,
   deals: baseDeals,
   lgas,
-  initialTab = "overview",
 }: HomeViewProps) {
   const deals = useDealsWithOverrides(baseDeals);
-  const [activeTab, setActiveTab] = useState<Tab>(initialTab);
 
   return (
     <div data-testid="home-view">
-      {/* Tab bar */}
-      <div
-        className="flex gap-1 border-b border-[#E8E6E3] mb-8"
-        role="tablist"
-        aria-label="Home tabs"
-      >
-        {TABS.map((tab) => (
-          <button
-            key={tab}
-            type="button"
-            role="tab"
-            aria-selected={activeTab === tab}
-            onClick={() => setActiveTab(tab)}
-            className={`
-              text-sm px-4 py-2 -mb-px
-              focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A]
-              focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]
-              transition duration-200 ease-out
-              ${
-                activeTab === tab
-                  ? "text-[#2C2C2C] border-b-2 border-[#2C2C2C] font-medium"
-                  : "text-[#6B6B6B] border-b-2 border-transparent hover:text-[#2C2C2C] hover:border-[#C8C4BF]"
-              }
-            `}
-          >
-            {TAB_LABELS[tab]}
-          </button>
-        ))}
-      </div>
-
-      {activeTab === "overview" && (
-        <OverviewTab deals={deals} lgas={lgas} opportunityTypes={opportunityTypes} />
-      )}
-
-      {activeTab === "map" && (
-        <div className="h-[calc(100vh-200px)] min-h-[500px]">
-          <MapView lgas={lgas} deals={deals} opportunityTypes={opportunityTypes} />
-        </div>
-      )}
+      <OverviewTab deals={deals} lgas={lgas} opportunityTypes={opportunityTypes} />
     </div>
   );
 }
@@ -171,8 +115,8 @@ function OverviewTab({
       {/* ── Key metrics ────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-5 gap-px bg-[#E8E6E3] border border-[#E8E6E3]">
         <MetricCard value={String(deals.length)} label="Deals" />
-        <MetricCard value={formatAud(totalInvestment)} label="Investment" />
-        <MetricCard value={formatAud(totalImpact)} label="Economic impact" />
+        <MetricCard value={formatAUD(totalInvestment)} label="Investment" />
+        <MetricCard value={formatAUD(totalImpact)} label="Economic impact" />
         <MetricCard
           value={totalJobs > 0 ? totalJobs.toLocaleString() : "—"}
           label="Jobs"
@@ -218,7 +162,7 @@ function OverviewTab({
                 {investment > 0 && (
                   <>
                     <Dot />
-                    <span className="tabular-nums">{formatAud(investment)}</span>
+                    <span className="tabular-nums">{formatAUD(investment)}</span>
                   </>
                 )}
               </div>
@@ -270,7 +214,7 @@ function OverviewTab({
                     {lgaInv > 0 && (
                       <>
                         <Dot />
-                        <span className="tabular-nums">{formatAud(lgaInv)}</span>
+                        <span className="tabular-nums">{formatAUD(lgaInv)}</span>
                       </>
                     )}
                     <Dot />
@@ -415,10 +359,3 @@ function buildReadinessDist(deals: Deal[]): ReadinessDistEntry[] {
   return READINESS_ORDER.map((state) => ({ state, count: map.get(state) ?? 0 }));
 }
 
-function formatAud(amount: number): string {
-  if (amount === 0) return "$0";
-  if (amount >= 1_000_000_000) return `$${(amount / 1_000_000_000).toFixed(1)}B`;
-  if (amount >= 1_000_000) return `$${(amount / 1_000_000).toFixed(1)}M`;
-  if (amount >= 1_000) return `$${(amount / 1_000).toFixed(0)}K`;
-  return `$${amount.toLocaleString()}`;
-}

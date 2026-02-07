@@ -1,5 +1,9 @@
-import { StrategyUpload } from "@/components/strategies/StrategyUpload";
+import { redirect } from "next/navigation";
 
-export default function StrategyUploadPage() {
-  return <StrategyUpload />;
+/**
+ * /strategies/upload now lives at /lga/strategies/upload.
+ * Redirect any old bookmarks or links.
+ */
+export default function StrategyUploadRedirect() {
+  redirect("/lga/strategies/upload");
 }

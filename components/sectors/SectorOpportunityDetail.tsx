@@ -267,7 +267,7 @@ export function SectorOpportunityDetail({
                 {linkedLgas.map((lga) => (
                   <Link
                     key={lga.id}
-                    href={`/?tab=map&lga=${lga.id}`}
+                    href={`/lga/map?lga=${lga.id}`}
                     className="group block border border-[#E8E6E3] bg-[#FAF9F7] p-3 hover:border-[#7A6B5A] hover:bg-white transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                   >
                     <p className="text-xs font-medium text-[#2C2C2C] group-hover:text-[#7A6B5A] transition duration-300 ease-out">
@@ -293,7 +293,7 @@ export function SectorOpportunityDetail({
                 {linkedStrategies.map((s) => (
                   <Link
                     key={s.id}
-                    href={`/strategies/${s.id}`}
+                    href={`/lga/strategies/${s.id}`}
                     className="group block border border-[#E8E6E3] bg-[#FAF9F7] p-3 space-y-1 hover:border-[#7A6B5A] hover:bg-white transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-white"
                   >
                     <p className="text-xs font-medium text-[#2C2C2C] group-hover:text-[#7A6B5A] transition duration-300 ease-out leading-snug">

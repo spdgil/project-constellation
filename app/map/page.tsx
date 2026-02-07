@@ -1,9 +1,9 @@
 import { redirect } from "next/navigation";
 
 /**
- * /map now lives as a tab on the Home page.
+ * /map now lives at /lga/map.
  * Redirect any old bookmarks or links.
  */
 export default function MapPage() {
-  redirect("/?tab=map");
+  redirect("/lga/map");
 }

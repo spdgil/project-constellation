@@ -10,6 +10,6 @@ export default async function StatePage({
   searchParams: Promise<{ tab?: string }>;
 }) {
   const params = await searchParams;
-  if (params.tab === "map") redirect("/?tab=map");
+  if (params.tab === "map") redirect("/lga/map");
   redirect("/");
 }

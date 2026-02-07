@@ -95,7 +95,7 @@ export function StrategyUpload() {
         }
 
         // Step 4: Redirect to draft page
-        router.push(`/strategies/${strategyId}/draft`);
+        router.push(`/lga/strategies/${strategyId}/draft`);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "An unexpected error occurred.",
@@ -195,7 +195,7 @@ export function StrategyUpload() {
           </p>
         </div>
         <Link
-          href="/strategies"
+          href="/lga/strategies"
           className="text-sm text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
         >
           Back to strategies

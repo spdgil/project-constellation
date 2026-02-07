@@ -87,8 +87,8 @@ export function StrategiesIndex({
     (s: SectorDevelopmentStrategy) => {
       const path =
         s.status === "draft"
-          ? `/strategies/${s.id}/draft`
-          : `/strategies/${s.id}`;
+          ? `/lga/strategies/${s.id}/draft`
+          : `/lga/strategies/${s.id}`;
       router.push(path);
     },
     [router],
@@ -132,7 +132,7 @@ export function StrategiesIndex({
         </h1>
         <div className="flex items-center gap-4">
           <Link
-            href="/strategies/upload"
+            href="/lga/strategies/upload"
             className="text-sm px-3 py-1.5 bg-[#2C2C2C] text-white hover:bg-[#1A1A1A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 transition duration-300 ease-out"
           >
             Upload strategy

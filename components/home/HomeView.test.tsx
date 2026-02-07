@@ -86,7 +86,7 @@ describe("HomeView", () => {
     vi.clearAllMocks();
   });
 
-  it("renders two tabs: Overview and Map", () => {
+  it("renders the home view with overview content", () => {
     render(
       <HomeView
         opportunityTypes={mockOpportunityTypes}
@@ -96,22 +96,7 @@ describe("HomeView", () => {
     );
 
     expect(screen.getByTestId("home-view")).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /overview/i })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /map/i })).toBeInTheDocument();
-    expect(screen.queryByRole("tab", { name: /aggregation/i })).not.toBeInTheDocument();
-  });
-
-  it("defaults to Overview tab", () => {
-    render(
-      <HomeView
-        opportunityTypes={mockOpportunityTypes}
-        deals={mockDeals}
-        lgas={mockLgas}
-      />,
-    );
-
     expect(screen.getByTestId("overview-tab")).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /overview/i })).toHaveAttribute("aria-selected", "true");
   });
 
   it("renders dynamic key metrics computed from deals", () => {
@@ -128,9 +113,9 @@ describe("HomeView", () => {
     expect(screen.getByText("Economic impact")).toBeInTheDocument();
     expect(screen.getByText("Jobs")).toBeInTheDocument();
     expect(screen.getByText(/Active LGAs/)).toBeInTheDocument();
-    // $5M + $3M = $8.0M investment, $10M + $7M = $17.0M impact, 120 + 80 = 200 jobs
-    expect(screen.getByText("$8.0M")).toBeInTheDocument();
-    expect(screen.getByText("$17.0M")).toBeInTheDocument();
+    // $5M + $3M = $8M investment, $10M + $7M = $17M impact, 120 + 80 = 200 jobs
+    expect(screen.getByText("$8M")).toBeInTheDocument();
+    expect(screen.getByText("$17M")).toBeInTheDocument();
     expect(screen.getByText("200")).toBeInTheDocument();
   });
 
@@ -209,13 +194,13 @@ describe("HomeView", () => {
       />,
     );
 
-    // Single deal: total investment $5.0M appears in both top metric and OT card.
+    // Single deal: total investment $5M appears in both top metric and OT card.
     // Check the top metric card label is present.
     expect(screen.getByText("Investment")).toBeInTheDocument();
-    // The value $5.0M will appear twice (top metric + OT card), so use getAllByText
-    expect(screen.getAllByText("$5.0M").length).toBeGreaterThanOrEqual(1);
+    // The value $5M will appear twice (top metric + OT card), so use getAllByText
+    expect(screen.getAllByText("$5M").length).toBeGreaterThanOrEqual(1);
 
-    // Re-render with both deals → top investment becomes $8.0M
+    // Re-render with both deals → top investment becomes $8M
     rerender(
       <HomeView
         opportunityTypes={mockOpportunityTypes}
@@ -224,7 +209,7 @@ describe("HomeView", () => {
       />,
     );
 
-    expect(screen.getByText("$8.0M")).toBeInTheDocument();
+    expect(screen.getByText("$8M")).toBeInTheDocument();
   });
 
   it("renders quick action links", () => {
@@ -240,17 +225,4 @@ describe("HomeView", () => {
     expect(screen.getByRole("link", { name: /new deal from document/i })).toHaveAttribute("href", "/deals/memo");
   });
 
-  it("respects initialTab=map", () => {
-    render(
-      <HomeView
-        opportunityTypes={mockOpportunityTypes}
-        deals={mockDeals}
-        lgas={mockLgas}
-        initialTab="map"
-      />,
-    );
-
-    expect(screen.getByRole("tab", { name: /map/i })).toHaveAttribute("aria-selected", "true");
-    expect(screen.queryByTestId("overview-tab")).not.toBeInTheDocument();
-  });
 });

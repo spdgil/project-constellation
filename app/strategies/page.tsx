@@ -1,22 +1,9 @@
-import {
-  loadStrategies,
-  loadStrategyGrades,
-  loadSectorOpportunities,
-} from "@/lib/db/queries";
-import { StrategiesIndex } from "@/components/strategies/StrategiesIndex";
+import { redirect } from "next/navigation";
 
-export default async function StrategiesPage() {
-  const [strategies, strategyGrades, sectorOpportunities] = await Promise.all([
-    loadStrategies(),
-    loadStrategyGrades(),
-    loadSectorOpportunities(),
-  ]);
-
-  return (
-    <StrategiesIndex
-      strategies={strategies}
-      strategyGrades={strategyGrades}
-      sectorOpportunities={sectorOpportunities}
-    />
-  );
+/**
+ * /strategies now lives at /lga/strategies.
+ * Redirect any old bookmarks or links.
+ */
+export default function StrategiesRedirect() {
+  redirect("/lga/strategies");
 }

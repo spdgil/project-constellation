@@ -52,20 +52,18 @@ vi.mock("@/lib/db/queries", () => ({
 }));
 
 describe("HomePage", () => {
-  it("renders the HomeView with Overview and Map tabs", async () => {
+  it("renders the HomeView with overview content", async () => {
     const HomePage = (await import("./page")).default;
-    const page = await HomePage({ searchParams: Promise.resolve({}) });
+    const page = await HomePage();
     render(page);
     expect(screen.getByTestId("home-view")).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /overview/i })).toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: /map/i })).toBeInTheDocument();
+    expect(screen.getByTestId("overview-tab")).toBeInTheDocument();
   });
 
-  it("defaults to Overview tab with dynamic metrics", async () => {
+  it("renders dynamic metrics", async () => {
     const HomePage = (await import("./page")).default;
-    const page = await HomePage({ searchParams: Promise.resolve({}) });
+    const page = await HomePage();
     render(page);
-    expect(screen.getByTestId("overview-tab")).toBeInTheDocument();
     expect(screen.getByText("Deals")).toBeInTheDocument();
     expect(screen.getByText("Investment")).toBeInTheDocument();
     // $5.7M appears in both top metric and OT card
@@ -75,7 +73,7 @@ describe("HomePage", () => {
 
   it("renders GW LGA cards", async () => {
     const HomePage = (await import("./page")).default;
-    const page = await HomePage({ searchParams: Promise.resolve({}) });
+    const page = await HomePage();
     render(page);
     expect(screen.getByRole("heading", { name: "Mackay" })).toBeInTheDocument();
     expect(screen.getByText(/1 hypothesis/i)).toBeInTheDocument();

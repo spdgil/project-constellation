@@ -1,33 +1,14 @@
-import { notFound } from "next/navigation";
-import {
-  loadStrategyById,
-  loadStrategyGrade,
-  loadSectorOpportunities,
-} from "@/lib/db/queries";
-import { StrategyDetail } from "@/components/strategies/StrategyDetail";
+import { redirect } from "next/navigation";
 
-interface StrategyPageProps {
+interface Props {
   params: Promise<{ id: string }>;
 }
 
-export default async function StrategyPage({ params }: StrategyPageProps) {
+/**
+ * /strategies/[id] now lives at /lga/strategies/[id].
+ * Redirect any old bookmarks or links.
+ */
+export default async function StrategyRedirect({ params }: Props) {
   const { id } = await params;
-
-  const [strategy, grade, sectorOpportunities] = await Promise.all([
-    loadStrategyById(id),
-    loadStrategyGrade(id),
-    loadSectorOpportunities(),
-  ]);
-
-  if (!strategy) {
-    notFound();
-  }
-
-  return (
-    <StrategyDetail
-      strategy={strategy}
-      grade={grade}
-      sectorOpportunities={sectorOpportunities}
-    />
-  );
+  redirect(`/lga/strategies/${id}`);
 }

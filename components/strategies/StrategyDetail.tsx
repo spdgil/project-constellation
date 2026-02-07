@@ -182,13 +182,13 @@ export function StrategyDetail({
       {/* Back link + edit */}
       <div className="flex items-center justify-between gap-4">
         <Link
-          href="/strategies"
+          href="/lga/strategies"
           className="text-sm text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
         >
           ← All strategies
         </Link>
         <Link
-          href={`/strategies/${s.id}/draft`}
+          href={`/lga/strategies/${s.id}/draft`}
           className="text-sm text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
           data-testid="edit-strategy-link"
         >

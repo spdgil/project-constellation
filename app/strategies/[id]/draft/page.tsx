@@ -1,21 +1,14 @@
-import { notFound } from "next/navigation";
-import { loadStrategyById } from "@/lib/db/queries";
-import { StrategyDraft } from "@/components/strategies/StrategyDraft";
+import { redirect } from "next/navigation";
 
-interface StrategyDraftPageProps {
+interface Props {
   params: Promise<{ id: string }>;
 }
 
-export default async function StrategyDraftPage({
-  params,
-}: StrategyDraftPageProps) {
+/**
+ * /strategies/[id]/draft now lives at /lga/strategies/[id]/draft.
+ * Redirect any old bookmarks or links.
+ */
+export default async function StrategyDraftRedirect({ params }: Props) {
   const { id } = await params;
-
-  const strategy = await loadStrategyById(id);
-
-  if (!strategy) {
-    notFound();
-  }
-
-  return <StrategyDraft strategy={strategy} />;
+  redirect(`/lga/strategies/${id}/draft`);
 }
