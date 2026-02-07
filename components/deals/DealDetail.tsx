@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import type {
   Deal,
   LGA,
@@ -15,6 +16,7 @@ import {
   getDealWithLocalOverrides,
   hasLocalDealOverrides,
   saveDealLocally,
+  deleteDealLocally,
   appendConstraintEvent,
 } from "@/lib/deal-storage";
 import {
@@ -60,7 +62,10 @@ const CONSTRAINT_OPTIONS: Constraint[] = [
 ];
 
 export interface DealDetailProps {
-  deal: Deal;
+  /** Static deal from JSON data, or null for locally-created deals. */
+  deal: Deal | null;
+  /** The deal ID (always provided so we can resolve from localStorage). */
+  dealId: string;
   opportunityTypes: OpportunityType[];
   lgas: LGA[];
   allDeals: Deal[];
@@ -70,23 +75,53 @@ export interface DealDetailProps {
  * Full-page deal detail view.
  * Hero summary, accordion sections, and contextual sidebar.
  * Supports view and edit modes.
+ *
+ * Resolves deal from localStorage if not found in static JSON data
+ * (e.g. AI-created deals via the "New Deal" tab).
  */
 export function DealDetail({
   deal: initialDeal,
+  dealId,
   opportunityTypes,
   lgas,
   allDeals,
 }: DealDetailProps) {
-  const [deal, setDeal] = useState<Deal>(initialDeal);
+  const router = useRouter();
+  const [deal, setDeal] = useState<Deal | null>(initialDeal);
   const [isLocal, setIsLocal] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [notFound, setNotFound] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  /* Load local overrides on mount */
+  /* Load local overrides on mount, or resolve fully local deals */
   useEffect(() => {
-    const merged = getDealWithLocalOverrides(initialDeal.id, initialDeal);
-    setDeal(merged);
-    setIsLocal(hasLocalDealOverrides(initialDeal.id));
-  }, [initialDeal]);
+    if (initialDeal) {
+      // Deal exists in static data — merge any local overrides
+      const merged = getDealWithLocalOverrides(initialDeal.id, initialDeal);
+      setDeal(merged);
+      setIsLocal(hasLocalDealOverrides(initialDeal.id));
+    } else {
+      // Deal not in static data — check localStorage (AI-created deals)
+      const raw =
+        typeof window !== "undefined"
+          ? window.localStorage.getItem("project-constellation:deals")
+          : null;
+      if (raw) {
+        try {
+          const map = JSON.parse(raw) as Record<string, Deal>;
+          const localDeal = map[dealId];
+          if (localDeal) {
+            setDeal(localDeal);
+            setIsLocal(true);
+            return;
+          }
+        } catch {
+          // corrupt localStorage — fall through to notFound
+        }
+      }
+      setNotFound(true);
+    }
+  }, [initialDeal, dealId]);
 
   /* ---------- Editing toggle ---------- */
 
@@ -94,10 +129,18 @@ export function DealDetail({
     setIsEditing((prev) => !prev);
   }, []);
 
+  /* ---------- Delete handler ---------- */
+
+  const handleDelete = useCallback(() => {
+    deleteDealLocally(dealId);
+    router.push("/deals/list");
+  }, [dealId, router]);
+
   /* ---------- Field handlers ---------- */
 
   const handleReadinessChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
+      if (!deal) return;
       const value = e.target.value as ReadinessState;
       const updated: Deal = { ...deal, readinessState: value, updatedAt: new Date().toISOString() };
       setDeal(updated);
@@ -109,6 +152,7 @@ export function DealDetail({
 
   const handleConstraintChange = useCallback(
     (e: React.ChangeEvent<HTMLSelectElement>) => {
+      if (!deal) return;
       const value = e.target.value as Constraint;
       const updated: Deal = { ...deal, dominantConstraint: value, updatedAt: new Date().toISOString() };
       setDeal(updated);
@@ -127,6 +171,7 @@ export function DealDetail({
 
   const handleGateToggle = useCallback(
     (questionIndex: number) => {
+      if (!deal) return;
       const stage = deal.stage;
       const entries = getStageGateChecklist(deal.gateChecklist ?? {}, stage);
       const entry = entries[questionIndex];
@@ -149,6 +194,7 @@ export function DealDetail({
 
   const handleArtefactStatusCycle = useCallback(
     (artefactIndex: number) => {
+      if (!deal) return;
       const stage = deal.stage;
       const entries = getStageArtefacts(deal.artefacts ?? {}, stage);
       const entry = entries[artefactIndex];
@@ -172,6 +218,7 @@ export function DealDetail({
 
   const handleArtefactFieldChange = useCallback(
     (artefactIndex: number, field: "summary" | "url", value: string) => {
+      if (!deal) return;
       const stage = deal.stage;
       const entries = getStageArtefacts(deal.artefacts ?? {}, stage);
       const updatedEntries = entries.map((e, i) =>
@@ -189,7 +236,36 @@ export function DealDetail({
     [deal],
   );
 
-  /* ---------- Derived data ---------- */
+  const selectClass =
+    "w-full h-9 px-3 border border-[#E8E6E3] bg-white text-[#2C2C2C] text-sm placeholder:text-[#9A9A9A] focus:border-[#7A6B5A] focus:ring-1 focus:ring-[#7A6B5A] focus:outline-none transition duration-300 ease-out";
+
+  /* ---------- Render ---------- */
+
+  if (notFound) {
+    return (
+      <div className="space-y-6">
+        <Link
+          href="/deals/list"
+          className="text-sm text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A]"
+        >
+          &larr; Back to deals
+        </Link>
+        <div className="bg-[#FAF9F7] border border-dashed border-[#E8E6E3] p-12 text-center">
+          <p className="text-sm text-[#6B6B6B]">Deal not found.</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!deal) {
+    return (
+      <div className="flex items-center justify-center py-20">
+        <div className="inline-block h-6 w-6 border-2 border-[#E8E6E3] border-t-[#2C2C2C] rounded-full animate-spin" />
+      </div>
+    );
+  }
+
+  /* ---------- Derived data (deal is guaranteed non-null here) ---------- */
 
   const gateEntries = getStageGateChecklist(deal.gateChecklist ?? {}, deal.stage);
   const gateSatisfied = gateEntries.filter((e) => e.status === "satisfied").length;
@@ -199,11 +275,6 @@ export function DealDetail({
   const artefactEntries = getStageArtefacts(deal.artefacts ?? {}, deal.stage);
   const artefactComplete = artefactEntries.filter((e) => e.status === "complete").length;
   const pathwayStage = PATHWAY_STAGES.find((s) => s.id === deal.stage);
-
-  const selectClass =
-    "w-full h-9 px-3 border border-[#E8E6E3] bg-white text-[#2C2C2C] text-sm placeholder:text-[#9A9A9A] focus:border-[#7A6B5A] focus:ring-1 focus:ring-[#7A6B5A] focus:outline-none transition duration-300 ease-out";
-
-  /* ---------- Render ---------- */
 
   return (
     <div className="space-y-6">
@@ -221,6 +292,16 @@ export function DealDetail({
               Updated locally
             </span>
           )}
+          {isLocal && (
+            <button
+              type="button"
+              onClick={() => setShowDeleteConfirm(true)}
+              aria-label="Delete deal"
+              className="h-9 px-3 text-sm border border-[#E8E6E3] bg-transparent text-red-600 hover:border-red-300 hover:bg-red-50 transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
+            >
+              Delete
+            </button>
+          )}
           <button
             type="button"
             onClick={toggleEditing}
@@ -236,6 +317,44 @@ export function DealDetail({
           </button>
         </div>
       </div>
+
+      {/* Delete confirmation dialog */}
+      {showDeleteConfirm && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/30"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Confirm delete"
+        >
+          <div className="bg-white border border-[#E8E6E3] shadow-lg max-w-sm w-full mx-4 p-6 space-y-4">
+            <h3 className="font-heading text-base font-medium text-[#2C2C2C]">
+              Delete deal?
+            </h3>
+            <p className="text-sm text-[#6B6B6B] leading-relaxed">
+              This will permanently remove{" "}
+              <span className="font-medium text-[#2C2C2C]">{deal.name}</span>{" "}
+              from your local deals. This action cannot be undone.
+            </p>
+            <div className="flex gap-3 justify-end">
+              <button
+                type="button"
+                onClick={() => setShowDeleteConfirm(false)}
+                className="h-9 px-4 text-sm border border-[#E8E6E3] bg-transparent text-[#2C2C2C] hover:border-[#9A9A9A] transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={handleDelete}
+                data-testid="confirm-delete"
+                className="h-9 px-4 text-sm bg-red-600 text-white hover:bg-red-700 transition duration-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Two-column grid: main + sidebar */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">

@@ -3,6 +3,11 @@ import { render, screen, fireEvent } from "@testing-library/react";
 import { DealDetail } from "./DealDetail";
 import type { Deal, LGA, OpportunityType } from "@/lib/types";
 
+const mockPush = vi.fn();
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: mockPush, replace: vi.fn(), back: vi.fn(), prefetch: vi.fn() }),
+}));
+
 const mockLgas: LGA[] = [
   {
     id: "mackay",
@@ -79,6 +84,7 @@ describe("DealDetail", () => {
     render(
       <DealDetail
         deal={mockDeal}
+        dealId={mockDeal.id}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[mockDeal]}
@@ -96,6 +102,7 @@ describe("DealDetail", () => {
     render(
       <DealDetail
         deal={mockDeal}
+        dealId={mockDeal.id}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[mockDeal]}
@@ -110,6 +117,7 @@ describe("DealDetail", () => {
     render(
       <DealDetail
         deal={mockDeal}
+        dealId={mockDeal.id}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[mockDeal]}
@@ -124,6 +132,7 @@ describe("DealDetail", () => {
     render(
       <DealDetail
         deal={mockDeal}
+        dealId={mockDeal.id}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[mockDeal]}
@@ -138,6 +147,7 @@ describe("DealDetail", () => {
     render(
       <DealDetail
         deal={mockDeal}
+        dealId={mockDeal.id}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[mockDeal]}
@@ -151,6 +161,7 @@ describe("DealDetail", () => {
     render(
       <DealDetail
         deal={mockDeal}
+        dealId={mockDeal.id}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[mockDeal]}
@@ -164,6 +175,7 @@ describe("DealDetail", () => {
     render(
       <DealDetail
         deal={mockDeal}
+        dealId={mockDeal.id}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[mockDeal]}
@@ -177,6 +189,7 @@ describe("DealDetail", () => {
     render(
       <DealDetail
         deal={mockDeal}
+        dealId={mockDeal.id}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[mockDeal]}
@@ -191,6 +204,7 @@ describe("DealDetail", () => {
     render(
       <DealDetail
         deal={mockDeal}
+        dealId={mockDeal.id}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[mockDeal]}
@@ -213,6 +227,7 @@ describe("DealDetail", () => {
     render(
       <DealDetail
         deal={mockDeal}
+        dealId={mockDeal.id}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         allDeals={[mockDeal]}

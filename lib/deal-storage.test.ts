@@ -4,6 +4,7 @@ import {
   getDealsWithLocalOverrides,
   hasLocalDealOverrides,
   saveDealLocally,
+  deleteDealLocally,
   getConstraintEvents,
   appendConstraintEvent,
 } from "./deal-storage";
@@ -16,8 +17,12 @@ function createMockStorage(): Storage {
     setItem: (key: string, value: string) => {
       store[key] = value;
     },
-    removeItem: () => {},
-    clear: () => {},
+    removeItem: (key: string) => {
+      delete store[key];
+    },
+    clear: () => {
+      for (const k of Object.keys(store)) delete store[k];
+    },
     key: () => null,
     get length() {
       return Object.keys(store).length;
@@ -84,6 +89,29 @@ describe("deal-storage", () => {
       const result = getDealsWithLocalOverrides(baseDeals, mockStorage);
       expect(result).toHaveLength(1);
       expect(result[0].readinessState).toBe("conceptual-interest");
+    });
+
+    it("deleteDealLocally removes a deal and returns true", () => {
+      saveDealLocally(baseDeal, mockStorage);
+      expect(hasLocalDealOverrides(baseDeal.id, mockStorage)).toBe(true);
+
+      const deleted = deleteDealLocally(baseDeal.id, mockStorage);
+      expect(deleted).toBe(true);
+      expect(hasLocalDealOverrides(baseDeal.id, mockStorage)).toBe(false);
+    });
+
+    it("deleteDealLocally returns false when deal does not exist", () => {
+      expect(deleteDealLocally("non-existent", mockStorage)).toBe(false);
+    });
+
+    it("deleteDealLocally removes storage key when last deal is deleted", () => {
+      saveDealLocally(baseDeal, mockStorage);
+      deleteDealLocally(baseDeal.id, mockStorage);
+
+      // Storage key removed entirely — getItem returns null
+      expect(
+        mockStorage.getItem("project-constellation:deals")
+      ).toBeNull();
     });
 
     it("appendConstraintEvent persists and getConstraintEvents returns it", () => {

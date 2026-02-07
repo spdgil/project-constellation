@@ -3,10 +3,11 @@
  * Persists to localStorage; no backend. For tests, inject a custom storage.
  */
 
-import type { Deal, ConstraintEvent } from "./types";
+import type { Deal, ConstraintEvent, OpportunityType } from "./types";
 
 const STORAGE_KEY_DEALS = "project-constellation:deals";
 const STORAGE_KEY_EVENTS = "project-constellation:constraint-events";
+const STORAGE_KEY_OT = "project-constellation:opportunity-types";
 
 function getStorage(): Storage {
   if (typeof window === "undefined") {
@@ -80,6 +81,66 @@ export function saveDealLocally(deal: Deal, storage: Storage = getStorage()): vo
     }
     throw error;
   }
+}
+
+/** Delete a deal from localStorage. Returns true if the deal existed. */
+export function deleteDealLocally(
+  dealId: string,
+  storage: Storage = getStorage()
+): boolean {
+  const raw = storage.getItem(STORAGE_KEY_DEALS);
+  if (!raw) return false;
+  try {
+    const map = JSON.parse(raw) as Record<string, Deal>;
+    if (!(dealId in map)) return false;
+    delete map[dealId];
+    if (Object.keys(map).length === 0) {
+      storage.removeItem(STORAGE_KEY_DEALS);
+    } else {
+      storage.setItem(STORAGE_KEY_DEALS, JSON.stringify(map));
+    }
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+// =============================================================================
+// Opportunity types (locally created)
+// =============================================================================
+
+/** Get locally-created opportunity types. */
+export function getLocalOpportunityTypes(
+  storage: Storage = getStorage()
+): OpportunityType[] {
+  const raw = storage.getItem(STORAGE_KEY_OT);
+  if (!raw) return [];
+  try {
+    return JSON.parse(raw) as OpportunityType[];
+  } catch {
+    return [];
+  }
+}
+
+/** Save a new opportunity type to localStorage. */
+export function saveOpportunityTypeLocally(
+  ot: OpportunityType,
+  storage: Storage = getStorage()
+): void {
+  const existing = getLocalOpportunityTypes(storage);
+  existing.push(ot);
+  storage.setItem(STORAGE_KEY_OT, JSON.stringify(existing));
+}
+
+/** Get all opportunity types (base + local). */
+export function getAllOpportunityTypes(
+  baseTypes: OpportunityType[],
+  storage: Storage = getStorage()
+): OpportunityType[] {
+  const local = getLocalOpportunityTypes(storage);
+  const baseIds = new Set(baseTypes.map((t) => t.id));
+  const newLocal = local.filter((t) => !baseIds.has(t.id));
+  return [...baseTypes, ...newLocal];
 }
 
 /** Load constraint events from localStorage. */
