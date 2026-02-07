@@ -348,7 +348,6 @@ const STRATEGY_INCLUDE = {
   prioritySectors: {
     orderBy: { sortOrder: "asc" as const },
   },
-  grading: true,
 } as const;
 
 type PrismaStrategyFull = Awaited<

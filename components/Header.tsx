@@ -20,14 +20,11 @@ export function Header() {
       role="banner"
     >
       <div className="mx-auto max-w-screen-2xl px-4 sm:px-6">
-        {/* App name — sits above the tabs */}
+        {/* App name — static identity label above the tabs */}
         <div className="pt-3 pb-1">
-          <Link
-            href="/"
-            className="font-heading text-xl text-[#2C2C2C] underline-offset-2 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7] transition-[box-shadow] duration-200 ease-out"
-          >
+          <span className="font-heading text-2xl text-[#2C2C2C]">
             The Constellation Development Facility
-          </Link>
+          </span>
         </div>
 
         {/* Navigation tabs */}

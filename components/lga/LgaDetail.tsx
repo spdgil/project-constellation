@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation";
 import type {
   Deal,
   LGA,
-  OpportunityType,
   SectorOpportunity,
   SectorDevelopmentStrategy,
 } from "@/lib/types";
@@ -44,7 +43,6 @@ const EMPTY_BOUNDARIES: GeoJSONFeatureCollection = {
 export interface LgaDetailProps {
   lga: LGA;
   linkedDeals: Deal[];
-  opportunityTypes: OpportunityType[];
   sectorOpportunities: SectorOpportunity[];
   linkedStrategies: SectorDevelopmentStrategy[];
 }
@@ -65,7 +63,6 @@ const bodyClass = "text-sm text-[#2C2C2C] leading-relaxed";
 export function LgaDetail({
   lga,
   linkedDeals: baseDeals,
-  opportunityTypes,
   sectorOpportunities,
   linkedStrategies,
 }: LgaDetailProps) {

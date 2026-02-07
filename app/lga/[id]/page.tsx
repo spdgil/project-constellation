@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { loadLgaById, loadDeals, loadOpportunityTypes, loadSectorOpportunities, loadStrategies } from "@/lib/db/queries";
+import { loadLgaById, loadDeals, loadSectorOpportunities, loadStrategies } from "@/lib/db/queries";
 import { LgaDetail } from "@/components/lga/LgaDetail";
 
 interface Props {
@@ -9,11 +9,10 @@ interface Props {
 export default async function LgaDetailPage({ params }: Props) {
   const { id } = await params;
 
-  const [lga, allDeals, opportunityTypes, sectorOpportunities, strategies] =
+  const [lga, allDeals, sectorOpportunities, strategies] =
     await Promise.all([
       loadLgaById(id),
       loadDeals(),
-      loadOpportunityTypes(),
       loadSectorOpportunities(),
       loadStrategies(),
     ]);
@@ -39,7 +38,6 @@ export default async function LgaDetailPage({ params }: Props) {
     <LgaDetail
       lga={lga}
       linkedDeals={linkedDeals}
-      opportunityTypes={opportunityTypes}
       sectorOpportunities={sectorOpportunities}
       linkedStrategies={linkedStrategies}
     />
