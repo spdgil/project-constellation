@@ -1,21 +1,21 @@
 /**
- * About page copy source: narrative_Project_Constellation.md
+ * About page copy source: narrative_Constellation_Development_Facility.md
  * Hardcoded for prototype; no markdown parser.
  */
 
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "About — Project Constellation",
+  title: "About — The Constellation Development Facility",
   description:
-    "Purpose, method, and governance for the Project Constellation dashboard.",
+    "Purpose, method, and governance for the Constellation Development Facility dashboard.",
 };
 
 export default function AboutPage() {
   return (
     <div className="max-w-prose">
       <h1 className="font-heading text-2xl font-normal leading-[1.3] text-[#2C2C2C] mb-6">
-        About Project Constellation
+        About the Constellation Development Facility
       </h1>
 
       <section className="mb-12" aria-labelledby="purpose-heading">
@@ -26,8 +26,8 @@ export default function AboutPage() {
           Purpose
         </h2>
         <p className="text-sm text-[#2C2C2C] leading-relaxed mb-2">
-          Project Constellation is a place-and-project system designed to support
-          a project development facility. The dashboard supports that facility by
+          The Constellation Development Facility is a place-and-project system
+          designed to support a project development facility. The dashboard supports that facility by
           identifying where projects stall before investment and where
           Queensland has credible economic opportunities that are not yet
           investable.

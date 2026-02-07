@@ -1,6 +1,6 @@
 /**
  * Data model (v1) — PRD §7.1
- * Entities and enums for Project Constellation.
+ * Entities and enums for the Constellation Development Facility.
  */
 
 // --- Enums / string unions (PRD §4.3, §4.4, §6.6) ---

@@ -25,9 +25,9 @@
 
 ## Local overrides
 
-- **Scope:** Deals only. Stored in `localStorage` under `project-constellation:deals` as a JSON object `Record<dealId, Deal>`.
+- **Scope:** Deals only. Stored in `localStorage` under `constellation-dev-facility:deals` as a JSON object `Record<dealId, Deal>`.
 - **Semantics:** `getDealWithLocalOverrides(id, baseDeal)` and `getDealsWithLocalOverrides(baseDeals)` merge: if a deal id exists in storage, that object is used; otherwise the base deal. No partial merge; the stored deal is the full Deal.
-- **Write:** `saveDealLocally(deal)` overwrites the entry for `deal.id`. Constraint changes can be appended via `appendConstraintEvent` (stored under `project-constellation:constraint-events`).
+- **Write:** `saveDealLocally(deal)` overwrites the entry for `deal.id`. Constraint changes can be appended via `appendConstraintEvent` (stored under `constellation-dev-facility:constraint-events`).
 - **Usage:** Map, opportunities index/detail, deals search, and state view call `getDealsWithLocalOverrides(baseDeals)` (or the single-deal variant) so aggregates and lists reflect local edits.
 
 ## Adding content

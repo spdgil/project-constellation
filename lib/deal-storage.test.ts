@@ -114,7 +114,7 @@ describe("deal-storage", () => {
 
       // Storage key removed entirely — getItem returns null
       expect(
-        mockStorage.getItem("project-constellation:deals")
+        mockStorage.getItem("constellation-dev-facility:deals")
       ).toBeNull();
     });
 

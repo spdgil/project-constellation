@@ -1,5 +1,5 @@
 # Product Requirements Document (PRD)
-## Project Constellation (Prototype)
+## The Constellation Development Facility (Prototype)
 
 
 **Version:** 0.2  

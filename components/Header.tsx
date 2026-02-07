@@ -26,7 +26,7 @@ export function Header() {
             href="/"
             className="font-heading text-xl text-[#2C2C2C] underline-offset-2 hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7] transition-[box-shadow] duration-200 ease-out"
           >
-            Project Constellation
+            The Constellation Development Facility
           </Link>
         </div>
 

@@ -5,9 +5,9 @@
 
 import type { Deal, ConstraintEvent, OpportunityType } from "./types";
 
-const STORAGE_KEY_DEALS = "project-constellation:deals";
-const STORAGE_KEY_EVENTS = "project-constellation:constraint-events";
-const STORAGE_KEY_OT = "project-constellation:opportunity-types";
+const STORAGE_KEY_DEALS = "constellation-dev-facility:deals";
+const STORAGE_KEY_EVENTS = "constellation-dev-facility:constraint-events";
+const STORAGE_KEY_OT = "constellation-dev-facility:opportunity-types";
 
 function getStorage(): Storage {
   if (typeof window === "undefined") {

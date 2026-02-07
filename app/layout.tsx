@@ -11,7 +11,7 @@ const newsreader = Newsreader({
 });
 
 export const metadata: Metadata = {
-  title: "Project Constellation",
+  title: "The Constellation Development Facility",
   description:
     "Queensland state-level dashboard: opportunity patterns by LGA, deal pipeline, project development facility.",
 };

@@ -1,4 +1,4 @@
-# Project Constellation
+# The Constellation Development Facility
 
 Queensland state-level dashboard that surfaces market-grounded opportunity patterns by LGA, tracks real deals as a maturation pipeline, and supports a project development facility to close the investability gap.
 

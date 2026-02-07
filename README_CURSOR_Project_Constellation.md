@@ -1,6 +1,6 @@
 # Cursor Package README
 
-This folder contains the core documents for building the Project Constellation prototype in Cursor.
+This folder contains the core documents for building the Constellation Development Facility prototype in Cursor.
 
 ## Files
 - `PRD_Project_Constellation.md` — product requirements and prototype scope

@@ -1,5 +1,5 @@
 # narrative.md
-## About page and living context for the Project Constellation
+## About page and living context for the Constellation Development Facility
 
 **Purpose of this file:**  
 This is a living narrative that supports the About page and keeps shared context over time. It is designed to be updated as the product, partnerships, and operating model evolve.
@@ -9,9 +9,9 @@ Warm, professional, restrained. British English spelling. No hype.
 
 ---
 
-## 1. What Project Constellation is
+## 1. What the Constellation Development Facility is
 
-Project Constellation is a place-and-project system designed to support a project development facility.
+The Constellation Development Facility is a place-and-project system designed to support a project development facility.
 
 It helps users see:
 

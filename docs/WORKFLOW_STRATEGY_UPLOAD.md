@@ -1,7 +1,7 @@
 # Workflow: Importing a Sector Development Strategy
 
 This document walks through the end-to-end flow for importing a new LGA
-sector development strategy into Project Constellation — from document
+sector development strategy into the Constellation Development Facility — from document
 upload through to a graded, published strategy record.
 
 ---
