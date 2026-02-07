@@ -14,6 +14,7 @@ import {
   artefactStatusToDb,
 } from "@/lib/db/enum-maps";
 import type { Deal } from "@/lib/types";
+import { CreateDealSchema } from "@/lib/validations";
 
 export async function GET() {
   try {
@@ -28,49 +29,19 @@ export async function GET() {
   }
 }
 
-/** Shape of the request body for creating a deal. */
-interface CreateDealBody {
-  name: string;
-  opportunityTypeId: string;
-  lgaIds?: string[];
-  lat?: number;
-  lng?: number;
-  stage: string;
-  readinessState: string;
-  dominantConstraint: string;
-  summary: string;
-  nextStep?: string;
-  description?: string;
-  investmentValue?: string;
-  investmentValueAmount?: number;
-  investmentValueDescription?: string;
-  economicImpact?: string;
-  economicImpactAmount?: number;
-  economicImpactDescription?: string;
-  economicImpactJobs?: number;
-  keyStakeholders?: string[];
-  risks?: string[];
-  strategicActions?: string[];
-  infrastructureNeeds?: string[];
-  skillsImplications?: string;
-  marketDrivers?: string;
-  governmentPrograms?: { name: string; description?: string }[];
-  timeline?: { label: string; date?: string }[];
-  evidence?: { label?: string; url?: string; pageRef?: string }[];
-  gateChecklist?: Record<string, { question: string; status: string }[]>;
-  artefacts?: Record<string, { name: string; status: string }[]>;
-}
-
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as CreateDealBody;
+    const raw = await request.json();
+    const parsed = CreateDealSchema.safeParse(raw);
 
-    if (!body.name?.trim()) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Deal name is required" },
+        { error: "Validation failed", issues: parsed.error.issues },
         { status: 400 }
       );
     }
+
+    const body = parsed.data;
 
     const deal = await prisma.deal.create({
       data: {
@@ -127,25 +98,27 @@ export async function POST(request: Request) {
           : undefined,
         gateChecklist: body.gateChecklist
           ? {
-              create: Object.entries(body.gateChecklist).flatMap(
-                ([stage, entries]) =>
-                  entries.map((e) => ({
-                    stage: stageToDb(stage as Deal["stage"]) as never,
-                    question: e.question,
-                    status: gateStatusToDb(e.status as "pending" | "satisfied" | "not-applicable") as never,
-                  }))
+              create: Object.entries(
+                body.gateChecklist as Record<string, { question: string; status: string }[]>,
+              ).flatMap(([stage, entries]) =>
+                entries.map((e) => ({
+                  stage: stageToDb(stage as Deal["stage"]) as never,
+                  question: e.question,
+                  status: gateStatusToDb(e.status as "pending" | "satisfied" | "not-applicable") as never,
+                }))
               ),
             }
           : undefined,
         artefacts: body.artefacts
           ? {
-              create: Object.entries(body.artefacts).flatMap(
-                ([stage, entries]) =>
-                  entries.map((e) => ({
-                    stage: stageToDb(stage as Deal["stage"]) as never,
-                    name: e.name,
-                    status: artefactStatusToDb(e.status as "not-started" | "in-progress" | "complete") as never,
-                  }))
+              create: Object.entries(
+                body.artefacts as Record<string, { name: string; status: string }[]>,
+              ).flatMap(([stage, entries]) =>
+                entries.map((e) => ({
+                  stage: stageToDb(stage as Deal["stage"]) as never,
+                  name: e.name,
+                  status: artefactStatusToDb(e.status as "not-started" | "in-progress" | "complete") as never,
+                }))
               ),
             }
           : undefined,

@@ -1,13 +1,13 @@
 "use client";
 
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Deal } from "@/lib/types";
-import type { GeoJSONFeatureCollection } from "@/lib/types";
 import type { DealGeoPosition } from "@/components/map/MapCanvas";
 import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
+import { useBoundaries } from "@/lib/hooks/useBoundaries";
 import { formatAUD } from "@/lib/colour-system";
 import { SummaryCard } from "@/components/ui/SummaryCard";
 
@@ -21,11 +21,6 @@ const MapCanvas = dynamic(
     ),
   },
 );
-
-const EMPTY_BOUNDARIES: GeoJSONFeatureCollection = {
-  type: "FeatureCollection",
-  features: [],
-};
 
 /** Queensland bounds — used for both the initial fit and pan constraint. */
 const QLD_BOUNDS: [[number, number], [number, number]] = [
@@ -64,21 +59,7 @@ export function HomeView({ deals: baseDeals }: HomeViewProps) {
   );
 
   /* ---- Boundaries for embedded map ---- */
-  const [boundaries, setBoundaries] = useState<GeoJSONFeatureCollection>(EMPTY_BOUNDARIES);
-
-  useEffect(() => {
-    fetch("/api/boundaries")
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((data: GeoJSONFeatureCollection) => {
-        if (data?.features?.length) setBoundaries(data);
-      })
-      .catch(() => {
-        /* silently degrade — map still renders without LGA outlines */
-      });
-  }, []);
+  const { boundaries } = useBoundaries();
 
   /* ---- Deal positions (same logic as MapView) ---- */
   const dealPositions = useMemo(() => {

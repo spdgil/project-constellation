@@ -534,6 +534,7 @@ export function StrategyDraft({ strategy: initial }: StrategyDraftProps) {
     criteria,
     crossCutting,
     stakeholders,
+    linkedSectorIds,
   ]);
 
   // ---------------------------------------------------------------------------

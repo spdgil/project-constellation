@@ -5,6 +5,7 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
+import { validateUploadedFile } from "@/lib/validations";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -66,6 +67,12 @@ export async function POST(request: Request, context: RouteContext) {
         { error: "No file provided" },
         { status: 400 },
       );
+    }
+
+    // Validate file size and MIME type
+    const fileError = validateUploadedFile(file);
+    if (fileError) {
+      return NextResponse.json({ error: fileError }, { status: 400 });
     }
 
     // Read file as buffer

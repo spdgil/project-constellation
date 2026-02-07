@@ -6,6 +6,7 @@ import type { Deal, LGA, OpportunityType } from "@/lib/types";
 import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
 import { formatAUD } from "@/lib/colour-system";
 import { PipelineSummaryBar } from "@/components/ui/PipelineSummaryBar";
+import { MiniStat } from "@/components/ui/MiniStat";
 
 /* -------------------------------------------------------------------------- */
 /* Types                                                                       */
@@ -266,13 +267,4 @@ function LgaCard({
   );
 }
 
-function MiniStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="text-center">
-      <p className="text-[10px] uppercase tracking-wider text-[#9A9A9A] font-medium">
-        {label}
-      </p>
-      <p className="text-sm font-medium text-[#2C2C2C] mt-0.5">{value}</p>
-    </div>
-  );
-}
+// MiniStat is imported from shared component — see components/ui/MiniStat.tsx

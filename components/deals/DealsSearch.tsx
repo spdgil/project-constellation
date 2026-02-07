@@ -10,6 +10,7 @@ import { dealLgaNames } from "@/lib/opportunities";
 import { STAGE_LABELS, READINESS_LABELS } from "@/lib/labels";
 import { STAGE_COLOUR_CLASSES, READINESS_COLOUR_CLASSES } from "@/lib/stage-colours";
 import { getStageGateChecklist } from "@/lib/deal-pathway-utils";
+import { MiniStat } from "@/components/ui/MiniStat";
 import {
   type ColourFamily,
   COLOUR_CLASSES,
@@ -297,13 +298,4 @@ function DealCard({
   );
 }
 
-function MiniStat({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="text-center">
-      <p className="text-[10px] uppercase tracking-wider text-[#9A9A9A] font-medium">
-        {label}
-      </p>
-      <p className="text-sm font-medium text-[#2C2C2C] mt-0.5">{value}</p>
-    </div>
-  );
-}
+// MiniStat is imported from shared component — see components/ui/MiniStat.tsx

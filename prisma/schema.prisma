@@ -72,6 +72,7 @@ model Lga {
   evidence              LgaEvidence[]
   opportunityHypotheses LgaOpportunityHypothesis[]
 
+  @@index([name])
   @@map("lgas")
 }
 
@@ -85,6 +86,7 @@ model LgaOpportunityHypothesis {
 
   lga                 Lga         @relation(fields: [lgaId], references: [id], onDelete: Cascade)
 
+  @@index([lgaId])
   @@map("lga_opportunity_hypotheses")
 }
 
@@ -172,6 +174,8 @@ model Deal {
 
   @@index([opportunityTypeId])
   @@index([stage])
+  @@index([readinessState])
+  @@index([dominantConstraint])
   @@index([updatedAt])
   @@map("deals")
 }
@@ -186,6 +190,7 @@ model DealEvidence {
 
   deal      Deal    @relation(fields: [dealId], references: [id], onDelete: Cascade)
 
+  @@index([dealId])
   @@map("deal_evidence")
 }
 
@@ -241,6 +246,7 @@ model DealGovernmentProgram {
 
   deal        Deal    @relation(fields: [dealId], references: [id], onDelete: Cascade)
 
+  @@index([dealId])
   @@map("deal_government_programs")
 }
 
@@ -253,6 +259,7 @@ model DealTimelineMilestone {
 
   deal    Deal    @relation(fields: [dealId], references: [id], onDelete: Cascade)
 
+  @@index([dealId])
   @@map("deal_timeline_milestones")
 }
 

@@ -1,18 +1,14 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState } from "react";
 import type { Deal, LGA, OpportunityType } from "@/lib/types";
 import type { GeoJSONFeatureCollection } from "@/lib/types";
+import { useBoundaries } from "@/lib/hooks/useBoundaries";
 import { MapCanvas } from "./MapCanvas";
 import type { DealGeoPosition } from "./MapCanvas";
 import { DealDrawer } from "./DealDrawer";
 import { LgaPanel } from "./LgaPanel";
 import { LgaBottomSheet } from "./LgaBottomSheet";
-
-const EMPTY_BOUNDARIES: GeoJSONFeatureCollection = {
-  type: "FeatureCollection",
-  features: [],
-};
 
 export interface MapViewProps {
   lgas: LGA[];
@@ -29,32 +25,8 @@ export function MapView({
 }: MapViewProps) {
   const [selectedLgaId, setSelectedLgaId] = useState<string | null>(null);
   const [selectedDealId, setSelectedDealId] = useState<string | null>(null);
-  const [boundariesFetched, setBoundariesFetched] =
-    useState<GeoJSONFeatureCollection | null>(null);
 
-  const boundaries =
-    boundariesProp?.features?.length
-      ? boundariesProp
-      : boundariesFetched ?? EMPTY_BOUNDARIES;
-
-  const [boundaryError, setBoundaryError] = useState<string | null>(null);
-
-  /* Fetch boundaries client-side if not passed from server */
-  useEffect(() => {
-    if (boundariesProp?.features?.length) return;
-    fetch("/api/boundaries")
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((data: GeoJSONFeatureCollection) => {
-        if (data?.features?.length) setBoundariesFetched(data);
-      })
-      .catch((err: unknown) => {
-        console.error("Failed to fetch LGA boundaries:", err);
-        setBoundaryError("Could not load LGA boundaries. The map may be incomplete.");
-      });
-  }, [boundariesProp?.features?.length]);
+  const { boundaries, boundaryError } = useBoundaries(boundariesProp);
 
   /* ------------------------------------------------------------------ */
   /* Compute geographic (lng, lat) positions for each deal              */

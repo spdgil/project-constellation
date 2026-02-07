@@ -15,6 +15,7 @@ import {
   artefactStatusToDb,
 } from "@/lib/db/enum-maps";
 import type { Deal } from "@/lib/types";
+import { PatchDealSchema } from "@/lib/validations";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -35,35 +36,20 @@ export async function GET(_req: Request, context: RouteContext) {
   }
 }
 
-/** Partial update body — only the fields being changed. */
-interface PatchDealBody {
-  name?: string;
-  stage?: string;
-  readinessState?: string;
-  dominantConstraint?: string;
-  changeReason?: string; // For constraint change audit
-  summary?: string;
-  nextStep?: string;
-  description?: string;
-  investmentValueAmount?: number;
-  investmentValueDescription?: string;
-  economicImpactAmount?: number;
-  economicImpactDescription?: string;
-  economicImpactJobs?: number | null;
-  keyStakeholders?: string[];
-  risks?: string[];
-  strategicActions?: string[];
-  infrastructureNeeds?: string[];
-  skillsImplications?: string;
-  marketDrivers?: string;
-  gateChecklist?: Record<string, { question: string; status: string }[]>;
-  artefacts?: Record<string, { name: string; status: string; summary?: string; url?: string }[]>;
-}
-
 export async function PATCH(request: Request, context: RouteContext) {
   const { id } = await context.params;
   try {
-    const body = (await request.json()) as PatchDealBody;
+    const raw = await request.json();
+    const parsed = PatchDealSchema.safeParse(raw);
+
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", issues: parsed.error.issues },
+        { status: 400 }
+      );
+    }
+
+    const body = parsed.data;
 
     // Check deal exists
     const existing = await prisma.deal.findUnique({ where: { id } });
@@ -115,7 +101,8 @@ export async function PATCH(request: Request, context: RouteContext) {
     // Replace gate checklist if provided
     if (body.gateChecklist) {
       await prisma.dealGateEntry.deleteMany({ where: { dealId: id } });
-      const entries = Object.entries(body.gateChecklist).flatMap(
+      const checklist = body.gateChecklist as Record<string, { question: string; status: string }[]>;
+      const entries = Object.entries(checklist).flatMap(
         ([stage, items]) =>
           items.map((item) => ({
             dealId: id,
@@ -132,7 +119,8 @@ export async function PATCH(request: Request, context: RouteContext) {
     // Replace artefacts if provided
     if (body.artefacts) {
       await prisma.dealArtefact.deleteMany({ where: { dealId: id } });
-      const entries = Object.entries(body.artefacts).flatMap(
+      const artefactMap = body.artefacts as Record<string, { name: string; status: string; summary?: string; url?: string }[]>;
+      const entries = Object.entries(artefactMap).flatMap(
         ([stage, items]) =>
           items.map((item) => ({
             dealId: id,

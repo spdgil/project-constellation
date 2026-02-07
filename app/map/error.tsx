@@ -13,9 +13,9 @@ export default function MapError({
 }) {
   return (
     <div className="max-w-lg mx-auto py-20 text-center" role="alert">
-      <h2 className="font-heading text-2xl font-normal text-[#2C2C2C] mb-4">
+      <h1 className="font-heading text-2xl font-normal text-[#2C2C2C] mb-4">
         Could not load map
-      </h2>
+      </h1>
       <p className="text-sm text-[#6B6B6B] leading-relaxed mb-6">
         {error.message || "Failed to load map data. Please try again."}
       </p>

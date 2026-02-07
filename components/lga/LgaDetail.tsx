@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -10,9 +10,9 @@ import type {
   SectorOpportunity,
   SectorDevelopmentStrategy,
 } from "@/lib/types";
-import type { GeoJSONFeatureCollection } from "@/lib/types";
 import type { DealGeoPosition } from "@/components/map/MapCanvas";
 import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
+import { useBoundaries } from "@/lib/hooks/useBoundaries";
 import { CONSTRAINT_LABELS } from "@/lib/labels";
 import { STAGE_COLOUR_CLASSES } from "@/lib/stage-colours";
 import { STAGE_LABELS } from "@/lib/labels";
@@ -30,11 +30,6 @@ const MapCanvas = dynamic(
     ),
   },
 );
-
-const EMPTY_BOUNDARIES: GeoJSONFeatureCollection = {
-  type: "FeatureCollection",
-  features: [],
-};
 
 /* -------------------------------------------------------------------------- */
 /* Props                                                                       */
@@ -94,22 +89,7 @@ export function LgaDetail({
   }, [deals, sectorOpportunities]);
 
   /* ---- Boundaries for embedded map ---- */
-  const [boundaries, setBoundaries] =
-    useState<GeoJSONFeatureCollection>(EMPTY_BOUNDARIES);
-
-  useEffect(() => {
-    fetch("/api/boundaries")
-      .then((r) => {
-        if (!r.ok) throw new Error(`HTTP ${r.status}`);
-        return r.json();
-      })
-      .then((data: GeoJSONFeatureCollection) => {
-        if (data?.features?.length) setBoundaries(data);
-      })
-      .catch(() => {
-        /* silently degrade */
-      });
-  }, []);
+  const { boundaries } = useBoundaries();
 
   /* ---- Compute bounding box of this LGA's geometry ---- */
   const lgaBounds = useMemo<

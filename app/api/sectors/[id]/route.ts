@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
+import { PatchSectorSchema } from "@/lib/validations";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -36,29 +37,34 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
 export async function PATCH(req: NextRequest, ctx: Ctx) {
   const { id } = await ctx.params;
   try {
-    const body = await req.json();
+    const raw = await req.json();
+    const parsed = PatchSectorSchema.safeParse(raw);
 
-    // Build the data payload from accepted fields
-    const data: Record<string, unknown> = {};
-
-    if (typeof body.name === "string") data.name = body.name;
-    if (typeof body.version === "string") data.version = body.version;
-    if (Array.isArray(body.tags)) data.tags = body.tags;
-    if (Array.isArray(body.sources)) data.sources = body.sources;
-
-    // Sections 1–10
-    for (let i = 1; i <= 10; i++) {
-      const key = `section${i}` as const;
-      if (typeof body.sections?.[String(i)] === "string") {
-        data[key] = body.sections[String(i)];
-      }
-    }
-
-    if (Object.keys(data).length === 0) {
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "No valid fields provided" },
+        { error: "Validation failed", issues: parsed.error.issues },
         { status: 400 },
       );
+    }
+
+    const body = parsed.data;
+
+    // Build the data payload from validated fields
+    const data: Record<string, unknown> = {};
+
+    if (body.name !== undefined) data.name = body.name;
+    if (body.version !== undefined) data.version = body.version;
+    if (body.tags !== undefined) data.tags = body.tags;
+    if (body.sources !== undefined) data.sources = body.sources;
+
+    // Sections 1–10
+    if (body.sections) {
+      for (let i = 1; i <= 10; i++) {
+        const key = `section${i}` as const;
+        if (typeof body.sections[String(i)] === "string") {
+          data[key] = body.sections[String(i)];
+        }
+      }
     }
 
     const updated = await prisma.sectorOpportunity.update({
