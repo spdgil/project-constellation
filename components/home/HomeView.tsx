@@ -4,11 +4,13 @@ import { useMemo, useCallback } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import type { Deal } from "@/lib/types";
+import type { Deal, DealStage } from "@/lib/types";
 import type { DealGeoPosition } from "@/components/map/MapCanvas";
 import { useBoundaries } from "@/lib/hooks/useBoundaries";
 import { formatAUD } from "@/lib/colour-system";
 import { SummaryCard } from "@/components/ui/SummaryCard";
+import { PATHWAY_STAGES } from "@/lib/pathway-data";
+import { STAGE_NODE_CLASSES } from "@/lib/stage-colours";
 
 /* Lazy-load MapCanvas — avoids shipping Mapbox JS on first paint */
 const MapCanvas = dynamic(
@@ -56,6 +58,15 @@ export function HomeView({ deals }: HomeViewProps) {
     [deals],
   );
 
+  /* ---- Deals per stage (for pipeline summary) ---- */
+  const stageCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const deal of deals) {
+      counts[deal.stage] = (counts[deal.stage] ?? 0) + 1;
+    }
+    return counts;
+  }, [deals]);
+
   /* ---- Boundaries for embedded map ---- */
   const { boundaries } = useBoundaries();
 
@@ -97,7 +108,7 @@ export function HomeView({ deals }: HomeViewProps) {
       <div className="grid grid-cols-1 lg:grid-cols-[3fr_2fr] gap-8 lg:h-[860px]">
         {/* Left column — intro, summary cards, nav links */}
         <div
-          className="flex flex-col gap-6 pt-16 lg:pt-24"
+          className="flex flex-col gap-5 pt-8 lg:pt-12"
           data-testid="summary-bar"
         >
           {/* Introduction */}
@@ -136,6 +147,9 @@ export function HomeView({ deals }: HomeViewProps) {
             />
           </div>
 
+          {/* Deal pipeline overview */}
+          <DealPipelineSummary stageCounts={stageCounts} />
+
           {/* Navigation links */}
           <div className="grid grid-cols-3 gap-3" data-testid="nav-links">
             <NavLink href="/deals/list" label="Deals" sub="Browse the pipeline" />
@@ -170,6 +184,74 @@ export function HomeView({ deals }: HomeViewProps) {
 /* ====================================================================== */
 /* Sub-components                                                         */
 /* ====================================================================== */
+
+function DealPipelineSummary({ stageCounts }: { stageCounts: Record<string, number> }) {
+  return (
+    <div data-testid="pipeline-summary">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] font-medium">
+          Deal pipeline
+        </p>
+        <Link
+          href="/deals/pathway"
+          className="text-[11px] text-[#9A9A9A] hover:text-[#2C2C2C] transition-colors duration-200"
+        >
+          View pathway &rarr;
+        </Link>
+      </div>
+      <div className="flex items-start justify-between gap-0">
+        {PATHWAY_STAGES.map((stage, i) => {
+          const count = stageCounts[stage.id] ?? 0;
+          return (
+            <div key={stage.id} className="flex items-start flex-1 min-w-0">
+              <div className="flex flex-col items-center text-center w-full">
+                <div className="flex items-center w-full">
+                  {/* Left connector */}
+                  {i > 0 ? (
+                    <div className="flex-1 h-px bg-[#E8E6E3]" aria-hidden />
+                  ) : (
+                    <div className="flex-1" aria-hidden />
+                  )}
+                  {/* Stage node */}
+                  <div
+                    className={`
+                      w-8 h-8 shrink-0 flex items-center justify-center
+                      border text-xs font-medium
+                      ${
+                        count > 0
+                          ? STAGE_NODE_CLASSES[stage.id as DealStage].active
+                          : "bg-[#FFFFFF] border-[#E8E6E3] text-[#9A9A9A]"
+                      }
+                    `}
+                  >
+                    {stage.number}
+                  </div>
+                  {/* Right connector */}
+                  {i < PATHWAY_STAGES.length - 1 ? (
+                    <div className="flex-1 h-px bg-[#E8E6E3]" aria-hidden />
+                  ) : (
+                    <div className="flex-1" aria-hidden />
+                  )}
+                </div>
+                <span className="mt-1.5 text-[10px] leading-tight text-[#6B6B6B] px-0.5">
+                  {stage.shortTitle}
+                </span>
+                <span
+                  className={`
+                    mt-0.5 text-[10px] font-medium
+                    ${count > 0 ? "text-[#2C2C2C]" : "text-[#C8C4BF]"}
+                  `}
+                >
+                  {count} {count === 1 ? "deal" : "deals"}
+                </span>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
 
 function NavLink({ href, label, sub }: { href: string; label: string; sub: string }) {
   return (
