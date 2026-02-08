@@ -90,3 +90,16 @@ const onClose: () => void = vi.fn();
 5. **Prefer non-breaking schema changes** (e.g. adding nullable columns, adding new tables) that don't require data migration. Save breaking changes (type conversions, column renames) for dedicated PRs with tested migration SQL.
 
 **Status:** Active rule. The `ConstraintEvent.entityType` column intentionally remains `String` (not an enum) to avoid requiring a migration for the code health sweep.
+
+## 9. Failed Migration Recovery in Vercel Build
+
+**Issue:** If a `prisma migrate deploy` fails mid-deploy (e.g. migration references columns that don't exist in production), Prisma records the failure in `_prisma_migrations` and **refuses to proceed** on subsequent deploys with: "A migration failed to apply. New migrations cannot be applied before the error is recovered from."
+
+**Fix:** The `vercel-build` script runs `prisma migrate resolve --rolled-back <name> 2>/dev/null` before `prisma migrate deploy`. The `2>/dev/null` silences errors when there's nothing to resolve (normal case). After the failed entry is cleared, deploy retries the migration.
+
+**Rule:** When a migration fails in production:
+1. Fix the migration SQL (make it idempotent or a no-op).
+2. Add a `prisma migrate resolve --rolled-back <migration_name>` step to `vercel-build` **before** `prisma migrate deploy`.
+3. Once the fix deploys successfully, remove the resolve command from `vercel-build` in a follow-up commit to keep it clean.
+
+**Status:** Active. The `vercel-build` currently includes a resolve for `20260207100000_split_investment_economic_fields`. Remove after successful deploy.

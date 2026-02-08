@@ -15,7 +15,7 @@
     "db:seed": "tsx --tsconfig prisma/tsconfig.seed.json prisma/seed.ts",
     "db:reset": "prisma migrate reset --force && tsx --tsconfig prisma/tsconfig.seed.json prisma/seed.ts",
     "seed:ingest": "tsx scripts/ingest-seeds.ts",
-    "vercel-build": "prisma generate && prisma migrate deploy && next build",
+    "vercel-build": "prisma generate && prisma migrate resolve --rolled-back 20260207100000_split_investment_economic_fields 2>/dev/null; prisma migrate deploy && next build",
     "prepare": "husky"
   },
   "dependencies": {
