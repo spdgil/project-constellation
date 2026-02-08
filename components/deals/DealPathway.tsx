@@ -241,14 +241,22 @@ function StageDetail({ stage }: { stage: PathwayStage }) {
           <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
             Key Activities
           </p>
-          <ul className="list-disc pl-5 m-0 space-y-1.5">
+          <div className="space-y-3">
             {stage.activities.map((activity) => (
-              <li key={activity.name} className="text-sm text-[#2C2C2C] leading-relaxed">
-                <span className="font-medium">{activity.name}:</span>{" "}
-                {activity.description}
-              </li>
+              <div key={activity.name}>
+                <p className="text-sm font-medium text-[#2C2C2C] mb-1">
+                  {activity.name}
+                </p>
+                <ul className="list-disc pl-5 m-0 space-y-1">
+                  {activity.descriptions.map((desc) => (
+                    <li key={desc} className="text-sm text-[#2C2C2C] leading-relaxed">
+                      {desc}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             ))}
-          </ul>
+          </div>
         </div>
 
         {/* Stage Gate Checklist */}
@@ -264,6 +272,9 @@ function StageDetail({ stage }: { stage: PathwayStage }) {
               </li>
             ))}
           </ul>
+          <p className="text-xs text-[#6B6B6B] italic mt-2">
+            {stage.gateFailNote}
+          </p>
         </div>
       </div>
 
@@ -296,26 +307,6 @@ function StageDetail({ stage }: { stage: PathwayStage }) {
               </li>
             ))}
           </ul>
-        </div>
-
-        {/* Investor Readiness */}
-        <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
-            Investor Readiness
-          </p>
-          <p className="text-sm text-[#2C2C2C] leading-relaxed">
-            {stage.investorAlignment}
-          </p>
-        </div>
-
-        {/* Evidence */}
-        <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
-            Evidence
-          </p>
-          <p className="text-sm text-[#2C2C2C] leading-relaxed">
-            {stage.evidenceNote}
-          </p>
         </div>
       </div>
     </div>

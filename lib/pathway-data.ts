@@ -9,7 +9,7 @@ import type { DealStage } from "./types";
 
 export interface PathwayActivity {
   name: string;
-  description: string;
+  descriptions: string[];
 }
 
 export interface PathwayGateItem {
@@ -30,10 +30,9 @@ export interface PathwayStage {
   purpose: string;
   activities: PathwayActivity[];
   gateChecklist: PathwayGateItem[];
+  gateFailNote: string;
   risksAddressed: PathwayRisk[];
   artefacts: string[];
-  investorAlignment: string;
-  evidenceNote: string;
 }
 
 export interface PathwayReference {
@@ -48,70 +47,102 @@ export const PATHWAY_STAGES: PathwayStage[] = [
   {
     id: "definition",
     number: 1,
-    title: "Enabling Environment and Project Definition",
+    title: "Mandate Fit and Project Definition",
     shortTitle: "Definition",
     purpose:
-      "This stage resolves strategic alignment and regulatory viability, ensuring the project is situated within a legal and institutional framework that supports private participation before significant resources are committed.",
+      "Establish whether the opportunity warrants deployment of development capital by confirming that a clearly defined project can plausibly align with the fund\u2019s mandate, operate within a viable regulatory setting, and progress toward private investment. This stage filters out ideas that cannot credibly be developed into investable opportunities.",
     activities: [
       {
-        name: "Sector Planning",
-        description:
-          "Conduct system planning to determine least-cost options and prioritize investments based on national goals.",
+        name: "Project definition and option screening",
+        descriptions: [
+          "Define the core project proposition, including the underlying asset, service, or revenue generating activity",
+          "Identify and screen alternative configurations to determine which options could plausibly support private capital participation",
+          "Exclude configurations that rely on unrealistic assumptions about pricing, demand, or public support",
+        ],
       },
       {
-        name: "Regulatory Assessment",
-        description:
-          "Evaluate legal, regulatory, and institutional frameworks to identify reforms required for private capital participation.",
+        name: "Mandate alignment assessment",
+        descriptions: [
+          "Test the project against fund mandate, sector focus, geography, ticket size, return expectations, and impact constraints",
+          "Clarify whether the project could ultimately support equity, debt, or blended capital",
+          "Identify any mandate misalignment that would prevent future investment, regardless of project quality",
+        ],
       },
       {
-        name: "Consensus Building",
-        description:
-          "Initiate stakeholder engagement to build government and social consensus for the project rationale.",
+        name: "Public sector and regulatory viability review",
+        descriptions: [
+          "Assess whether the legal, regulatory, and institutional environment can support private participation and contract enforceability",
+          "Identify any critical policy or regulatory dependencies that must be resolved before progressing",
+          "Distinguish between manageable conditions precedent and fundamental structural barriers",
+        ],
       },
       {
-        name: "Concept Definition",
-        description:
-          "Screen project options against needs and draft the initial project concept.",
+        name: "Sponsor and counterparty credibility screen",
+        descriptions: [
+          "Identify the likely project sponsor, public counterparty, or offtaker",
+          "Conduct an early credibility and authority screen, including mandate, incentives, decision rights, and delivery track record",
+          "Test whether counterparties are likely to behave consistently with long term project bankability",
+        ],
       },
     ],
     gateChecklist: [
       {
-        question: "Strategic Suitability",
+        question: "Project clarity",
         description:
-          "Does the project align with national infrastructure priorities and Nationally Determined Contributions (NDCs)?",
+          "Is there a clearly defined project with a plausible investable form?",
       },
       {
-        question: "Legal Viability",
+        question: "Mandate fit",
         description:
-          "Is the existing legal and regulatory framework sufficient to support the proposed project structure (e.g., PPP law)?",
+          "Does the project sit within the fund\u2019s investment mandate and risk appetite?",
       },
       {
-        question: "Government Commitment",
+        question: "Regulatory viability",
         description:
-          "Is there demonstrable government support and willingness to champion the project?",
+          "Is there a credible legal and regulatory pathway to enforceable contracts and financial close?",
+      },
+      {
+        question: "Counterparty credibility",
+        description:
+          "Is there evidence of sponsor and counterparty authority, commitment, and delivery capacity?",
+      },
+      {
+        question: "Capital pathway",
+        description:
+          "Is there a plausible route to third party investment without reliance on speculative policy reform?",
       },
     ],
+    gateFailNote:
+      "Projects that fail any of these criteria do not proceed to pre-feasibility.",
     risksAddressed: [
       {
-        name: "Government Action Failure",
+        name: "Concept risk",
         description:
-          "Reducing the risk of erratic policy changes or lack of political will.",
+          "Avoiding development spend on poorly defined or incoherent project propositions",
       },
       {
-        name: "Legal/Regulatory Risk",
+        name: "Mandate drift risk",
         description:
-          "Identifying legislative gaps that would prevent financial close.",
+          "Preventing investment in projects that institutional capital cannot ultimately support",
+      },
+      {
+        name: "Policy and counterparty risk",
+        description:
+          "Early identification of public sector behaviours that undermine bankability",
+      },
+      {
+        name: "Structural infeasibility risk",
+        description:
+          "Screening out concepts that cannot be shaped into an investable form",
       },
     ],
     artefacts: [
-      "Project Concept Note (PCN)",
-      "Legal and Regulatory Assessment Report",
-      "Project Information Document",
+      "Project Concept Note",
+      "Option screening summary",
+      "Regulatory and enabling environment viability memo",
+      "Sponsor and counterparty credibility summary",
+      "Preliminary investment rationale note",
     ],
-    investorAlignment:
-      "Corresponds to an investor's initial \"screen\" or \"watch list.\" Investors look for \"strategic suitability\" and a stable enabling environment.",
-    evidenceNote:
-      "Design draws on the GIF's \"Project or program definition\" activity and World Bank \"Enabling Environment\" phase, emphasizing upstream policy work.",
   },
   {
     id: "pre-feasibility",
@@ -119,67 +150,98 @@ export const PATHWAY_STAGES: PathwayStage[] = [
     title: "Pre-feasibility and Prioritisation",
     shortTitle: "Pre-feasibility",
     purpose:
-      "This stage resolves the \"fatal flaw\" uncertainty by determining if the project is technically plausible and financially reasonable before incurring high preparation costs.",
+      "Determine whether the project is technically plausible, commercially coherent, and free of fatal flaws before committing significant development capital. This stage establishes whether the project justifies full feasibility and structuring effort.",
     activities: [
       {
-        name: "Pre-feasibility Studies",
-        description:
-          "Conduct high-level analysis of technical, financial, and environmental aspects to validate the core logic.",
+        name: "Pre-feasibility assessment",
+        descriptions: [
+          "Test the technical concept at a high level to confirm plausibility, scale assumptions, and delivery logic",
+          "Develop an initial financial view to assess whether revenues, costs, and capital intensity could support private investment",
+          "Identify material environmental, climate, and social constraints that could preclude development",
+        ],
       },
       {
-        name: "Options Analysis",
-        description:
-          "Screen implementation options (public vs. private) and technical configurations.",
+        name: "Options refinement and prioritisation",
+        descriptions: [
+          "Assess alternative technical, delivery, and ownership configurations",
+          "Compare options on risk profile, complexity, cost, and alignment with potential capital providers",
+          "Prioritise configurations that minimise complexity and improve investability",
+        ],
       },
       {
-        name: "Initial Risk Screening",
-        description:
-          "Identify high-level physical climate risks, transition risks, and social safeguards issues.",
+        name: "Initial risk assessment",
+        descriptions: [
+          "Identify dominant technical, delivery, market, climate, and social risks",
+          "Distinguish between risks that can be mitigated through structuring and those that are likely to be prohibitive",
+          "Flag risks that materially affect timing, cost, or capital appetite",
+        ],
       },
       {
-        name: "Market Testing",
-        description:
-          "Conduct initial market sounding to gauge potential investor interest.",
+        name: "Early market sounding",
+        descriptions: [
+          "Test the project concept with a small number of relevant capital providers or developers",
+          "Validate whether the emerging project shape aligns with real investor constraints and expectations",
+          "Use feedback to refine scope or deprioritise the project where appropriate",
+        ],
       },
     ],
     gateChecklist: [
       {
-        question: "Preliminary Feasibility",
+        question: "Technical plausibility",
         description:
-          "Does the pre-feasibility study indicate technical and financial viability without fatal flaws?",
+          "Is the project technically feasible at a high level without unresolved fatal flaws?",
       },
       {
-        question: "Clearance in Principle",
+        question: "Preliminary financial viability",
         description:
-          "Has the project passed initial screening for climate, nature, and social risks (e.g., HSES Category A/B)?",
+          "Do indicative costs and revenues suggest a credible path to bankability?",
       },
       {
-        question: "Additionality",
+        question: "Risk acceptability",
         description:
-          "Is there evidence that the investment would not occur without facility support?",
+          "Are the dominant risks identifiable and potentially manageable through later structuring?",
+      },
+      {
+        question: "Safeguards clearance in principle",
+        description:
+          "Are environmental, climate, and social risks within acceptable bounds at this stage?",
+      },
+      {
+        question: "Development additionality",
+        description:
+          "Is there a clear rationale for continued facility involvement rather than immediate market delivery?",
       },
     ],
+    gateFailNote:
+      "Projects that fail any of these criteria do not proceed to full feasibility.",
     risksAddressed: [
       {
-        name: "Technical Performance Risk",
+        name: "Technical viability risk",
         description:
-          "Ensuring the proposed technology or solution is viable at a basic level.",
+          "Avoiding investment in solutions that cannot perform at the required scale or reliability",
       },
       {
-        name: "Social Opposition Risk",
+        name: "Early financial infeasibility risk",
         description:
-          "Identifying community or safeguard issues early to avoid project cancellation.",
+          "Identifying cost or revenue dynamics that undermine investability",
+      },
+      {
+        name: "Safeguards and social risk",
+        description:
+          "Surfacing issues that could delay, constrain, or halt development",
+      },
+      {
+        name: "Misallocation of development capital",
+        description:
+          "Preventing deeper spend on projects with weak prospects of closure",
       },
     ],
     artefacts: [
-      "Pre-feasibility Study",
-      "Integrated Safeguards Data Sheet",
-      "\"Clearance in Principle\" Decision Note",
+      "Pre-feasibility assessment report",
+      "Options analysis and prioritisation note",
+      "Initial risk and safeguards screening summary",
+      "Market sounding summary and prioritisation decision note",
     ],
-    investorAlignment:
-      "Corresponds to an investor's \"preliminary review.\" The project is investable at this stage only for early-stage risk capital (e.g., DevCo).",
-    evidenceNote:
-      "The separation of Pre-feasibility is supported by the GIF's \"Project Definition Activity\" and PIDG's \"Clearance in Principle\" gate.",
   },
   {
     id: "feasibility",
@@ -187,67 +249,98 @@ export const PATHWAY_STAGES: PathwayStage[] = [
     title: "Detailed Feasibility and Investment Appraisal",
     shortTitle: "Feasibility",
     purpose:
-      "This stage resolves the core investment uncertainties by producing the detailed technical, economic, and ESG evidence required for a final investment decision.",
+      "Resolve the remaining investment critical uncertainties by establishing cost, performance, risk, and impact with sufficient rigour to support a credible investment decision. This stage determines whether the project can withstand full investor and lender scrutiny.",
     activities: [
       {
-        name: "Full Feasibility Studies",
-        description:
-          "Execute detailed engineering estimates, geotechnical assessments, and resource assessments.",
+        name: "Detailed technical feasibility and cost definition",
+        descriptions: [
+          "Undertake detailed engineering, geotechnical, and site specific assessments",
+          "Develop investment grade cost estimates (e.g. Class 3 or equivalent) to improve cost certainty",
+          "Confirm delivery approach, construction timeline, and key interfaces",
+        ],
       },
       {
-        name: "ESIA",
-        description:
-          "Conduct full Environmental and Social Impact Assessments in accordance with international standards.",
+        name: "Environmental, social, and permitting diligence",
+        descriptions: [
+          "Complete full environmental and social impact assessments consistent with applicable standards",
+          "Identify material impacts, mitigation measures, and residual risks",
+          "Confirm permitting pathways, approval timelines, and compliance obligations",
+        ],
       },
       {
-        name: "Financial Modelling",
-        description:
-          "Develop detailed financial models to assess viability, sustainability, and fiscal impact.",
+        name: "Financial and economic appraisal",
+        descriptions: [
+          "Build an integrated financial model reflecting realistic cost, revenue, and financing assumptions",
+          "Test sensitivity to key risks including cost overruns, demand variation, and delays",
+          "Assess long term financial sustainability under base and downside scenarios",
+        ],
       },
       {
-        name: "Value for Money (VfM) Analysis",
-        description:
-          "Assess whether the proposed delivery model offers better value than traditional public procurement.",
+        name: "Delivery and value assessment",
+        descriptions: [
+          "Evaluate delivery structures and risk allocation options",
+          "Assess whether the proposed structure offers value relative to credible alternatives",
+          "Confirm alignment between delivery model, risk allocation, and likely capital providers",
+        ],
       },
     ],
     gateChecklist: [
       {
-        question: "Commercial Viability",
+        question: "Cost and schedule confidence",
         description:
-          "Does the financial model demonstrate sufficient cash flows to cover costs and provide returns?",
+          "Are capital costs, timelines, and delivery risks defined with sufficient certainty for investment appraisal?",
       },
       {
-        question: "ESG Compliance",
+        question: "Financial robustness",
         description:
-          "Are E&S assessments completed with management plans (ESMP) that meet international performance standards?",
+          "Does the project demonstrate sustainable cash flows under realistic and downside assumptions?",
       },
       {
-        question: "Fiscal Affordability",
+        question: "ESG and permitting readiness",
         description:
-          "Is the project affordable within the government's fiscal constraints?",
+          "Are environmental and social risks understood, mitigable, and aligned with applicable standards?",
+      },
+      {
+        question: "Structural coherence",
+        description:
+          "Is the proposed delivery and ownership structure internally consistent and investable?",
+      },
+      {
+        question: "Decision readiness",
+        description:
+          "Is the project sufficiently defined to proceed to final structuring and capital engagement?",
       },
     ],
+    gateFailNote:
+      "Projects that fail any of these criteria do not proceed to transaction structuring.",
     risksAddressed: [
       {
-        name: "Construction Cost Overrun Risk",
+        name: "Cost and delivery risk",
         description:
-          "Improving cost certainty through detailed engineering.",
+          "Reducing uncertainty around capital expenditure, schedule, and constructability",
       },
       {
-        name: "Environmental/Social Risk",
+        name: "Revenue and demand risk",
         description:
-          "Mitigating adverse impacts that could lead to liability or reputational damage.",
+          "Stress testing the project\u2019s ability to service capital under adverse conditions",
+      },
+      {
+        name: "Environmental and social risk",
+        description:
+          "Identifying impacts that could create liability, delay, or reputational exposure",
+      },
+      {
+        name: "Structural misalignment risk",
+        description:
+          "Avoiding investment in projects with incoherent risk allocation or delivery design",
       },
     ],
     artefacts: [
-      "Detailed Feasibility Report",
-      "Environmental and Social Impact Assessment (ESIA)",
-      "Financial Model and VfM Report",
+      "Detailed feasibility report and cost estimates",
+      "Environmental and social impact assessment and management plans",
+      "Integrated financial model with sensitivity analysis",
+      "Delivery structure and investment appraisal note",
     ],
-    investorAlignment:
-      "Corresponds to the \"due diligence\" phase. Investors require \"cost certainty\" and verified \"revenue potential\".",
-    evidenceNote:
-      "The heavy focus on technical/financial/ESG appraisal is derived from the \"Project Preparation and Investment Feasibility Assessment\" described by GIF and the World Bank's feasibility checklist.",
   },
   {
     id: "structuring",
@@ -255,67 +348,93 @@ export const PATHWAY_STAGES: PathwayStage[] = [
     title: "Project Structuring and Risk Allocation",
     shortTitle: "Structuring",
     purpose:
-      "This stage resolves the commercial structure and risk allocation to ensure the project presents an acceptable risk-return profile to the market.",
+      "Translate a feasible project into a transaction that capital can commit to by finalising risk allocation, commercial structure, and credit support in a way that produces an acceptable risk\u2013return profile for targeted investors.",
     activities: [
       {
-        name: "Risk Allocation",
-        description:
-          "Define the legal transfer of risks (e.g., construction, demand) to the parties best able to manage them.",
+        name: "Risk allocation and commercial design",
+        descriptions: [
+          "Allocate construction, operating, demand, regulatory, and force majeure risks to parties best able to manage them",
+          "Define residual risks retained by the public sector or sponsors and the mechanisms used to compensate or mitigate them",
+          "Confirm that risk allocation is internally consistent and financeable",
+        ],
       },
       {
-        name: "Transaction Structuring",
-        description:
-          "Design the commercial structure, including credit enhancements or blended finance instruments (e.g., guarantees, concessional debt).",
+        name: "Transaction and capital structuring",
+        descriptions: [
+          "Design the ownership, financing, and contractual structure",
+          "Incorporate credit enhancements or blended finance instruments where required to address binding risks",
+          "Ensure the structure aligns with the requirements of likely equity and debt providers",
+        ],
       },
       {
-        name: "Drafting Agreements",
-        description:
-          "Prepare draft concession agreements, power purchase agreements (PPAs), and tender documents.",
+        name: "Contract development and documentation",
+        descriptions: [
+          "Prepare draft concession, offtake, or availability based payment agreements",
+          "Develop term sheets and key commercial schedules",
+          "Prepare procurement or tender documentation where competitive processes are required",
+        ],
       },
       {
-        name: "Market Sounding",
-        description:
-          "Engage with investors to test the attractiveness of the proposed structure.",
+        name: "Targeted market engagement",
+        descriptions: [
+          "Test the proposed structure with a defined set of potential investors and lenders",
+          "Validate pricing assumptions, risk appetite, and conditions for commitment",
+          "Refine structure in response to market feedback",
+        ],
       },
     ],
     gateChecklist: [
       {
-        question: "Market Appetite",
+        question: "Risk allocation credibility",
         description:
-          "Have market sounding activities confirmed investor interest in the proposed risk allocation?",
+          "Are risks allocated in a way that is acceptable to the market and consistent with investor practice?",
       },
       {
-        question: "Creditworthiness",
+        question: "Capital fit",
         description:
-          "Is the off-taker or implementing entity sufficiently creditworthy, or are credit enhancements in place?",
+          "Does the structure align with the requirements of the targeted equity and debt providers?",
       },
       {
-        question: "Endorsement",
+        question: "Credit adequacy",
         description:
-          "Has the project received final endorsement regarding climate/nature risk mitigation and development impact?",
+          "Are offtakers and counterparties creditworthy, or are appropriate credit enhancements in place?",
+      },
+      {
+        question: "Commit-ability",
+        description:
+          "Is the transaction sufficiently defined to support conditional commitments or bid participation?",
       },
     ],
+    gateFailNote:
+      "Projects that fail any of these criteria do not proceed to final capital engagement.",
     risksAddressed: [
       {
-        name: "Revenue Adequacy Risk",
+        name: "Mispriced risk risk",
         description:
-          "Structuring tariffs or payments to ensure financial obligations can be met.",
+          "Avoiding structures where risk is allocated but not bankable or compensable",
       },
       {
-        name: "Currency Risk",
+        name: "Revenue and credit risk",
         description:
-          "Implementing hedging or local currency guarantees to mitigate FX exposure.",
+          "Ensuring payment mechanisms and counterparties can support long term obligations",
+      },
+      {
+        name: "Capital mismatch risk",
+        description:
+          "Preventing misalignment between project structure and available capital instruments",
+      },
+      {
+        name: "Transaction failure risk",
+        description:
+          "Reducing the likelihood of market rejection late in the process",
       },
     ],
     artefacts: [
-      "Risk Allocation Matrix",
-      "Draft Concession/Project Agreements",
-      "Bid/Tender Documents",
+      "Risk allocation matrix",
+      "Draft concession, offtake, or project agreements",
+      "Financing structure and credit support term sheet",
+      "Procurement and bid documentation",
     ],
-    investorAlignment:
-      "Corresponds to the \"credit committee\" or \"investment committee\" decision.",
-    evidenceNote:
-      "Structuring and risk allocation as a distinct phase is supported by the GIF's \"Transaction design and implementation\" and the Strategic Maturation analysis.",
   },
   {
     id: "transaction-close",
@@ -323,69 +442,95 @@ export const PATHWAY_STAGES: PathwayStage[] = [
     title: "Transaction Implementation and Financial Close",
     shortTitle: "Transaction close",
     purpose:
-      "This stage resolves the final funding and contractual uncertainties, moving the project from a structured proposal to a funded asset ready for construction.",
+      "Convert conditional commitments into binding contracts and deployed capital, resolving all remaining legal, financial, and execution uncertainties so the project can move into construction or implementation.",
     activities: [
       {
-        name: "Procurement Management",
-        description:
-          "Manage the competitive bidding/tender process and evaluate proposals.",
+        name: "Procurement and selection",
+        descriptions: [
+          "Manage competitive procurement or negotiated selection processes",
+          "Evaluate bids against pre-defined commercial, technical, and financial criteria",
+          "Confirm that the selected counterparty can deliver on the proposed risk allocation and pricing",
+        ],
       },
       {
-        name: "Financial Arranging",
-        description:
-          "Coordinate public and private financing, finalizing debt and equity packages.",
+        name: "Capital finalisation and financial arranging",
+        descriptions: [
+          "Finalise debt and equity commitments, including pricing, tenor, security, and covenants",
+          "Coordinate participation by public, private, and catalytic capital providers where relevant",
+          "Confirm alignment between financing terms and project cash flows",
+        ],
       },
       {
-        name: "Negotiation",
-        description:
-          "Finalize project agreements with the winning bidder and financiers.",
+        name: "Final negotiations and documentation",
+        descriptions: [
+          "Conclude negotiations on all project and financing agreements",
+          "Resolve residual issues related to risk allocation, security, and step-in rights",
+          "Finalise intercreditor and sponsor arrangements where applicable",
+        ],
       },
       {
-        name: "Conditions Precedent",
-        description:
-          "Ensure all legal and financial conditions for disbursement are met.",
+        name: "Conditions precedent and close management",
+        descriptions: [
+          "Verify that all legal, regulatory, and contractual conditions precedent are satisfied",
+          "Coordinate closing mechanics to enable funds to flow",
+          "Manage sequencing to avoid last minute execution risk",
+        ],
       },
     ],
     gateChecklist: [
       {
-        question: "Commercial Close",
+        question: "Commercial close",
         description:
-          "Are all project agreements and contracts signed?",
+          "Are all material project agreements executed and enforceable?",
       },
       {
-        question: "Financial Close",
+        question: "Financial close",
         description:
-          "Have all financing agreements been signed and conditions precedent satisfied to allow funds to flow?",
+          "Are all financing agreements signed and conditions precedent satisfied?",
+      },
+      {
+        question: "Funding certainty",
+        description:
+          "Is committed capital available for drawdown in line with the construction or implementation schedule?",
+      },
+      {
+        question: "Execution readiness",
+        description:
+          "Are governance, controls, and interfaces in place to move into delivery?",
       },
     ],
+    gateFailNote:
+      "Projects that fail to clear these criteria do not proceed to implementation.",
     risksAddressed: [
       {
-        name: "Financial Market Failure",
+        name: "Closing risk",
         description:
-          "Overcoming liquidity constraints or risk aversion through final credit enhancement packages.",
+          "Preventing transaction failure due to unresolved legal or commercial issues",
       },
       {
-        name: "Closing Risk",
+        name: "Funding failure risk",
         description:
-          "Ensuring all parties sign and conditions are met.",
+          "Ensuring capital is committed, available, and correctly sequenced",
+      },
+      {
+        name: "Execution handover risk",
+        description:
+          "Avoiding gaps between financial close and effective project delivery",
+      },
+      {
+        name: "Market withdrawal risk",
+        description:
+          "Managing late stage changes in market conditions or investor appetite",
       },
     ],
     artefacts: [
-      "Signed Financing Agreements",
-      "Commercial Contracts (signed)",
-      "Tender Evaluation Report",
+      "Executed financing agreements",
+      "Executed project and commercial contracts",
+      "Tender evaluation and selection report",
+      "Financial close and funds flow memorandum",
     ],
-    investorAlignment:
-      "Corresponds to \"financial close.\"",
-    evidenceNote:
-      "The final transaction phase aligns with GIF's \"Financing\" stage and the \"Commercial/Financial Close\" milestones tracked in results frameworks.",
   },
 ];
-
-// --- Investability Definition ---
-
-export const INVESTABILITY_DEFINITION =
-  "A project is investable/bankable at the final stage when its \"risk-return profile meets investors' criteria,\" ensuring that \"estimated cash flows cover costs and produce returns commensurate with risk\". It requires a \"creditworthy entity\" to implement the project and confidence that \"regulatory, environmental, social, and economic factors\" will not prevent completion.";
 
 // --- References ---
 

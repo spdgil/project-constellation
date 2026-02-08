@@ -16,7 +16,7 @@ export type ReadinessState =
 
 /** Deal stage — 5-stage development pathway */
 export type DealStage =
-  | "definition"          // Stage 1: Enabling Environment and Project Definition
+  | "definition"          // Stage 1: Mandate Fit and Project Definition
   | "pre-feasibility"     // Stage 2: Pre-feasibility and Prioritisation
   | "feasibility"         // Stage 3: Detailed Feasibility and Investment Appraisal
   | "structuring"         // Stage 4: Project Structuring and Risk Allocation
