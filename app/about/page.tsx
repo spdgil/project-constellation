@@ -61,35 +61,6 @@ const CORE_OBJECTS = [
   },
 ] as const;
 
-const NOT_LIST = [
-  "A promise of funding",
-  "A ranking system for LGAs",
-  "A substitute for investment due diligence",
-  "A platform for lobbying or promotional content",
-  "A forecasting engine",
-];
-
-const READINESS_LADDER = [
-  "No viable projects",
-  "Conceptual interest",
-  "Feasibility underway",
-  "Structurable but stalled",
-  "Investable with minor intervention",
-  "Scaled and replicable",
-];
-
-const CONSTRAINT_VOCABULARY = [
-  "Revenue certainty",
-  "Offtake / demand aggregation",
-  "Planning and approvals",
-  "Sponsor capability",
-  "Early risk capital",
-  "Balance sheet constraints",
-  "Technology risk",
-  "Coordination failure",
-  "Skills and workforce",
-  "Common-user infrastructure gap",
-];
 
 /* ====================================================================== */
 /* Page                                                                    */
@@ -270,56 +241,6 @@ export default function AboutPage() {
               </div>
             </AccordionBlock>
 
-            {/* Governance and data */}
-            <AccordionBlock title="Governance and data">
-              <div className="space-y-3">
-                <p className="text-sm text-[#2C2C2C] leading-relaxed">
-                  Deals are included as evidence, not endorsements.
-                  Classifications are updated over time and logged. Content may
-                  be incomplete and is designed to be improved.
-                </p>
-                <div className="border border-[#E8E6E3] bg-[#FAF9F7] p-4">
-                  <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] font-medium mb-2">
-                    This dashboard is not
-                  </p>
-                  <ul className="list-none p-0 m-0 space-y-1">
-                    {NOT_LIST.map((item) => (
-                      <li
-                        key={item}
-                        className="flex items-start gap-2 text-sm text-[#2C2C2C] leading-relaxed"
-                      >
-                        <span
-                          className="shrink-0 mt-0.5 text-[#9A9A9A]"
-                          aria-hidden="true"
-                        >
-                          &mdash;
-                        </span>
-                        {item}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </AccordionBlock>
-
-            {/* Known limitations */}
-            <AccordionBlock title="Known limitations">
-              <p className="text-sm text-[#2C2C2C] leading-relaxed">
-                This prototype uses static data and optional local overrides.
-                Map boundaries are simplified. Deal and LGA content may be
-                incomplete. The dashboard is not a substitute for investment due
-                diligence.
-              </p>
-            </AccordionBlock>
-
-            {/* Contact and contributions */}
-            <AccordionBlock title="Contact and contributions">
-              <p className="text-sm text-[#2C2C2C] leading-relaxed">
-                Partners can suggest a deal exemplar, a missing opportunity
-                type, or an evidence correction. For enquiries, use the contact
-                details provided by the project development facility.
-              </p>
-            </AccordionBlock>
           </div>
         </div>
 
@@ -352,47 +273,6 @@ export default function AboutPage() {
                 sub="Search the project pipeline"
               />
             </div>
-          </div>
-
-          {/* Capital readiness ladder */}
-          <div className="bg-white border border-[#E8E6E3] border-l-[3px] border-l-emerald-400 p-5 space-y-3">
-            <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] font-medium">
-              Capital readiness ladder
-            </p>
-            <ol className="list-none p-0 m-0 space-y-1.5">
-              {READINESS_LADDER.map((step, i) => (
-                <li
-                  key={step}
-                  className="flex items-start gap-2 text-xs text-[#2C2C2C] leading-relaxed"
-                >
-                  <span className="shrink-0 text-[10px] text-[#9A9A9A] font-medium w-3 text-right">
-                    {i + 1}
-                  </span>
-                  {step}
-                </li>
-              ))}
-            </ol>
-          </div>
-
-          {/* Constraint vocabulary */}
-          <div className="bg-white border border-[#E8E6E3] border-l-[3px] border-l-amber-400 p-5 space-y-3">
-            <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] font-medium">
-              Dominant constraints
-            </p>
-            <p className="text-xs text-[#6B6B6B] leading-relaxed">
-              Every deal has exactly one dominant constraint &mdash; the reason
-              capital is not flowing today.
-            </p>
-            <ul className="list-none p-0 m-0 space-y-1">
-              {CONSTRAINT_VOCABULARY.map((c) => (
-                <li
-                  key={c}
-                  className="text-xs text-[#2C2C2C] leading-relaxed"
-                >
-                  {c}
-                </li>
-              ))}
-            </ul>
           </div>
         </aside>
       </div>
