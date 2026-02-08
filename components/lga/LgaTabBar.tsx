@@ -10,14 +10,14 @@ const TABS = [
 ] as const;
 
 /**
- * Sub-tab navigation for the /lga section.
- * Renders tabs: Map (interactive LGA map) and Strategies (strategy documents).
+ * Chip/pill navigation for the /lga section.
+ * Visually distinct from the global underlined-tab nav in Header.
  */
 export function LgaTabBar() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="LGA views" className="flex gap-1 border-b border-[#E8E6E3]">
+    <nav aria-label="LGA views" className="flex flex-wrap gap-2">
       {TABS.map(({ href, label }) => {
         const isActive = pathname.startsWith(href);
 
@@ -27,13 +27,13 @@ export function LgaTabBar() {
             href={href}
             aria-current={isActive ? "page" : undefined}
             className={`
-              text-sm px-4 py-2.5
+              text-sm rounded-full px-3.5 py-1.5
               focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]
               transition duration-200 ease-out
               ${
                 isActive
-                  ? "text-[#2C2C2C] border-b-2 border-[#2C2C2C] font-medium"
-                  : "text-[#6B6B6B] border-b-2 border-transparent hover:text-[#2C2C2C] hover:border-[#C8C4BF]"
+                  ? "bg-[#2C2C2C] text-white font-medium"
+                  : "border border-[#E8E6E3] text-[#6B6B6B] hover:border-[#C8C4BF] hover:text-[#2C2C2C]"
               }
             `}
           >
