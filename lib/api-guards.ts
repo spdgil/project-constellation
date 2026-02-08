@@ -17,6 +17,21 @@ export async function requireAuthOrResponse(): Promise<NextResponse | null> {
   return null;
 }
 
+/**
+ * Require an authenticated admin user. Returns a 403 response if the user
+ * is not an admin, or delegates to requireAuthOrResponse for 401/503.
+ */
+export async function requireAdminOrResponse(): Promise<NextResponse | null> {
+  const authErr = await requireAuthOrResponse();
+  if (authErr) return authErr;
+
+  const session = await auth();
+  if (session?.user?.role !== "admin") {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+  return null;
+}
+
 export async function rateLimitOrResponse(
   request: Request,
   keyPrefix: string,

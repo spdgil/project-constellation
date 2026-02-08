@@ -23,11 +23,20 @@ export function Header() {
       role="banner"
     >
       <div className="mx-auto max-w-screen-2xl px-4 sm:px-6">
-        {/* Top bar: app name + user */}
+        {/* Top bar: logo + app name + user */}
         <div className="pt-3 pb-1 flex items-center justify-between">
-          <span className="font-heading text-2xl text-[#2C2C2C]">
-            The Constellation Development Facility
-          </span>
+          <Link href="/" className="flex items-center gap-3">
+            <Image
+              src="/images/CDF-logo.png"
+              alt=""
+              width={36}
+              height={36}
+              className="h-9 w-auto"
+            />
+            <span className="font-heading text-2xl text-[#2C2C2C]">
+              The Constellation Development Facility
+            </span>
+          </Link>
 
           {session?.user && (
             <div className="flex items-center gap-3">

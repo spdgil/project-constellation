@@ -56,6 +56,49 @@ enum ArtefactStatus {
   complete
 }
 
+// --- Access-control enums & models ---
+
+/// User role for RBAC
+enum UserRole {
+  admin
+  member
+}
+
+/// Outcome of an authentication attempt
+enum AuthOutcome {
+  allowed
+  denied_not_allowlisted  @map("denied-not-allowlisted")
+  denied_inactive         @map("denied-inactive")
+  error
+}
+
+/// Allowlisted email — only these emails may sign in.
+model AllowedEmail {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  role      UserRole @default(member)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([email])
+  @@map("allowed_emails")
+}
+
+/// Audit log for authentication attempts (GDPR-friendly: hashed IP, no PII beyond email).
+model AuthAuditEvent {
+  id        String      @id @default(cuid())
+  email     String
+  action    String      // e.g. "sign_in"
+  outcome   AuthOutcome
+  ipHash    String?     @map("ip_hash")
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  @@index([email])
+  @@index([createdAt])
+  @@map("auth_audit_events")
+}
+
 // --- Models ---
 
 /// LGA (Place) — PRD §7.1

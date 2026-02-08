@@ -1,13 +1,34 @@
 /**
- * Custom sign-in page — branded to match the Constellation design system.
+ * Custom sign-in page — branded login with CDF logo, Google OAuth,
+ * and access-denied messaging for non-allowlisted users.
  */
 
+import Image from "next/image";
 import { signIn } from "@/lib/auth";
 
-export default function SignInPage() {
+export default async function SignInPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ error?: string }>;
+}) {
+  const { error } = await searchParams;
+  const accessDenied = error === "AccessDenied";
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FAF9F7]">
       <div className="w-full max-w-sm mx-auto px-6">
+        {/* Logo */}
+        <div className="flex justify-center mb-6">
+          <Image
+            src="/images/CDF-logo.png"
+            alt="The Constellation Development Facility"
+            width={180}
+            height={180}
+            priority
+            className="h-auto w-auto max-h-28"
+          />
+        </div>
+
         <div className="text-center mb-8">
           <h1 className="font-heading text-2xl text-[#2C2C2C] mb-2">
             The Constellation Development Facility
@@ -16,6 +37,20 @@ export default function SignInPage() {
             Sign in to access the development facility dashboard.
           </p>
         </div>
+
+        {/* Access denied message */}
+        {accessDenied && (
+          <div
+            className="mb-6 border border-red-200 bg-red-50 text-red-800 text-sm px-4 py-3 text-center"
+            role="alert"
+          >
+            <p className="font-medium">Access not granted</p>
+            <p className="mt-1 text-red-600 text-xs">
+              Your Google account is not on the approved access list.
+              Please contact an administrator to request access.
+            </p>
+          </div>
+        )}
 
         <form
           action={async () => {
