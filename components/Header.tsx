@@ -39,11 +39,12 @@ export function Header() {
           </Link>
 
           {session?.user && (
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2.5">
               {session.user.image && (
-                <Image
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
                   src={session.user.image}
-                  alt={session.user.name ?? "User avatar"}
+                  alt=""
                   width={28}
                   height={28}
                   className="w-7 h-7 rounded-full"
