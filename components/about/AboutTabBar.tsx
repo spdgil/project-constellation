@@ -4,22 +4,23 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const TABS = [
-  { href: "/deals/list", label: "Pipeline" },
-  { href: "/deals/analysis", label: "Analysis" },
-  { href: "/deals/memo", label: "Add Deal" },
+  { href: "/about", label: "About", exact: true },
+  { href: "/about/pathway", label: "Deal Pathway", exact: false },
 ] as const;
 
 /**
- * Chip/pill navigation for the /deals section.
+ * Chip/pill navigation for the /about section.
  * Visually distinct from the global underlined-tab nav in Header.
  */
-export function DealsTabBar() {
+export function AboutTabBar() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="Deal views" className="flex flex-wrap gap-2">
-      {TABS.map(({ href, label }) => {
-        const isActive = pathname.startsWith(href);
+    <nav aria-label="About views" className="flex flex-wrap gap-2">
+      {TABS.map(({ href, label, exact }) => {
+        const isActive = exact
+          ? pathname === href
+          : pathname.startsWith(href);
 
         return (
           <Link
