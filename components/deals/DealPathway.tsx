@@ -225,7 +225,7 @@ function StageDetail({ stage }: { stage: PathwayStage }) {
   return (
     <div className="grid md:grid-cols-3 md:gap-8 gap-6">
       {/* Primary column: what you do and prove */}
-      <div className="md:col-span-2 space-y-3">
+      <div className="md:col-span-2 space-y-6">
         {/* Purpose */}
         <div>
           <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
@@ -261,27 +261,33 @@ function StageDetail({ stage }: { stage: PathwayStage }) {
 
         {/* Stage Gate Checklist */}
         <div>
-          <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
+          <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-2">
             Stage Gate Checklist
           </p>
-          <ul className="list-disc pl-5 m-0 space-y-1.5">
+          <ul className="list-none p-0 m-0 space-y-2">
             {stage.gateChecklist.map((item) => (
-              <li key={item.question} className="text-sm text-[#2C2C2C] leading-relaxed">
-                <span className="font-medium">{item.question}:</span>{" "}
-                {item.description}
+              <li key={item.question} className="flex items-start gap-2.5">
+                <span
+                  className="mt-0.5 h-4 w-4 shrink-0 rounded border border-[#D0CEC9] bg-[#FFFFFF]"
+                  aria-hidden="true"
+                />
+                <span className="text-sm text-[#2C2C2C] leading-relaxed">
+                  <span className="font-medium">{item.question}:</span>{" "}
+                  {item.description}
+                </span>
               </li>
             ))}
           </ul>
-          <p className="text-xs text-[#6B6B6B] italic mt-2">
+          <p className="text-xs text-[#6B6B6B] italic mt-3">
             {stage.gateFailNote}
           </p>
         </div>
       </div>
 
-      {/* Secondary column: supporting / reference content */}
-      <div className="md:col-span-1 bg-[#FAF9F7] border border-[#E8E6E3] p-4 space-y-3 self-start">
+      {/* Secondary column: two separate boxes */}
+      <div className="md:col-span-1 space-y-4 self-start">
         {/* Primary Risks Addressed */}
-        <div>
+        <div className="bg-[#FAF9F7] border border-[#E8E6E3] p-4">
           <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
             Primary Risks Addressed
           </p>
@@ -296,7 +302,7 @@ function StageDetail({ stage }: { stage: PathwayStage }) {
         </div>
 
         {/* Typical Artefacts Produced */}
-        <div>
+        <div className="bg-[#FAF9F7] border border-[#E8E6E3] p-4">
           <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1">
             Typical Artefacts
           </p>
