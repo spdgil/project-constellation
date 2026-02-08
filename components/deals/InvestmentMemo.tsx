@@ -18,7 +18,8 @@ import {
   extractTextFromFile,
   ACCEPTED_EXTENSIONS,
 } from "@/lib/extract-text";
-import type { MemoAnalysisResult } from "@/app/api/deals/analyse-memo/route";
+import type { MemoAnalysisResult } from "@/lib/ai/types";
+import { logClientError, logClientWarn } from "@/lib/client-logger";
 
 // =============================================================================
 // Props
@@ -423,11 +424,19 @@ export function InvestmentMemo({
           // Add to local list so it appears in the dropdown
           setAllOpportunityTypes((prev) => [...prev, newOt]);
         } else {
-          console.error("Failed to create opportunity type");
+          logClientError(
+            "Failed to create opportunity type",
+            undefined,
+            "InvestmentMemo",
+          );
           return;
         }
-      } catch {
-        console.error("Failed to create opportunity type");
+      } catch (error) {
+        logClientError(
+          "Failed to create opportunity type",
+          { error: String(error) },
+          "InvestmentMemo",
+        );
         return;
       }
     } else {
@@ -502,9 +511,13 @@ export function InvestmentMemo({
             method: "POST",
             body: formData,
           });
-        } catch {
+        } catch (error) {
           // Deal was created, document upload failed — not fatal
-          console.warn("Document upload failed, deal was still created.");
+          logClientWarn(
+            "Document upload failed, deal was still created.",
+            { error: String(error) },
+            "InvestmentMemo",
+          );
         }
       }
 

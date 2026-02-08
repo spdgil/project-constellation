@@ -4,6 +4,7 @@
  */
 
 import type { Deal, ConstraintEvent, OpportunityType } from "./types";
+import { logClientWarn } from "@/lib/client-logger";
 
 const STORAGE_KEY_DEALS = "constellation-dev-facility:deals";
 const STORAGE_KEY_EVENTS = "constellation-dev-facility:constraint-events";
@@ -76,7 +77,11 @@ export function saveDealLocally(deal: Deal, storage: Storage = getStorage()): vo
       (error.name === "QuotaExceededError" ||
         error.code === DOMException.QUOTA_EXCEEDED_ERR)
     ) {
-      console.warn("localStorage quota exceeded — deal override not saved.");
+      logClientWarn(
+        "localStorage quota exceeded — deal override not saved.",
+        undefined,
+        "deal-storage",
+      );
       return;
     }
     throw error;
@@ -176,7 +181,11 @@ export function appendConstraintEvent(
       (error.name === "QuotaExceededError" ||
         error.code === DOMException.QUOTA_EXCEEDED_ERR)
     ) {
-      console.warn("localStorage quota exceeded — constraint event not saved.");
+      logClientWarn(
+        "localStorage quota exceeded — constraint event not saved.",
+        undefined,
+        "deal-storage",
+      );
       return full;
     }
     throw error;

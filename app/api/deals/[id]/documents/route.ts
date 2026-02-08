@@ -8,6 +8,7 @@ import { prisma } from "@/lib/db/prisma";
 import { validateUploadedFile } from "@/lib/validations";
 import { uploadToBlob } from "@/lib/blob-storage";
 import { logger } from "@/lib/logger";
+import { rateLimitOrResponse, requireAuthOrResponse } from "@/lib/api-guards";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -51,6 +52,17 @@ export async function GET(_req: Request, context: RouteContext) {
 export async function POST(request: Request, context: RouteContext) {
   const { id } = await context.params;
   try {
+    const authResponse = await requireAuthOrResponse();
+    if (authResponse) return authResponse;
+
+    const rateLimitResponse = await rateLimitOrResponse(
+      request,
+      "deal-document-upload",
+      20,
+      60_000,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
+
     // Verify deal exists
     const deal = await prisma.deal.findUnique({ where: { id } });
     if (!deal) {

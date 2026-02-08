@@ -1,5 +1,5 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, fireEvent, within } from "@testing-library/react";
+import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
+import { render, screen, fireEvent, within, waitFor } from "@testing-library/react";
 import { DealsSearch } from "./DealsSearch";
 import type { Deal, LGA, OpportunityType } from "@/lib/types";
 
@@ -88,10 +88,54 @@ const mockDeals: Deal[] = [
   },
 ];
 
+const defaultPaging = {
+  dealTotal: mockDeals.length,
+  dealLimit: mockDeals.length,
+  dealOffset: 0,
+};
+
 describe("DealsSearch", () => {
+  const originalFetch = globalThis.fetch;
+
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
+    const defaultFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ items: mockDeals }),
+    });
+    (globalThis as unknown as { fetch: typeof fetch }).fetch = defaultFetch;
+  });
+
+  afterEach(() => {
+    (globalThis as unknown as { fetch: typeof fetch }).fetch = originalFetch;
+  });
+
+  it("fetches next page from API when unfiltered", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({ items: [mockDeals[0]] }),
+    });
+    (globalThis as unknown as { fetch: typeof fetch }).fetch = fetchMock;
+
+    render(
+      <DealsSearch
+        deals={[mockDeals[0]]}
+        opportunityTypes={mockOpportunityTypes}
+        lgas={mockLgas}
+        sectorCount={mockOpportunityTypes.length}
+        {...defaultPaging}
+        dealTotal={4}
+        dealLimit={1}
+        dealOffset={0}
+      />,
+    );
+
+    fireEvent.click(screen.getByRole("button", { name: /next/i }));
+
+    await waitFor(() => {
+      expect(fetchMock).toHaveBeenCalledWith("/api/deals?limit=1&offset=1");
+    });
   });
 
   it("renders search input, filter dropdowns, and results grid", () => {
@@ -101,6 +145,7 @@ describe("DealsSearch", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         sectorCount={mockOpportunityTypes.length}
+        {...defaultPaging}
       />
     );
 
@@ -124,6 +169,7 @@ describe("DealsSearch", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         sectorCount={mockOpportunityTypes.length}
+        {...defaultPaging}
       />
     );
 
@@ -138,6 +184,7 @@ describe("DealsSearch", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         sectorCount={mockOpportunityTypes.length}
+        {...defaultPaging}
       />
     );
 
@@ -156,6 +203,7 @@ describe("DealsSearch", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         sectorCount={mockOpportunityTypes.length}
+        {...defaultPaging}
       />
     );
 
@@ -174,6 +222,7 @@ describe("DealsSearch", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         sectorCount={mockOpportunityTypes.length}
+        {...defaultPaging}
       />
     );
 
@@ -192,6 +241,7 @@ describe("DealsSearch", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         sectorCount={mockOpportunityTypes.length}
+        {...defaultPaging}
       />
     );
 
@@ -208,6 +258,7 @@ describe("DealsSearch", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         sectorCount={mockOpportunityTypes.length}
+        {...defaultPaging}
       />
     );
 
@@ -223,6 +274,7 @@ describe("DealsSearch", () => {
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
         sectorCount={mockOpportunityTypes.length}
+        {...defaultPaging}
       />
     );
 

@@ -28,6 +28,7 @@ import {
 import { getStageGateChecklist, getStageArtefacts } from "@/lib/deal-pathway-utils";
 import { PATHWAY_STAGES } from "@/lib/pathway-data";
 import { formatDate } from "@/lib/format";
+import { logClientError } from "@/lib/client-logger";
 
 const ARTEFACT_STATUS_CYCLE: ArtefactStatus[] = ["not-started", "in-progress", "complete"];
 
@@ -155,7 +156,7 @@ export function DealDrawer({
           setDeal(updated);
         }
       } catch (error) {
-        console.error("Failed to save deal:", error);
+        logClientError("Failed to save deal", { error: String(error) }, "DealDrawer");
       }
     },
     [deal],

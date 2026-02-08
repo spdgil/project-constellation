@@ -1,7 +1,8 @@
-import { describe, it, expect, vi, beforeEach } from "vitest";
+import { describe, it, expect, vi, beforeEach, afterAll } from "vitest";
 import { render, screen, fireEvent } from "@testing-library/react";
 import type { GeoJSONFeatureCollection } from "@/lib/types";
 import type { Deal } from "@/lib/types";
+import type { MapMouseEvent } from "mapbox-gl";
 
 /* ---------------------------------------------------------------------- */
 /* Mock react-map-gl/mapbox so tests run in jsdom (no WebGL).             */

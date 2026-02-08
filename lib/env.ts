@@ -20,6 +20,8 @@ const serverEnvSchema = z.object({
   AUTH_GOOGLE_SECRET: optionalString,
   BLOB_READ_WRITE_TOKEN: optionalString,
   SENTRY_DSN: optionalString,
+  UPSTASH_REDIS_REST_URL: optionalString,
+  UPSTASH_REDIS_REST_TOKEN: optionalString,
 });
 
 export type ServerEnv = z.infer<typeof serverEnvSchema>;

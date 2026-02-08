@@ -1,2 +1,2 @@
-npx tsc --noEmit 2>&1 | grep -v "MapCanvas.test.tsx" | grep "error TS" && exit 1 || true
+npx tsc --noEmit 2>&1 | grep "error TS" && exit 1 || true
 npm run test:run

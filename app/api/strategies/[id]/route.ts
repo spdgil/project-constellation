@@ -8,6 +8,12 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { loadStrategyById } from "@/lib/db/queries";
 import { logger } from "@/lib/logger";
+import { PatchStrategySchema } from "@/lib/validations";
+import {
+  rateLimitOrResponse,
+  readJsonWithLimitOrResponse,
+  requireAuthOrResponse,
+} from "@/lib/api-guards";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -31,29 +37,20 @@ export async function GET(_req: Request, context: RouteContext) {
   }
 }
 
-/** Fields that can be updated via PATCH. */
-interface PatchStrategyBody {
-  title?: string;
-  summary?: string;
-  sourceDocument?: string;
-  status?: "draft" | "published";
-  // Blueprint components (keyed "1"–"6")
-  components?: Record<string, string>;
-  // Selection logic
-  selectionLogic?: {
-    adjacentDefinition?: string | null;
-    growthDefinition?: string | null;
-    criteria?: string[];
-  };
-  crossCuttingThemes?: string[];
-  stakeholderCategories?: string[];
-  /** Linked sector opportunity IDs (replaces all existing links). */
-  prioritySectorIds?: string[];
-}
-
 export async function PATCH(request: Request, context: RouteContext) {
   const { id } = await context.params;
   try {
+    const authResponse = await requireAuthOrResponse();
+    if (authResponse) return authResponse;
+
+    const rateLimitResponse = await rateLimitOrResponse(
+      request,
+      "strategy-update",
+      20,
+      60_000,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
+
     const existing = await prisma.sectorDevelopmentStrategy.findUnique({
       where: { id },
     });
@@ -64,7 +61,20 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
-    const body = (await request.json()) as PatchStrategyBody;
+    const parsedBody = await readJsonWithLimitOrResponse<unknown>(
+      request,
+      262_144,
+    );
+    if ("response" in parsedBody) return parsedBody.response;
+
+    const parsed = PatchStrategySchema.safeParse(parsedBody.data);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Validation failed", issues: parsed.error.issues },
+        { status: 400 },
+      );
+    }
+    const body = parsed.data;
     const data: Record<string, unknown> = {};
 
     if (body.title !== undefined) data.title = body.title.trim();
@@ -107,34 +117,30 @@ export async function PATCH(request: Request, context: RouteContext) {
       );
     }
 
-    // Update strategy fields
-    if (Object.keys(data).length > 0) {
-      await prisma.sectorDevelopmentStrategy.update({
-        where: { id },
-        data,
-      });
-    }
-
-    // Update sector opportunity links (replace all)
-    if (hasSectorLinks) {
-      const sectorIds = body.prioritySectorIds!;
-
-      // Delete existing links
-      await prisma.strategySectorOpportunity.deleteMany({
-        where: { strategyId: id },
-      });
-
-      // Re-create with sort order
-      for (let i = 0; i < sectorIds.length; i++) {
-        await prisma.strategySectorOpportunity.create({
-          data: {
-            strategyId: id,
-            sectorOpportunityId: sectorIds[i],
-            sortOrder: i,
-          },
+    await prisma.$transaction(async (tx) => {
+      if (Object.keys(data).length > 0) {
+        await tx.sectorDevelopmentStrategy.update({
+          where: { id },
+          data,
         });
       }
-    }
+
+      if (hasSectorLinks) {
+        const sectorIds = body.prioritySectorIds!;
+        await tx.strategySectorOpportunity.deleteMany({
+          where: { strategyId: id },
+        });
+        if (sectorIds.length > 0) {
+          await tx.strategySectorOpportunity.createMany({
+            data: sectorIds.map((sectorId, index) => ({
+              strategyId: id,
+              sectorOpportunityId: sectorId,
+              sortOrder: index,
+            })),
+          });
+        }
+      }
+    });
 
     return NextResponse.json({ ok: true });
   } catch (error) {
@@ -149,6 +155,17 @@ export async function PATCH(request: Request, context: RouteContext) {
 export async function DELETE(_req: Request, context: RouteContext) {
   const { id } = await context.params;
   try {
+    const authResponse = await requireAuthOrResponse();
+    if (authResponse) return authResponse;
+
+    const rateLimitResponse = await rateLimitOrResponse(
+      _req,
+      "strategy-delete",
+      10,
+      60_000,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
+
     const existing = await prisma.sectorDevelopmentStrategy.findUnique({
       where: { id },
     });

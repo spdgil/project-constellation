@@ -16,8 +16,8 @@ import {
 import type {
   StrategyExtractionResult,
   ComponentExtraction,
-} from "@/app/api/strategies/extract/route";
-import type { StrategyGradeResult } from "@/app/api/strategies/[id]/grade/route";
+  StrategyGradeResult,
+} from "@/lib/ai/types";
 
 // =============================================================================
 // Props

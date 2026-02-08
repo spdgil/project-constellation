@@ -7,6 +7,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { deleteFromBlob } from "@/lib/blob-storage";
 import { logger } from "@/lib/logger";
+import { rateLimitOrResponse, requireAuthOrResponse } from "@/lib/api-guards";
 
 type RouteContext = { params: Promise<{ id: string; docId: string }> };
 
@@ -39,6 +40,17 @@ export async function GET(_req: Request, context: RouteContext) {
 export async function DELETE(_req: Request, context: RouteContext) {
   const { docId } = await context.params;
   try {
+    const authResponse = await requireAuthOrResponse();
+    if (authResponse) return authResponse;
+
+    const rateLimitResponse = await rateLimitOrResponse(
+      _req,
+      "deal-document-delete",
+      20,
+      60_000,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
+
     const doc = await prisma.dealDocument.findUnique({
       where: { id: docId },
       select: { id: true, fileUrl: true },

@@ -7,6 +7,12 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { loadStrategies } from "@/lib/db/queries";
 import { logger } from "@/lib/logger";
+import { CreateStrategySchema } from "@/lib/validations";
+import {
+  rateLimitOrResponse,
+  readJsonWithLimitOrResponse,
+  requireAuthOrResponse,
+} from "@/lib/api-guards";
 
 export async function GET() {
   try {
@@ -21,24 +27,33 @@ export async function GET() {
   }
 }
 
-/** Shape of the request body for creating a draft strategy. */
-interface CreateStrategyBody {
-  title: string;
-  sourceDocument?: string;
-  summary?: string;
-  extractedText?: string;
-}
-
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as CreateStrategyBody;
+    const authResponse = await requireAuthOrResponse();
+    if (authResponse) return authResponse;
 
-    if (!body.title?.trim()) {
+    const rateLimitResponse = await rateLimitOrResponse(
+      request,
+      "strategy-create",
+      20,
+      60_000,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
+
+    const parsedBody = await readJsonWithLimitOrResponse<unknown>(
+      request,
+      262_144,
+    );
+    if ("response" in parsedBody) return parsedBody.response;
+
+    const parsed = CreateStrategySchema.safeParse(parsedBody.data);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Strategy title is required" },
+        { error: "Validation failed", issues: parsed.error.issues },
         { status: 400 },
       );
     }
+    const body = parsed.data;
 
     const strategy = await prisma.sectorDevelopmentStrategy.create({
       data: {

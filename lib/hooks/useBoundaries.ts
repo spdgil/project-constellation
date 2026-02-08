@@ -7,6 +7,7 @@
 
 import { useState, useEffect } from "react";
 import type { GeoJSONFeatureCollection } from "@/lib/types";
+import { logClientError } from "@/lib/client-logger";
 
 const EMPTY_BOUNDARIES: GeoJSONFeatureCollection = {
   type: "FeatureCollection",
@@ -40,7 +41,11 @@ export function useBoundaries(
         if (data?.features?.length) setFetched(data);
       })
       .catch((err: unknown) => {
-        console.error("Failed to fetch LGA boundaries:", err);
+        logClientError(
+          "Failed to fetch LGA boundaries",
+          { error: String(err) },
+          "useBoundaries",
+        );
         setError(
           "Could not load LGA boundaries. The map may be incomplete.",
         );

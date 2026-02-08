@@ -7,6 +7,7 @@ import {
   extractTextFromFile,
   ACCEPTED_EXTENSIONS,
 } from "@/lib/extract-text";
+import { logClientWarn } from "@/lib/client-logger";
 
 // =============================================================================
 // Component
@@ -87,10 +88,12 @@ export function StrategyUpload() {
             method: "POST",
             body: formData,
           });
-        } catch {
+        } catch (error) {
           // Document upload failed but strategy was created — not fatal
-          console.warn(
+          logClientWarn(
             "Document upload failed, strategy draft was still created.",
+            { error: String(error) },
+            "StrategyUpload",
           );
         }
 

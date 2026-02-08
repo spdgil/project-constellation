@@ -15,7 +15,7 @@ import {
   STRATEGY_COMPONENT_EDDT_DOMAINS,
 } from "@/lib/types";
 import { AccordionSection } from "@/components/ui/AccordionSection";
-import type { StrategyGradeResult } from "@/app/api/strategies/[id]/grade/route";
+import type { StrategyGradeResult } from "@/lib/ai/types";
 
 export interface StrategyDetailProps {
   strategy: SectorDevelopmentStrategy;

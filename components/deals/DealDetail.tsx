@@ -29,6 +29,7 @@ import {
 import { getStageGateChecklist, getStageArtefacts } from "@/lib/deal-pathway-utils";
 import { PATHWAY_STAGES } from "@/lib/pathway-data";
 import { formatDate } from "@/lib/format";
+import { logClientError } from "@/lib/client-logger";
 import { AccordionSection } from "@/components/ui/AccordionSection";
 import { DealHero } from "./DealHero";
 import { DealSidebar } from "./DealSidebar";
@@ -104,7 +105,7 @@ export function DealDetail({
       await fetch(`/api/deals/${dealId}`, { method: "DELETE" });
       router.push("/deals/list");
     } catch (error) {
-      console.error("Failed to delete deal:", error);
+      logClientError("Failed to delete deal", { error: String(error) }, "DealDetail");
     }
   }, [dealId, router]);
 
@@ -144,7 +145,11 @@ export function DealDetail({
             });
           }
         } catch (error) {
-          console.error("Failed to upload document:", error);
+          logClientError(
+            "Failed to upload document",
+            { error: String(error) },
+            "DealDetail",
+          );
         }
       }
       setDeal({ ...deal, documents: newDocs, updatedAt: new Date().toISOString() });
@@ -162,7 +167,11 @@ export function DealDetail({
         const newDocs = (deal.documents ?? []).filter((d) => d.id !== docId);
         setDeal({ ...deal, documents: newDocs, updatedAt: new Date().toISOString() });
       } catch (error) {
-        console.error("Failed to remove document:", error);
+        logClientError(
+          "Failed to remove document",
+          { error: String(error) },
+          "DealDetail",
+        );
       }
     },
     [deal],
@@ -205,7 +214,7 @@ export function DealDetail({
           setDeal(updated);
         }
       } catch (error) {
-        console.error("Failed to save deal:", error);
+        logClientError("Failed to save deal", { error: String(error) }, "DealDetail");
       } finally {
         setIsSaving(false);
       }

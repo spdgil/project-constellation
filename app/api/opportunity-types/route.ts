@@ -7,6 +7,12 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { loadOpportunityTypes } from "@/lib/db/queries";
 import { logger } from "@/lib/logger";
+import { CreateOpportunityTypeSchema } from "@/lib/validations";
+import {
+  rateLimitOrResponse,
+  readJsonWithLimitOrResponse,
+  requireAuthOrResponse,
+} from "@/lib/api-guards";
 
 export async function GET() {
   try {
@@ -21,25 +27,33 @@ export async function GET() {
   }
 }
 
-interface CreateOpportunityTypeBody {
-  id?: string;
-  name: string;
-  definition?: string;
-  economicFunction?: string;
-  typicalCapitalStack?: string;
-  typicalRisks?: string;
-}
-
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as CreateOpportunityTypeBody;
+    const authResponse = await requireAuthOrResponse();
+    if (authResponse) return authResponse;
 
-    if (!body.name?.trim()) {
+    const rateLimitResponse = await rateLimitOrResponse(
+      request,
+      "opportunity-type-create",
+      20,
+      60_000,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
+
+    const parsedBody = await readJsonWithLimitOrResponse<unknown>(
+      request,
+      131_072,
+    );
+    if ("response" in parsedBody) return parsedBody.response;
+
+    const parsed = CreateOpportunityTypeSchema.safeParse(parsedBody.data);
+    if (!parsed.success) {
       return NextResponse.json(
-        { error: "Name is required" },
-        { status: 400 }
+        { error: "Validation failed", issues: parsed.error.issues },
+        { status: 400 },
       );
     }
+    const body = parsed.data;
 
     const id =
       body.id ||

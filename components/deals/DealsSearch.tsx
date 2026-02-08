@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import type { Deal, DealStage, LGA, OpportunityType } from "@/lib/types";
 import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
@@ -33,6 +33,9 @@ export interface DealsSearchProps {
   lgas: LGA[];
   /** Number of sector opportunities — drives the "Sectors" metric in the summary bar */
   sectorCount: number;
+  dealTotal: number;
+  dealLimit: number;
+  dealOffset: number;
 }
 
 export function DealsSearch({
@@ -40,9 +43,17 @@ export function DealsSearch({
   opportunityTypes,
   lgas,
   sectorCount,
+  dealTotal,
+  dealLimit,
+  dealOffset,
 }: DealsSearchProps) {
-  const deals = useDealsWithOverrides(baseDeals);
+  const [serverDeals, setServerDeals] = useState(baseDeals);
+  const [allDeals, setAllDeals] = useState<Deal[] | null>(null);
   const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [serverPage, setServerPage] = useState(
+    Math.floor(dealOffset / dealLimit) + 1,
+  );
 
   /* Faceted filter state */
   const [stageFilter, setStageFilter] = useState<DealStage | "">("");
@@ -59,6 +70,8 @@ export function DealsSearch({
 
   const hasActiveFilters = !!(stageFilter || otFilter || lgaFilter || query.trim());
 
+  const deals = useDealsWithOverrides(allDeals ?? serverDeals);
+
   const clearFilters = useCallback(() => {
     setQuery("");
     setStageFilter("");
@@ -66,10 +79,50 @@ export function DealsSearch({
     setLgaFilter("");
   }, []);
 
-  const filtered = useMemo(
-    () => filterDealsByQuery(deals, query, opportunityTypes, lgas, filters),
-    [deals, query, opportunityTypes, lgas, filters],
+  const filtered = useMemo(() => {
+    if (!hasActiveFilters) return deals;
+    return filterDealsByQuery(deals, query, opportunityTypes, lgas, filters);
+  }, [deals, query, opportunityTypes, lgas, filters, hasActiveFilters]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [query, stageFilter, otFilter, lgaFilter]);
+
+  useEffect(() => {
+    if (!hasActiveFilters) return;
+    if (allDeals) return;
+    (async () => {
+      const res = await fetch("/api/deals");
+      if (!res.ok) return;
+      const data = (await res.json()) as Deal[];
+      setAllDeals(data);
+    })();
+  }, [hasActiveFilters, allDeals]);
+
+  useEffect(() => {
+    if (hasActiveFilters) return;
+    (async () => {
+      const offset = (serverPage - 1) * dealLimit;
+      const res = await fetch(`/api/deals?limit=${dealLimit}&offset=${offset}`);
+      if (!res.ok) return;
+      const data = (await res.json()) as { items: Deal[] };
+      setServerDeals(data.items);
+    })();
+  }, [hasActiveFilters, serverPage, dealLimit]);
+
+  const pageSize = dealLimit;
+  const totalPages = hasActiveFilters
+    ? Math.max(1, Math.ceil(filtered.length / pageSize))
+    : Math.max(1, Math.ceil(dealTotal / pageSize));
+  const currentPage = hasActiveFilters
+    ? Math.min(page, totalPages)
+    : Math.min(serverPage, totalPages);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(
+    startIndex + pageSize,
+    hasActiveFilters ? filtered.length : dealTotal,
   );
+  const paged = hasActiveFilters ? filtered.slice(startIndex, endIndex) : filtered;
 
   /* Aggregate stats across ALL deals (unfiltered) for summary bar */
   const pipelineStats = useMemo(() => {
@@ -169,7 +222,17 @@ export function DealsSearch({
         </select>
 
         <span className="text-xs text-[#6B6B6B]" data-testid="deals-count">
-          {filtered.length} {filtered.length === 1 ? "deal" : "deals"}
+          {hasActiveFilters ? filtered.length : dealTotal}{" "}
+          {hasActiveFilters
+            ? filtered.length === 1
+              ? "deal"
+              : "deals"
+            : dealTotal === 1
+              ? "deal"
+              : "deals"}
+          {(hasActiveFilters ? filtered.length : dealTotal) > 0 && (
+            <> · Showing {startIndex + 1}-{endIndex}</>
+          )}
         </span>
 
         {hasActiveFilters && (
@@ -194,19 +257,53 @@ export function DealsSearch({
             : "No deals available."}
         </div>
       ) : (
-        <div
-          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
-          data-testid="deals-results-list"
-        >
-          {filtered.map((deal) => (
-            <DealCard
-              key={deal.id}
-              deal={deal}
-              opportunityTypeName={getOpportunityTypeName(deal)}
-              lgaNames={dealLgaNames(deal, lgas).join(", ")}
-            />
-          ))}
-        </div>
+        <>
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
+            data-testid="deals-results-list"
+          >
+          {paged.map((deal) => (
+              <DealCard
+                key={deal.id}
+                deal={deal}
+                opportunityTypeName={getOpportunityTypeName(deal)}
+                lgaNames={dealLgaNames(deal, lgas).join(", ")}
+              />
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between text-xs text-[#6B6B6B]">
+              <button
+                type="button"
+              onClick={() =>
+                hasActiveFilters
+                  ? setPage((p) => Math.max(1, p - 1))
+                  : setServerPage((p) => Math.max(1, p - 1))
+              }
+                disabled={currentPage === 1}
+                className="px-2 py-1 border border-[#E8E6E3] bg-white disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <span>
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                type="button"
+              onClick={() =>
+                hasActiveFilters
+                  ? setPage((p) => Math.min(totalPages, p + 1))
+                  : setServerPage((p) => Math.min(totalPages, p + 1))
+              }
+                disabled={currentPage === totalPages}
+                className="px-2 py-1 border border-[#E8E6E3] bg-white disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

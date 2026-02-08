@@ -9,6 +9,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { PatchSectorSchema } from "@/lib/validations";
 import { logger } from "@/lib/logger";
+import {
+  rateLimitOrResponse,
+  readJsonWithLimitOrResponse,
+  requireAuthOrResponse,
+} from "@/lib/api-guards";
 
 type Ctx = { params: Promise<{ id: string }> };
 
@@ -38,8 +43,24 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
 export async function PATCH(req: NextRequest, ctx: Ctx) {
   const { id } = await ctx.params;
   try {
-    const raw = await req.json();
-    const parsed = PatchSectorSchema.safeParse(raw);
+    const authResponse = await requireAuthOrResponse();
+    if (authResponse) return authResponse;
+
+    const rateLimitResponse = await rateLimitOrResponse(
+      req,
+      "sector-update",
+      20,
+      60_000,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
+
+    const parsedBody = await readJsonWithLimitOrResponse<unknown>(
+      req,
+      262_144,
+    );
+    if ("response" in parsedBody) return parsedBody.response;
+
+    const parsed = PatchSectorSchema.safeParse(parsedBody.data);
 
     if (!parsed.success) {
       return NextResponse.json(

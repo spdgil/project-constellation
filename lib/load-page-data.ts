@@ -6,6 +6,7 @@
 import {
   loadLgas,
   loadDeals,
+  countDeals,
   loadOpportunityTypes,
   loadSectorOpportunities,
   loadStrategies,
@@ -33,6 +34,12 @@ export interface PageDataWithStrategies extends PageData {
   strategyGrades: StrategyGrade[];
 }
 
+export interface PageDataWithDealPaging extends PageData {
+  dealTotal: number;
+  dealOffset: number;
+  dealLimit: number;
+}
+
 /** Load core page data (LGAs, deals, opportunity types, sector opportunities) from the database. */
 export async function loadPageData(pageName: string): Promise<PageData> {
   try {
@@ -43,6 +50,36 @@ export async function loadPageData(pageName: string): Promise<PageData> {
       loadSectorOpportunities(),
     ]);
     return { lgas, deals, opportunityTypes, sectorOpportunities };
+  } catch (error) {
+    throw new Error(
+      `Failed to load ${pageName} data: ${error instanceof Error ? error.message : String(error)}`,
+    );
+  }
+}
+
+/** Load page data with paged deals (for deals list). */
+export async function loadPageDataWithDealPaging(
+  pageName: string,
+  options: { limit: number; offset: number },
+): Promise<PageDataWithDealPaging> {
+  try {
+    const [lgas, deals, opportunityTypes, sectorOpportunities, dealTotal] =
+      await Promise.all([
+        loadLgas(),
+        loadDeals({ limit: options.limit, offset: options.offset }),
+        loadOpportunityTypes(),
+        loadSectorOpportunities(),
+        countDeals(),
+      ]);
+    return {
+      lgas,
+      deals,
+      opportunityTypes,
+      sectorOpportunities,
+      dealTotal,
+      dealOffset: options.offset,
+      dealLimit: options.limit,
+    };
   } catch (error) {
     throw new Error(
       `Failed to load ${pageName} data: ${error instanceof Error ? error.message : String(error)}`,

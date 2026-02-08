@@ -10,14 +10,9 @@ This file documents past issues and architectural decisions to prevent repeating
 
 ## 1. MapCanvas.test.tsx Pre-existing Type Errors
 
-**Issue:** `MapCanvas.test.tsx` has pre-existing TypeScript errors (`Cannot find name 'afterAll'`, `Cannot find name 'MapMouseEvent'`) that predate current work.
+**Issue:** `MapCanvas.test.tsx` had pre-existing TypeScript errors (`Cannot find name 'afterAll'`, `Cannot find name 'MapMouseEvent'`).
 
-**Workaround:** The pre-commit hook filters these out:
-```bash
-npx tsc --noEmit 2>&1 | grep -v "MapCanvas.test.tsx"
-```
-
-**Status:** Known; will be fixed when test is refactored.
+**Status:** Resolved. The pre-commit hook filter has been removed.
 
 ## 2. `next lint` Fails on Paths with Spaces
 
@@ -68,3 +63,15 @@ const onClose = vi.fn();
 // ✅ GOOD
 const onClose: () => void = vi.fn();
 ```
+
+## 7. Vitest 4.x Process Hang on Node 24 (Known Bug)
+
+**Issue:** Vitest 4.x (tested with v4.0.18) on Node 24 hangs indefinitely after all tests complete. The `startVitest()` Node API never resolves, `vitest.close()` blocks forever, and even `process.exit()` is intercepted by the `signal-exit` module. Setting `forceExit: true`, changing pool type (`threads`/`forks`), and adjusting `teardownTimeout` all fail to fix it.
+
+**Root cause:** Lingering internal handles in Vitest's Vite server or file watcher system. This is a known upstream issue (see vitest-dev/vitest discussions).
+
+**Fix:** `scripts/vitest-run.mjs` spawns vitest as a child process and monitors stdout. When output goes silent for 5 seconds after test results are seen, the wrapper SIGKILL's the child and exits with the correct code. The `test:run` npm script uses this wrapper.
+
+**Rule:** Do NOT change `test:run` back to `vitest run` directly. If Vitest is upgraded and the hang is fixed upstream, the wrapper can be removed.
+
+**Status:** Workaround in place; monitor Vitest releases for upstream fix.

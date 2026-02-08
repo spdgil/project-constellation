@@ -173,8 +173,8 @@ describe("POST /api/strategies/:id/grade", () => {
     expect(body.gradeRationaleShort).toBe("No rationale provided.");
     // Warnings
     expect(body.warnings.length).toBeGreaterThan(0);
-    expect(body.warnings.some((w: string) => w.includes("invalid grade 'Z'"))).toBe(true);
-    expect(body.warnings.some((w: string) => w.includes("rationale"))).toBe(true);
+    expect(body.warnings.some((w: string) => w.includes("Invalid grade_letter"))).toBe(true);
+    expect(body.warnings.some((w: string) => w.includes("grade_rationale_short"))).toBe(true);
     expect(body.warnings.some((w: string) => w.includes("evidence"))).toBe(true);
   });
 

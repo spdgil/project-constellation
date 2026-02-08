@@ -167,6 +167,57 @@ export const PatchSectorSchema = z
 export type PatchSectorInput = z.infer<typeof PatchSectorSchema>;
 
 /* ====================================================================== */
+/* Strategy schemas                                                       */
+/* ====================================================================== */
+
+export const CreateStrategySchema = z.object({
+  title: z.string().min(1, "Strategy title is required").trim(),
+  sourceDocument: z.string().optional(),
+  summary: z.string().optional(),
+  extractedText: z.string().optional(),
+});
+
+export const PatchStrategySchema = z
+  .object({
+    title: z.string().min(1).trim(),
+    summary: z.string(),
+    sourceDocument: z.string().nullable(),
+    extractedText: z.string().nullable(),
+    status: z.enum(["draft", "published"]),
+    components: z.record(z.string(), z.string()),
+    selectionLogic: z.object({
+      adjacentDefinition: z.string().nullable().optional(),
+      growthDefinition: z.string().nullable().optional(),
+      criteria: z.array(z.string()).optional(),
+    }).optional(),
+    crossCuttingThemes: z.array(z.string()),
+    stakeholderCategories: z.array(z.string()),
+    prioritySectorIds: z.array(z.string()),
+  })
+  .partial()
+  .refine((data) => Object.keys(data).length > 0, {
+    message: "At least one field must be provided",
+  });
+
+export type CreateStrategyInput = z.infer<typeof CreateStrategySchema>;
+export type PatchStrategyInput = z.infer<typeof PatchStrategySchema>;
+
+/* ====================================================================== */
+/* Opportunity type schemas                                               */
+/* ====================================================================== */
+
+export const CreateOpportunityTypeSchema = z.object({
+  id: z.string().optional(),
+  name: z.string().min(1, "Name is required").trim(),
+  definition: z.string().optional(),
+  economicFunction: z.string().optional(),
+  typicalCapitalStack: z.string().optional(),
+  typicalRisks: z.string().optional(),
+});
+
+export type CreateOpportunityTypeInput = z.infer<typeof CreateOpportunityTypeSchema>;
+
+/* ====================================================================== */
 /* File upload constraints                                                 */
 /* ====================================================================== */
 

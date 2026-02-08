@@ -16,10 +16,40 @@ import {
 } from "@/lib/db/enum-maps";
 import type { Deal } from "@/lib/types";
 import { CreateDealSchema } from "@/lib/validations";
+import {
+  rateLimitOrResponse,
+  readJsonWithLimitOrResponse,
+  requireAuthOrResponse,
+} from "@/lib/api-guards";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    const deals = await loadDeals();
+    const url = new URL(request.url);
+    const limitParam = url.searchParams.get("limit");
+    const offsetParam = url.searchParams.get("offset");
+    const parsedLimit = limitParam ? Number.parseInt(limitParam, 10) : undefined;
+    const parsedOffset = offsetParam ? Number.parseInt(offsetParam, 10) : undefined;
+    let limit: number | undefined;
+    let offset: number | undefined;
+    if (parsedLimit !== undefined && Number.isFinite(parsedLimit)) {
+      limit = Math.min(Math.max(parsedLimit, 1), 200);
+    }
+    if (parsedOffset !== undefined && Number.isFinite(parsedOffset)) {
+      offset = Math.max(parsedOffset, 0);
+    }
+
+    const deals = await loadDeals({ limit, offset });
+
+    if (limit !== undefined || offset !== undefined) {
+      const total = await prisma.deal.count();
+      return NextResponse.json({
+        items: deals,
+        total,
+        limit: limit ?? null,
+        offset: offset ?? 0,
+      });
+    }
+
     return NextResponse.json(deals);
   } catch (error) {
     logger.error("GET /api/deals failed", { error: String(error) });
@@ -32,7 +62,24 @@ export async function GET() {
 
 export async function POST(request: Request) {
   try {
-    const raw = await request.json();
+    const authResponse = await requireAuthOrResponse();
+    if (authResponse) return authResponse;
+
+    const rateLimitResponse = await rateLimitOrResponse(
+      request,
+      "deal-create",
+      30,
+      60_000,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
+
+    const parsedBody = await readJsonWithLimitOrResponse<unknown>(
+      request,
+      262_144,
+    );
+    if ("response" in parsedBody) return parsedBody.response;
+
+    const raw = parsedBody.data;
     const parsed = CreateDealSchema.safeParse(raw);
 
     if (!parsed.success) {

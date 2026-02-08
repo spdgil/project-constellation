@@ -17,6 +17,11 @@ import {
 } from "@/lib/db/enum-maps";
 import type { Deal } from "@/lib/types";
 import { PatchDealSchema } from "@/lib/validations";
+import {
+  rateLimitOrResponse,
+  readJsonWithLimitOrResponse,
+  requireAuthOrResponse,
+} from "@/lib/api-guards";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -40,8 +45,23 @@ export async function GET(_req: Request, context: RouteContext) {
 export async function PATCH(request: Request, context: RouteContext) {
   const { id } = await context.params;
   try {
-    const raw = await request.json();
-    const parsed = PatchDealSchema.safeParse(raw);
+    const authResponse = await requireAuthOrResponse();
+    if (authResponse) return authResponse;
+
+    const rateLimitResponse = await rateLimitOrResponse(
+      request,
+      "deal-update",
+      30,
+      60_000,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
+
+    const parsedBody = await readJsonWithLimitOrResponse<unknown>(
+      request,
+      262_144,
+    );
+    if ("response" in parsedBody) return parsedBody.response;
+    const parsed = PatchDealSchema.safeParse(parsedBody.data);
 
     if (!parsed.success) {
       return NextResponse.json(
@@ -152,6 +172,17 @@ export async function PATCH(request: Request, context: RouteContext) {
 export async function DELETE(_req: Request, context: RouteContext) {
   const { id } = await context.params;
   try {
+    const authResponse = await requireAuthOrResponse();
+    if (authResponse) return authResponse;
+
+    const rateLimitResponse = await rateLimitOrResponse(
+      _req,
+      "deal-delete",
+      20,
+      60_000,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
+
     const existing = await prisma.deal.findUnique({ where: { id } });
     if (!existing) {
       return NextResponse.json({ error: "Deal not found" }, { status: 404 });

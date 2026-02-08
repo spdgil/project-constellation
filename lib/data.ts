@@ -1,6 +1,6 @@
 /**
- * Typed loaders for static JSON in /data — PRD §7.2
- * No server DB; reads from repo data files.
+ * @deprecated Legacy static JSON loaders (seed/test use only).
+ * Prefer database-backed queries from `lib/db/queries`.
  */
 
 import type {

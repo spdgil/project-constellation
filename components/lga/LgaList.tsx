@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import type { Deal, LGA, OpportunityType } from "@/lib/types";
 import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
@@ -39,6 +39,8 @@ export function LgaList({
 }: LgaListProps) {
   const deals = useDealsWithOverrides(baseDeals);
   const [query, setQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const pageSize = 24;
 
   /* Per-LGA statistics computed from all deals */
   const lgaStatsMap = useMemo(() => {
@@ -109,6 +111,16 @@ export function LgaList({
     });
   }, [filtered, lgaStatsMap]);
 
+  useEffect(() => {
+    setPage(1);
+  }, [query]);
+
+  const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
+  const currentPage = Math.min(page, totalPages);
+  const startIndex = (currentPage - 1) * pageSize;
+  const endIndex = Math.min(startIndex + pageSize, sorted.length);
+  const paged = sorted.slice(startIndex, endIndex);
+
   return (
     <div className="flex flex-col gap-6" data-testid="lga-list">
       {/* Summary bar */}
@@ -139,6 +151,9 @@ export function LgaList({
 
         <span className="text-xs text-[#6B6B6B]" data-testid="lga-count">
           {sorted.length} {sorted.length === 1 ? "LGA" : "LGAs"}
+          {sorted.length > 0 && (
+            <> · Showing {startIndex + 1}-{endIndex}</>
+          )}
         </span>
 
         {hasActiveFilters && (
@@ -161,19 +176,45 @@ export function LgaList({
             : "No LGAs available."}
         </div>
       ) : (
-        <div
-          className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
-          data-testid="lga-results-list"
-        >
-          {sorted.map((lga) => (
-            <LgaCard
-              key={lga.id}
-              lga={lga}
-              stats={lgaStatsMap[lga.id]}
-              opportunityTypes={opportunityTypes}
-            />
-          ))}
-        </div>
+        <>
+          <div
+            className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4"
+            data-testid="lga-results-list"
+          >
+            {paged.map((lga) => (
+              <LgaCard
+                key={lga.id}
+                lga={lga}
+                stats={lgaStatsMap[lga.id]}
+                opportunityTypes={opportunityTypes}
+              />
+            ))}
+          </div>
+
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between text-xs text-[#6B6B6B]">
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.max(1, p - 1))}
+                disabled={currentPage === 1}
+                className="px-2 py-1 border border-[#E8E6E3] bg-white disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <span>
+                Page {currentPage} of {totalPages}
+              </span>
+              <button
+                type="button"
+                onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+                disabled={currentPage === totalPages}
+                className="px-2 py-1 border border-[#E8E6E3] bg-white disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+          )}
+        </>
       )}
     </div>
   );

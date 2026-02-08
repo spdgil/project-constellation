@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { InvestmentMemo } from "./InvestmentMemo";
 import type { Deal, LGA, OpportunityType } from "@/lib/types";
-import type { MemoAnalysisResult } from "@/app/api/deals/analyse-memo/route";
+import type { MemoAnalysisResult } from "@/lib/ai/types";
 
 /* Mock next/navigation */
 const pushMock = vi.fn();

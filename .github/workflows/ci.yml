@@ -14,8 +14,21 @@ jobs:
   quality:
     name: Lint, Type-check, Test, Build
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: constellation_ci
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     env:
-      # Dummy DATABASE_URL for Prisma generate/type-check (no real DB in CI)
       DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/constellation_ci"
       # Suppress Sentry source map upload in CI
       SENTRY_AUTH_TOKEN: ""
@@ -34,6 +47,12 @@ jobs:
       - name: Generate Prisma client
         run: npx prisma generate
 
+      - name: Migrate database
+        run: npx prisma migrate deploy
+
+      - name: Seed database
+        run: npm run db:seed
+
       - name: Lint
         run: npm run lint
 
@@ -45,3 +64,9 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps
+
+      - name: E2E tests
+        run: npm run test:e2e

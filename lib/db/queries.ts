@@ -209,13 +209,21 @@ function mapOpportunityType(
 // Query functions
 // =============================================================================
 
-/** Load all deals with all relations. */
-export async function loadDeals(): Promise<Deal[]> {
+/** Load deals with all relations (optionally paged). */
+export async function loadDeals(options: { limit?: number; offset?: number } = {}): Promise<Deal[]> {
+  const { limit, offset } = options;
   const rows = await prisma.deal.findMany({
     include: DEAL_INCLUDE,
     orderBy: { updatedAt: "desc" },
+    take: limit,
+    skip: offset,
   });
   return rows.map(mapDeal);
+}
+
+/** Count total deals. */
+export async function countDeals(): Promise<number> {
+  return prisma.deal.count();
 }
 
 /** Load a single deal by ID. */
@@ -275,22 +283,6 @@ export async function loadConstraintEvents(entityId: string): Promise<Constraint
     changedAt: r.changedAt.toISOString(),
     changeReason: r.changeReason,
   }));
-}
-
-/** Get document metadata (URL) for download/redirect. */
-export async function getDocumentData(
-  docId: string
-): Promise<{ fileName: string; mimeType: string; fileUrl: string } | null> {
-  const doc = await prisma.dealDocument.findUnique({
-    where: { id: docId },
-    select: { fileName: true, mimeType: true, fileUrl: true },
-  });
-  if (!doc) return null;
-  return {
-    fileName: doc.fileName,
-    mimeType: doc.mimeType,
-    fileUrl: doc.fileUrl,
-  };
 }
 
 // =============================================================================
