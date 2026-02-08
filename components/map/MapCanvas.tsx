@@ -78,9 +78,15 @@ export function MapCanvas({
   const hasFittedRef = useRef(false);
   const mapLoadedRef = useRef(false);
   const boundariesRef = useRef(boundaries);
-  boundariesRef.current = boundaries;
   const initialFitBoundsRef = useRef(initialFitBounds);
-  initialFitBoundsRef.current = initialFitBounds;
+
+  useEffect(() => {
+    boundariesRef.current = boundaries;
+  }, [boundaries]);
+
+  useEffect(() => {
+    initialFitBoundsRef.current = initialFitBounds;
+  }, [initialFitBounds]);
 
   /** Try to fit the map to the best available bounds. Called from
    *  handleLoad (on first map load) and from an effect when

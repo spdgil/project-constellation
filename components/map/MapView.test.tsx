@@ -8,7 +8,8 @@ import type { GeoJSONFeatureCollection } from "@/lib/types";
 /* Mock react-map-gl/mapbox (no WebGL in jsdom)                           */
 /* ---------------------------------------------------------------------- */
 
-let capturedMapProps: Record<string, unknown> = {};
+/** Capture map props via vi.fn() — avoids module-scope mutation in render */
+const captureMapProps = vi.fn();
 
 vi.mock("react-map-gl/mapbox", () => {
   const React = require("react"); // eslint-disable-line @typescript-eslint/no-require-imports
@@ -18,7 +19,7 @@ vi.mock("react-map-gl/mapbox", () => {
       props: Record<string, unknown> & { children?: React.ReactNode },
       _ref: unknown,
     ) {
-      capturedMapProps = props;
+      captureMapProps(props);
       return (
         <div data-testid="mock-mapbox-map">
           {props.children}
@@ -120,7 +121,7 @@ const mockDeals: Deal[] = [
 describe("MapView", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    capturedMapProps = {};
+    captureMapProps.mockClear();
   });
 
   it("renders LGA sidebar and map canvas", () => {
@@ -326,7 +327,8 @@ describe("MapView", () => {
     );
 
     /* Simulate Mapbox click on the LGA fill layer */
-    const onClick = capturedMapProps.onClick as (e: unknown) => void;
+    const lastProps = captureMapProps.mock.calls.at(-1)?.[0] ?? {};
+    const onClick = lastProps.onClick as (e: unknown) => void;
     expect(onClick).toBeDefined();
     act(() => {
       onClick({

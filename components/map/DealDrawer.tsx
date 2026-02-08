@@ -79,25 +79,26 @@ export function DealDrawer({
   onEditingChange,
   expanded = false,
 }: DealDrawerProps) {
-  const [deal, setDeal] = useState<Deal | null>(null);
+  const [deal, setDeal] = useState<Deal | null>(initialDeal);
   const [internalEditing, setInternalEditing] = useState(false);
   const drawerRef = useRef<HTMLElement | null>(null);
 
   const isControlled = editingProp !== undefined;
   const isEditing = isControlled ? editingProp : internalEditing;
 
-  /* ---------- Deal loading ---------- */
+  /* ---------- Deal loading (adjust-state-during-render) ---------- */
 
-  useEffect(() => {
+  const prevInitialDealRef = useRef(initialDeal);
+  if (prevInitialDealRef.current !== initialDeal) {
+    prevInitialDealRef.current = initialDeal;
     if (!initialDeal) {
       setDeal(null);
       setInternalEditing(false);
-      return;
+    } else {
+      setDeal(initialDeal);
+      setInternalEditing(false);
     }
-    // Deal now comes from the database via server component — no localStorage merge needed
-    setDeal(initialDeal);
-    setInternalEditing(false);
-  }, [initialDeal]);
+  }
 
   /* ---------- Focus management ---------- */
 

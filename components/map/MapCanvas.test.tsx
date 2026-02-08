@@ -10,7 +10,8 @@ import type { MapMouseEvent } from "mapbox-gl";
 /* the onClick prop captured from <Map>.                                  */
 /* ---------------------------------------------------------------------- */
 
-let capturedMapProps: Record<string, unknown> = {};
+/** Capture map props via vi.fn() — avoids module-scope mutation in render */
+const captureMapProps = vi.fn();
 
 vi.mock("react-map-gl/mapbox", () => {
   const React = require("react"); // eslint-disable-line @typescript-eslint/no-require-imports
@@ -20,7 +21,7 @@ vi.mock("react-map-gl/mapbox", () => {
       props: Record<string, unknown> & { children?: React.ReactNode },
       _ref: unknown,
     ) {
-      capturedMapProps = props;
+      captureMapProps(props);
       return (
         <div data-testid="mock-mapbox-map">
           {props.children}
@@ -110,7 +111,7 @@ describe("MapCanvas", () => {
 
   beforeEach(() => {
     vi.resetModules();
-    capturedMapProps = {};
+    captureMapProps.mockClear();
   });
 
   afterAll(() => {
@@ -229,7 +230,8 @@ describe("MapCanvas", () => {
     );
 
     /* Simulate what Mapbox does: call onClick with features */
-    const onClick = capturedMapProps.onClick as (e: MapMouseEvent) => void;
+    const lastProps = captureMapProps.mock.calls.at(-1)?.[0] ?? {};
+    const onClick = lastProps.onClick as (e: MapMouseEvent) => void;
     expect(onClick).toBeDefined();
     onClick({
       features: [{ properties: { id: "mackay" } }],
@@ -256,7 +258,8 @@ describe("MapCanvas", () => {
       />,
     );
 
-    const onClick = capturedMapProps.onClick as (e: MapMouseEvent) => void;
+    const lastProps = captureMapProps.mock.calls.at(-1)?.[0] ?? {};
+    const onClick = lastProps.onClick as (e: MapMouseEvent) => void;
     onClick({
       features: [{ properties: { id: "mackay" } }],
     } as unknown as MapMouseEvent);

@@ -71,6 +71,14 @@ vi.mock("@/components/map/MapCanvas", () => ({
   MapCanvas: () => <div data-testid="map-canvas" />,
 }));
 
+/* Mock useBoundaries to avoid fetch("/api/boundaries") 404 in jsdom */
+vi.mock("@/lib/hooks/useBoundaries", () => ({
+  useBoundaries: () => ({
+    boundaries: { type: "FeatureCollection", features: [] },
+    boundaryError: null,
+  }),
+}));
+
 describe("HomePage", () => {
   it("renders the HomeView with header and summary bar", async () => {
     const HomePage = (await import("./page")).default;

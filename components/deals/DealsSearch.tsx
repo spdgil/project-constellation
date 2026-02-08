@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback, useEffect } from "react";
+import { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import Link from "next/link";
 import type { Deal, DealStage, LGA, OpportunityType } from "@/lib/types";
 import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
@@ -84,9 +84,13 @@ export function DealsSearch({
     return filterDealsByQuery(deals, query, opportunityTypes, lgas, filters);
   }, [deals, query, opportunityTypes, lgas, filters, hasActiveFilters]);
 
-  useEffect(() => {
+  // Reset page when filters change (adjust-state-during-render pattern)
+  const filterFingerprint = `${query}|${stageFilter}|${otFilter}|${lgaFilter}`;
+  const prevFilterRef = useRef(filterFingerprint);
+  if (prevFilterRef.current !== filterFingerprint) {
+    prevFilterRef.current = filterFingerprint;
     setPage(1);
-  }, [query, stageFilter, otFilter, lgaFilter]);
+  }
 
   useEffect(() => {
     if (!hasActiveFilters) return;

@@ -979,7 +979,7 @@ export function InvestmentMemo({
 
               {/* LGA assignment — searchable multi-select */}
               <div className="p-5 space-y-2">
-                <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
+                <label htmlFor="draft-lga-search" className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
                   LGA <span className="text-red-600">*</span>
                 </label>
 
@@ -1016,6 +1016,7 @@ export function InvestmentMemo({
                 {!applied && (
                   <div className="relative">
                     <input
+                      id="draft-lga-search"
                       type="text"
                       value={lgaSearch}
                       onChange={(e) => {
@@ -1069,11 +1070,12 @@ export function InvestmentMemo({
 
               {/* Location (geocoding) */}
               <div className="p-5 space-y-2">
-                <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
+                <label htmlFor="draft-location" className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
                   Location
                 </label>
                 <div className="flex gap-2">
                   <input
+                    id="draft-location"
                     type="text"
                     value={draftLocationText}
                     onChange={(e) => setDraftLocationText(e.target.value)}
@@ -1131,10 +1133,11 @@ export function InvestmentMemo({
 
               {/* Description */}
               <div className="p-5 space-y-1.5">
-                <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
+                <label htmlFor="draft-description" className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
                   Description
                 </label>
                 <textarea
+                  id="draft-description"
                   value={draftDescription}
                   onChange={(e) => setDraftDescription(e.target.value)}
                   rows={5}
@@ -1144,10 +1147,11 @@ export function InvestmentMemo({
 
               {/* Next step */}
               <div className="p-5 space-y-1.5">
-                <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
+                <label htmlFor="draft-next-step" className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
                   Recommended next step
                 </label>
                 <input
+                  id="draft-next-step"
                   type="text"
                   value={draftNextStep}
                   onChange={(e) => setDraftNextStep(e.target.value)}
@@ -1158,10 +1162,11 @@ export function InvestmentMemo({
               {/* Key fields grid */}
               <div className="p-5 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-4">
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-0.5 block">
+                  <label htmlFor="draft-investment-value" className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-0.5 block">
                     Investment value
                   </label>
                   <input
+                    id="draft-investment-value"
                     type="text"
                     value={draftInvestmentValue}
                     onChange={(e) => setDraftInvestmentValue(e.target.value)}
@@ -1169,10 +1174,11 @@ export function InvestmentMemo({
                   />
                 </div>
                 <div>
-                  <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-0.5 block">
+                  <label htmlFor="draft-economic-impact" className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-0.5 block">
                     Economic impact
                   </label>
                   <input
+                    id="draft-economic-impact"
                     type="text"
                     value={draftEconomicImpact}
                     onChange={(e) => setDraftEconomicImpact(e.target.value)}
@@ -1180,11 +1186,12 @@ export function InvestmentMemo({
                   />
                 </div>
                 <div className="sm:col-span-2">
-                  <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-0.5 block">
+                  <label htmlFor="draft-key-stakeholders" className="text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-0.5 block">
                     Key stakeholders
                     <span className="normal-case text-[#999] ml-1">(comma-separated)</span>
                   </label>
                   <input
+                    id="draft-key-stakeholders"
                     type="text"
                     value={draftKeyStakeholders}
                     onChange={(e) => setDraftKeyStakeholders(e.target.value)}
@@ -1196,11 +1203,12 @@ export function InvestmentMemo({
 
               {/* Risks */}
               <div className="p-5 space-y-1.5">
-                <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
+                <label htmlFor="draft-risks" className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
                   Risks
                   <span className="normal-case text-[#999] ml-1">(one per line)</span>
                 </label>
                 <textarea
+                  id="draft-risks"
                   value={draftRisks}
                   onChange={(e) => setDraftRisks(e.target.value)}
                   rows={4}
@@ -1211,11 +1219,12 @@ export function InvestmentMemo({
 
               {/* Strategic actions */}
               <div className="p-5 space-y-1.5">
-                <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
+                <label htmlFor="draft-strategic-actions" className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
                   Strategic actions
                   <span className="normal-case text-[#999] ml-1">(one per line)</span>
                 </label>
                 <textarea
+                  id="draft-strategic-actions"
                   value={draftStrategicActions}
                   onChange={(e) => setDraftStrategicActions(e.target.value)}
                   rows={4}
@@ -1226,11 +1235,12 @@ export function InvestmentMemo({
 
               {/* Infrastructure needs */}
               <div className="p-5 space-y-1.5">
-                <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
+                <label htmlFor="draft-infrastructure-needs" className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
                   Infrastructure needs
                   <span className="normal-case text-[#999] ml-1">(one per line)</span>
                 </label>
                 <textarea
+                  id="draft-infrastructure-needs"
                   value={draftInfrastructureNeeds}
                   onChange={(e) => setDraftInfrastructureNeeds(e.target.value)}
                   rows={3}
@@ -1241,10 +1251,11 @@ export function InvestmentMemo({
 
               {/* Skills implications */}
               <div className="p-5 space-y-1.5">
-                <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
+                <label htmlFor="draft-skills-implications" className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
                   Skills &amp; workforce implications
                 </label>
                 <textarea
+                  id="draft-skills-implications"
                   value={draftSkillsImplications}
                   onChange={(e) => setDraftSkillsImplications(e.target.value)}
                   rows={3}
@@ -1254,10 +1265,11 @@ export function InvestmentMemo({
 
               {/* Market drivers */}
               <div className="p-5 space-y-1.5">
-                <label className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
+                <label htmlFor="draft-market-drivers" className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
                   Market drivers
                 </label>
                 <textarea
+                  id="draft-market-drivers"
                   value={draftMarketDrivers}
                   onChange={(e) => setDraftMarketDrivers(e.target.value)}
                   rows={3}
