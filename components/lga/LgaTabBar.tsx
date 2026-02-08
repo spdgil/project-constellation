@@ -17,7 +17,7 @@ export function LgaTabBar() {
   const pathname = usePathname();
 
   return (
-    <nav aria-label="LGA views" role="tablist" className="flex gap-1 border-b border-[#E8E6E3]">
+    <nav aria-label="LGA views" className="flex gap-1 border-b border-[#E8E6E3]">
       {TABS.map(({ href, label }) => {
         const isActive = pathname.startsWith(href);
 
@@ -25,8 +25,6 @@ export function LgaTabBar() {
           <Link
             key={href}
             href={href}
-            role="tab"
-            aria-selected={isActive}
             aria-current={isActive ? "page" : undefined}
             className={`
               text-sm px-4 py-2.5

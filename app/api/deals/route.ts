@@ -22,17 +22,27 @@ import {
   requireAuthOrResponse,
 } from "@/lib/api-guards";
 
+/** List deals with pagination and total count. */
 export async function GET(request: Request) {
   try {
+    const rateLimitResponse = await rateLimitOrResponse(
+      request,
+      "deal-read",
+      120,
+      60_000,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
+
     const url = new URL(request.url);
     const limitParam = url.searchParams.get("limit");
     const offsetParam = url.searchParams.get("offset");
     const parsedLimit = limitParam ? Number.parseInt(limitParam, 10) : undefined;
     const parsedOffset = offsetParam ? Number.parseInt(offsetParam, 10) : undefined;
-    let limit: number | undefined;
-    let offset: number | undefined;
+    const defaultLimit = 200;
+    let limit = defaultLimit;
+    let offset = 0;
     if (parsedLimit !== undefined && Number.isFinite(parsedLimit)) {
-      limit = Math.min(Math.max(parsedLimit, 1), 200);
+      limit = Math.min(Math.max(parsedLimit, 1), 500);
     }
     if (parsedOffset !== undefined && Number.isFinite(parsedOffset)) {
       offset = Math.max(parsedOffset, 0);
@@ -40,17 +50,13 @@ export async function GET(request: Request) {
 
     const deals = await loadDeals({ limit, offset });
 
-    if (limit !== undefined || offset !== undefined) {
-      const total = await prisma.deal.count();
-      return NextResponse.json({
-        items: deals,
-        total,
-        limit: limit ?? null,
-        offset: offset ?? 0,
-      });
-    }
-
-    return NextResponse.json(deals);
+    const total = await prisma.deal.count();
+    return NextResponse.json({
+      items: deals,
+      total,
+      limit: limit ?? null,
+      offset: offset ?? 0,
+    });
   } catch (error) {
     logger.error("GET /api/deals failed", { error: String(error) });
     return NextResponse.json(
@@ -60,6 +66,7 @@ export async function GET(request: Request) {
   }
 }
 
+/** Create a new deal. */
 export async function POST(request: Request) {
   try {
     const authResponse = await requireAuthOrResponse();

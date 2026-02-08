@@ -8,7 +8,7 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
 import { loadStrategyById } from "@/lib/db/queries";
 import { logger } from "@/lib/logger";
-import { PatchStrategySchema } from "@/lib/validations";
+import { IdParamSchema, PatchStrategySchema } from "@/lib/validations";
 import {
   rateLimitOrResponse,
   readJsonWithLimitOrResponse,
@@ -17,9 +17,20 @@ import {
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-export async function GET(_req: Request, context: RouteContext) {
+export async function GET(request: Request, context: RouteContext) {
   const { id } = await context.params;
   try {
+    const idError = validateIdParam(id, "strategy id");
+    if (idError) return idError;
+
+    const rateLimitResponse = await rateLimitOrResponse(
+      request,
+      "strategy-read",
+      120,
+      60_000,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
+
     const strategy = await loadStrategyById(id);
     if (!strategy) {
       return NextResponse.json(
@@ -40,6 +51,9 @@ export async function GET(_req: Request, context: RouteContext) {
 export async function PATCH(request: Request, context: RouteContext) {
   const { id } = await context.params;
   try {
+    const idError = validateIdParam(id, "strategy id");
+    if (idError) return idError;
+
     const authResponse = await requireAuthOrResponse();
     if (authResponse) return authResponse;
 
@@ -142,7 +156,8 @@ export async function PATCH(request: Request, context: RouteContext) {
       }
     });
 
-    return NextResponse.json({ ok: true });
+    const updated = await loadStrategyById(id);
+    return NextResponse.json(updated);
   } catch (error) {
     logger.error("PATCH /api/strategies/:id failed", { id, error: String(error) });
     return NextResponse.json(
@@ -152,14 +167,17 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 }
 
-export async function DELETE(_req: Request, context: RouteContext) {
+export async function DELETE(request: Request, context: RouteContext) {
   const { id } = await context.params;
   try {
+    const idError = validateIdParam(id, "strategy id");
+    if (idError) return idError;
+
     const authResponse = await requireAuthOrResponse();
     if (authResponse) return authResponse;
 
     const rateLimitResponse = await rateLimitOrResponse(
-      _req,
+      request,
       "strategy-delete",
       10,
       60_000,
@@ -185,4 +203,12 @@ export async function DELETE(_req: Request, context: RouteContext) {
       { status: 500 },
     );
   }
+}
+
+function validateIdParam(value: string, label: string) {
+  const parsed = IdParamSchema.safeParse(value);
+  if (!parsed.success) {
+    return NextResponse.json({ error: `Invalid ${label}` }, { status: 400 });
+  }
+  return null;
 }

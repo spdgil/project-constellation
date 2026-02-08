@@ -24,10 +24,13 @@ export default async function StrategyPage({ params }: StrategyPageProps) {
   }
 
   return (
-    <StrategyDetail
-      strategy={strategy}
-      grade={grade}
-      sectorOpportunities={sectorOpportunities}
-    />
+    <div>
+      <h1 className="sr-only">Strategy details</h1>
+      <StrategyDetail
+        strategy={strategy}
+        grade={grade}
+        sectorOpportunities={sectorOpportunities}
+      />
+    </div>
   );
 }

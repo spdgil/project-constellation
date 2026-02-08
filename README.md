@@ -14,6 +14,27 @@ Queensland state-level dashboard that surfaces market-grounded opportunity patte
 - **Monitoring:** Sentry (error tracking)
 - **Hosting:** Vercel
 
+## Architecture Overview
+
+- **App Router:** Server components in `app/` fetch data via `lib/db/queries.ts`.
+- **Client UI:** Interactive widgets live in `components/` (`"use client"` scoped).
+- **API routes:** `app/api/**/route.ts` provide JSON endpoints for client updates.
+- **Data layer:** Prisma schema in `prisma/schema.prisma`, generated client in `lib/generated/prisma`.
+- **Static data:** `data/` holds seed files and boundary GeoJSON.
+
+## API Overview
+
+Core routes (all JSON):
+
+- **Deals:** `GET/POST /api/deals`, `GET/PATCH/DELETE /api/deals/:id`
+- **Deal documents:** `GET/POST /api/deals/:id/documents`, `GET/DELETE /api/deals/:id/documents/:docId`
+- **Strategies:** `GET/POST /api/strategies`, `GET/PATCH/DELETE /api/strategies/:id`
+- **Strategy documents:** `GET/POST /api/strategies/:id/documents`
+- **Sectors & types:** `GET /api/sectors`, `GET/PATCH /api/sectors/:id`, `GET/POST /api/opportunity-types`
+- **Utilities:** `POST /api/geocode`, `GET /api/boundaries`, `GET /api/health`
+
+All write routes are authenticated and rate-limited. Read routes are rate-limited.
+
 ## Getting Started
 
 ### Prerequisites

@@ -29,13 +29,16 @@ export default async function DealPage({ params }: DealPageProps) {
   }
 
   return (
-    <DealDetail
-      deal={deal}
-      dealId={id}
-      opportunityTypes={opportunityTypes}
-      lgas={lgas}
-      allDeals={allDeals}
-      sectorOpportunities={sectorOpportunities}
-    />
+    <div>
+      <h1 className="sr-only">Deal details</h1>
+      <DealDetail
+        deal={deal}
+        dealId={id}
+        opportunityTypes={opportunityTypes}
+        lgas={lgas}
+        allDeals={allDeals}
+        sectorOpportunities={sectorOpportunities}
+      />
+    </div>
   );
 }

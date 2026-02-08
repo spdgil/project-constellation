@@ -7,15 +7,17 @@
  */
 
 import { NextResponse } from "next/server";
+import { z } from "zod";
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
+import { rateLimitOrResponse } from "@/lib/api-guards";
 
 // Queensland bounding box (covers all 77 LGAs)
 const QLD_BBOX = "138,-29,154,-10";
 
-interface GeocodeRequest {
-  query: string;
-}
+const GeocodeRequestSchema = z.object({
+  query: z.string().max(200),
+});
 
 interface GeocodeResult {
   lat: number | null;
@@ -26,11 +28,28 @@ interface GeocodeResult {
   matchedPlace: string | null;
 }
 
+/** Forward-geocode a location string to lat/lng within QLD. */
 export async function POST(request: Request) {
   try {
-    const body = (await request.json()) as GeocodeRequest;
+    const rateLimitResponse = await rateLimitOrResponse(
+      request,
+      "geocode",
+      30,
+      60_000,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
 
-    if (!body.query || typeof body.query !== "string" || !body.query.trim()) {
+    const body = await request.json();
+    const parsed = GeocodeRequestSchema.safeParse(body);
+    if (!parsed.success) {
+      return NextResponse.json(
+        { error: "Invalid request body" },
+        { status: 400 },
+      );
+    }
+
+    const query = parsed.data.query.trim();
+    if (!query) {
       return NextResponse.json(
         { lat: null, lng: null, confidence: null, matchedPlace: null },
         { status: 200 }
@@ -47,7 +66,7 @@ export async function POST(request: Request) {
     }
 
     const params = new URLSearchParams({
-      q: body.query.trim(),
+      q: query,
       access_token: token,
       bbox: QLD_BBOX,
       country: "AU",

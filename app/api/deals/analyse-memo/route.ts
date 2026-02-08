@@ -138,12 +138,7 @@ export async function POST(request: Request) {
 
     logger.error("Analyse memo failed", { error: String(error) });
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred.",
-      },
+      { error: "An unexpected error occurred." },
       { status: 500 }
     );
   }

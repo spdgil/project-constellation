@@ -1,4 +1,5 @@
 import { withSentryConfig } from "@sentry/nextjs";
+import bundleAnalyzer from "@next/bundle-analyzer";
 import type { NextConfig } from "next";
 
 const securityHeaders = [
@@ -27,6 +28,10 @@ const securityHeaders = [
   },
 ];
 
+const withBundleAnalyzer = bundleAnalyzer({
+  enabled: process.env.ANALYZE === "true",
+});
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   async headers() {
@@ -39,7 +44,7 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default withSentryConfig(nextConfig, {
+export default withSentryConfig(withBundleAnalyzer(nextConfig), {
   // Suppress source map upload warnings when SENTRY_AUTH_TOKEN is not set
   silent: !process.env.SENTRY_AUTH_TOKEN,
 

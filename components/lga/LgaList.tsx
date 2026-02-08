@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback, useRef } from "react";
+import { useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 import type { Deal, LGA, OpportunityType } from "@/lib/types";
 import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
@@ -99,7 +99,10 @@ export function LgaList({
   }, [lgas, query]);
 
   const hasActiveFilters = !!query.trim();
-  const clearFilters = useCallback(() => setQuery(""), []);
+  const clearFilters = useCallback(() => {
+    setQuery("");
+    setPage(1);
+  }, []);
 
   /* Sort: LGAs with deals first, then alphabetical */
   const sorted = useMemo(() => {
@@ -111,12 +114,7 @@ export function LgaList({
     });
   }, [filtered, lgaStatsMap]);
 
-  // Reset page when query changes (adjust-state-during-render pattern)
-  const prevQueryRef = useRef(query);
-  if (prevQueryRef.current !== query) {
-    prevQueryRef.current = query;
-    setPage(1);
-  }
+  // Page reset handled in query handlers.
 
   const totalPages = Math.max(1, Math.ceil(sorted.length / pageSize));
   const currentPage = Math.min(page, totalPages);
@@ -144,7 +142,10 @@ export function LgaList({
           id="lga-search-input"
           type="search"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setPage(1);
+          }}
           placeholder="Search LGAs…"
           aria-label="Filter LGAs by name or opportunity"
           autoComplete="off"

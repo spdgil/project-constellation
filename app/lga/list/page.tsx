@@ -6,11 +6,14 @@ export default async function LgaListPage() {
     await loadPageData("lga list");
 
   return (
-    <LgaList
-      lgas={lgas}
-      deals={deals}
-      opportunityTypes={opportunityTypes}
-      sectorCount={sectorOpportunities.length}
-    />
+    <div>
+      <h1 className="sr-only">LGA list</h1>
+      <LgaList
+        lgas={lgas}
+        deals={deals}
+        opportunityTypes={opportunityTypes}
+        sectorCount={sectorOpportunities.length}
+      />
+    </div>
   );
 }

@@ -14,10 +14,23 @@ import {
   requireAuthOrResponse,
 } from "@/lib/api-guards";
 
-export async function GET() {
+/** List all opportunity types. */
+export async function GET(request: Request) {
   try {
+    const rateLimitResponse = await rateLimitOrResponse(
+      request,
+      "opportunity-type-read",
+      120,
+      60_000,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
+
     const types = await loadOpportunityTypes();
-    return NextResponse.json(types);
+    return NextResponse.json(types, {
+      headers: {
+        "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
+      },
+    });
   } catch (error) {
     logger.error("GET /api/opportunity-types failed", { error: String(error) });
     return NextResponse.json(
@@ -27,6 +40,7 @@ export async function GET() {
   }
 }
 
+/** Create a new opportunity type. */
 export async function POST(request: Request) {
   try {
     const authResponse = await requireAuthOrResponse();

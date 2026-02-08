@@ -13,10 +13,13 @@ export default async function StrategiesPage() {
   ]);
 
   return (
-    <StrategiesIndex
-      strategies={strategies}
-      strategyGrades={strategyGrades}
-      sectorOpportunities={sectorOpportunities}
-    />
+    <div>
+      <h1 className="sr-only">Strategies</h1>
+      <StrategiesIndex
+        strategies={strategies}
+        strategyGrades={strategyGrades}
+        sectorOpportunities={sectorOpportunities}
+      />
+    </div>
   );
 }

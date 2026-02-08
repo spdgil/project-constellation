@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useCallback, useEffect, useRef } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import type { Deal, DealStage, LGA, OpportunityType } from "@/lib/types";
 import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
@@ -11,12 +11,7 @@ import { STAGE_LABELS, READINESS_LABELS } from "@/lib/labels";
 import { STAGE_COLOUR_CLASSES, READINESS_COLOUR_CLASSES } from "@/lib/stage-colours";
 import { getStageGateChecklist } from "@/lib/deal-pathway-utils";
 import { MiniStat } from "@/components/ui/MiniStat";
-import {
-  type ColourFamily,
-  COLOUR_CLASSES,
-  OPP_TYPE_COLOUR,
-  formatAUD,
-} from "@/lib/colour-system";
+import { COLOUR_CLASSES, OPP_TYPE_COLOUR, formatAUD } from "@/lib/colour-system";
 import { PipelineSummaryBar } from "@/components/ui/PipelineSummaryBar";
 
 const STAGE_OPTIONS: DealStage[] = [
@@ -77,6 +72,8 @@ export function DealsSearch({
     setStageFilter("");
     setOtFilter("");
     setLgaFilter("");
+    setPage(1);
+    setServerPage(1);
   }, []);
 
   const filtered = useMemo(() => {
@@ -84,34 +81,45 @@ export function DealsSearch({
     return filterDealsByQuery(deals, query, opportunityTypes, lgas, filters);
   }, [deals, query, opportunityTypes, lgas, filters, hasActiveFilters]);
 
-  // Reset page when filters change (adjust-state-during-render pattern)
-  const filterFingerprint = `${query}|${stageFilter}|${otFilter}|${lgaFilter}`;
-  const prevFilterRef = useRef(filterFingerprint);
-  if (prevFilterRef.current !== filterFingerprint) {
-    prevFilterRef.current = filterFingerprint;
-    setPage(1);
-  }
+  // Resetting the client-side page is handled in filter handlers.
 
   useEffect(() => {
     if (!hasActiveFilters) return;
     if (allDeals) return;
+    const controller = new AbortController();
     (async () => {
-      const res = await fetch("/api/deals");
-      if (!res.ok) return;
-      const data = (await res.json()) as Deal[];
-      setAllDeals(data);
+      try {
+        const totalLimit = Math.max(dealTotal, 1);
+        const res = await fetch(`/api/deals?limit=${totalLimit}&offset=0`, {
+          signal: controller.signal,
+        });
+        if (!res.ok) return;
+        const data = (await res.json()) as { items: Deal[] };
+        if (!controller.signal.aborted) setAllDeals(data.items);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+      }
     })();
-  }, [hasActiveFilters, allDeals]);
+    return () => controller.abort();
+  }, [hasActiveFilters, allDeals, dealTotal]);
 
   useEffect(() => {
     if (hasActiveFilters) return;
+    const controller = new AbortController();
     (async () => {
-      const offset = (serverPage - 1) * dealLimit;
-      const res = await fetch(`/api/deals?limit=${dealLimit}&offset=${offset}`);
-      if (!res.ok) return;
-      const data = (await res.json()) as { items: Deal[] };
-      setServerDeals(data.items);
+      try {
+        const offset = (serverPage - 1) * dealLimit;
+        const res = await fetch(`/api/deals?limit=${dealLimit}&offset=${offset}`, {
+          signal: controller.signal,
+        });
+        if (!res.ok) return;
+        const data = (await res.json()) as { items: Deal[] };
+        if (!controller.signal.aborted) setServerDeals(data.items);
+      } catch (err) {
+        if (err instanceof DOMException && err.name === "AbortError") return;
+      }
     })();
+    return () => controller.abort();
   }, [hasActiveFilters, serverPage, dealLimit]);
 
   const pageSize = dealLimit;
@@ -141,9 +149,19 @@ export function DealsSearch({
     return { investment, impact, jobs };
   }, [deals]);
 
-  const getOpportunityTypeName = (deal: Deal) =>
-    opportunityTypes.find((o) => o.id === deal.opportunityTypeId)?.name ??
-    deal.opportunityTypeId;
+  const opportunityTypeNameById = useMemo(() => {
+    const map = new Map<string, string>();
+    for (const ot of opportunityTypes) {
+      map.set(ot.id, ot.name);
+    }
+    return map;
+  }, [opportunityTypes]);
+
+  const getOpportunityTypeName = useCallback(
+    (deal: Deal) =>
+      opportunityTypeNameById.get(deal.opportunityTypeId) ?? deal.opportunityTypeId,
+    [opportunityTypeNameById],
+  );
 
   const selectClassName =
     "h-9 px-2 border border-[#E8E6E3] bg-white text-[#2C2C2C] text-sm focus:border-[#7A6B5A] focus:ring-1 focus:ring-[#7A6B5A] focus:outline-none transition duration-300 ease-out";
@@ -172,7 +190,10 @@ export function DealsSearch({
           id="deals-search-input"
           type="search"
           value={query}
-          onChange={(e) => setQuery(e.target.value)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setPage(1);
+          }}
           placeholder="Search deals…"
           aria-label="Filter deals by name, opportunity type, or LGA name"
           autoComplete="off"
@@ -182,7 +203,10 @@ export function DealsSearch({
 
         <select
           value={otFilter}
-          onChange={(e) => setOtFilter(e.target.value)}
+          onChange={(e) => {
+            setOtFilter(e.target.value);
+            setPage(1);
+          }}
           aria-label="Filter by opportunity type"
           className={selectClassName}
           data-testid="filter-opportunity-type"
@@ -197,7 +221,10 @@ export function DealsSearch({
 
         <select
           value={stageFilter}
-          onChange={(e) => setStageFilter(e.target.value as DealStage | "")}
+          onChange={(e) => {
+            setStageFilter(e.target.value as DealStage | "");
+            setPage(1);
+          }}
           aria-label="Filter by stage"
           className={selectClassName}
           data-testid="filter-stage"
@@ -212,7 +239,10 @@ export function DealsSearch({
 
         <select
           value={lgaFilter}
-          onChange={(e) => setLgaFilter(e.target.value)}
+          onChange={(e) => {
+            setLgaFilter(e.target.value);
+            setPage(1);
+          }}
           aria-label="Filter by LGA"
           className={selectClassName}
           data-testid="filter-lga"
@@ -225,7 +255,13 @@ export function DealsSearch({
           ))}
         </select>
 
-        <span className="text-xs text-[#6B6B6B]" data-testid="deals-count">
+        <span
+          className="text-xs text-[#6B6B6B]"
+          data-testid="deals-count"
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+        >
           {hasActiveFilters ? filtered.length : dealTotal}{" "}
           {hasActiveFilters
             ? filtered.length === 1
@@ -243,6 +279,7 @@ export function DealsSearch({
           <button
             type="button"
             onClick={clearFilters}
+            aria-label="Clear filters"
             className="text-xs text-[#7A6B5A] underline underline-offset-2 hover:text-[#5A4B3A] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A]"
             data-testid="clear-filters"
           >
@@ -286,6 +323,7 @@ export function DealsSearch({
                   : setServerPage((p) => Math.max(1, p - 1))
               }
                 disabled={currentPage === 1}
+                aria-label="Previous page"
                 className="px-2 py-1 border border-[#E8E6E3] bg-white disabled:opacity-50"
               >
                 Previous
@@ -301,6 +339,7 @@ export function DealsSearch({
                   : setServerPage((p) => Math.min(totalPages, p + 1))
               }
                 disabled={currentPage === totalPages}
+                aria-label="Next page"
                 className="px-2 py-1 border border-[#E8E6E3] bg-white disabled:opacity-50"
               >
                 Next

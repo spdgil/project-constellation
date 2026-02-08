@@ -5,7 +5,16 @@ const mockFindUnique = vi.fn();
 const mockUpdate = vi.fn();
 const mockDeleteMany = vi.fn();
 const mockCreateMany = vi.fn();
-const mockTransaction = vi.fn(async (fn: (tx: any) => Promise<void>) => {
+const mockLoadStrategyById = vi.fn();
+type MockTx = {
+  sectorDevelopmentStrategy: { update: typeof mockUpdate };
+  strategySectorOpportunity: {
+    deleteMany: typeof mockDeleteMany;
+    createMany: typeof mockCreateMany;
+  };
+};
+
+const mockTransaction = vi.fn(async (fn: (tx: MockTx) => Promise<void>) => {
   await fn({
     sectorDevelopmentStrategy: { update: mockUpdate },
     strategySectorOpportunity: {
@@ -20,8 +29,12 @@ vi.mock("@/lib/db/prisma", () => ({
     sectorDevelopmentStrategy: {
       findUnique: (...args: unknown[]) => mockFindUnique(...args),
     },
-    $transaction: (fn: any) => mockTransaction(fn),
+    $transaction: (fn: (tx: MockTx) => Promise<void>) => mockTransaction(fn),
   },
+}));
+
+vi.mock("@/lib/db/queries", () => ({
+  loadStrategyById: (...args: unknown[]) => mockLoadStrategyById(...args),
 }));
 
 const mockRequireAuth = vi.fn();
@@ -65,6 +78,7 @@ describe("PATCH /api/strategies/:id", () => {
       data: { summary: "Updated summary" },
     });
     mockFindUnique.mockResolvedValueOnce({ id: "strategy-1" });
+    mockLoadStrategyById.mockResolvedValueOnce({ id: "strategy-1" });
 
     const res = await PATCH(makeRequest({}), {
       params: Promise.resolve({ id: "strategy-1" }),

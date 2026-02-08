@@ -290,7 +290,7 @@ describe("MapView", () => {
     ).toBeInTheDocument();
     /* Bottom sheet drag handle is present */
     expect(
-      screen.getByRole("separator", { name: /resize lga detail panel/i }),
+      screen.getByRole("slider", { name: /resize lga detail panel/i }),
     ).toBeInTheDocument();
   });
 

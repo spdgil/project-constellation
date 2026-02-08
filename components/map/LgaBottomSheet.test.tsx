@@ -60,10 +60,10 @@ describe("LgaBottomSheet", () => {
     expect(onClose).toHaveBeenCalledTimes(1);
   });
 
-  it("renders drag handle with separator role", () => {
+  it("renders drag handle with slider role", () => {
     render(<LgaBottomSheet lga={mockLga} deals={mockDeals} onClose={onClose} />);
 
-    const handle = screen.getByRole("separator", { name: /resize lga detail panel/i });
+    const handle = screen.getByRole("slider", { name: /resize lga detail panel/i });
     expect(handle).toBeInTheDocument();
     expect(handle).toHaveAttribute("tabindex", "0");
   });
@@ -95,7 +95,7 @@ describe("LgaBottomSheet", () => {
   it("ArrowUp on handle changes snap from half to full", () => {
     render(<LgaBottomSheet lga={mockLga} deals={mockDeals} onClose={onClose} />);
 
-    const handle = screen.getByRole("separator", { name: /resize lga detail panel/i });
+    const handle = screen.getByRole("slider", { name: /resize lga detail panel/i });
     fireEvent.keyDown(handle, { key: "ArrowUp" });
 
     /* Full button should now appear active (visual check via className) */
@@ -106,7 +106,7 @@ describe("LgaBottomSheet", () => {
   it("ArrowDown on handle changes snap from half to peek", () => {
     render(<LgaBottomSheet lga={mockLga} deals={mockDeals} onClose={onClose} />);
 
-    const handle = screen.getByRole("separator", { name: /resize lga detail panel/i });
+    const handle = screen.getByRole("slider", { name: /resize lga detail panel/i });
     fireEvent.keyDown(handle, { key: "ArrowDown" });
 
     const peekBtn = screen.getByRole("button", { name: /resize to peek/i });

@@ -35,11 +35,14 @@ export default async function LgaDetailPage({ params }: Props) {
   );
 
   return (
-    <LgaDetail
-      lga={lga}
-      linkedDeals={linkedDeals}
-      sectorOpportunities={sectorOpportunities}
-      linkedStrategies={linkedStrategies}
-    />
+    <div>
+      <h1 className="sr-only">LGA detail</h1>
+      <LgaDetail
+        lga={lga}
+        linkedDeals={linkedDeals}
+        sectorOpportunities={sectorOpportunities}
+        linkedStrategies={linkedStrategies}
+      />
+    </div>
   );
 }

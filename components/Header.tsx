@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useSession, signOut } from "next-auth/react";
@@ -31,9 +32,11 @@ export function Header() {
           {session?.user && (
             <div className="flex items-center gap-3">
               {session.user.image && (
-                <img
+                <Image
                   src={session.user.image}
-                  alt=""
+                  alt={session.user.name ?? "User avatar"}
+                  width={28}
+                  height={28}
                   className="w-7 h-7 rounded-full"
                   referrerPolicy="no-referrer"
                 />

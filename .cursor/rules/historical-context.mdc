@@ -75,3 +75,18 @@ const onClose: () => void = vi.fn();
 **Rule:** Do NOT change `test:run` back to `vitest run` directly. If Vitest is upgraded and the hang is fixed upstream, the wrapper can be removed.
 
 **Status:** Workaround in place; monitor Vitest releases for upstream fix.
+
+## 8. Prisma Migration Drift on Local Dev DB
+
+**Issue:** Running `prisma migrate dev` creates migration files and applies them to the local DB. If those files are later removed (squash, cleanup, or git reset), the local DB remembers them but the directory doesn't, causing permanent drift. Subsequent `prisma migrate dev --create-only` refuses to run.
+
+**Root cause:** Prisma tracks applied migrations in `_prisma_migrations` table. When files disappear from `prisma/migrations/`, Prisma sees "applied but absent" entries.
+
+**Rules:**
+1. **Never delete migration files** that have been applied to any database. If you need to squash, use `prisma migrate diff` to generate a baseline and coordinate across all environments.
+2. **Schema changes that require a migration** (adding/removing columns, changing types, new enums) must be created and committed in the same PR. Do NOT change `schema.prisma` without the corresponding migration file.
+3. **If drift occurs**, the fix is `prisma migrate reset --force` on the local dev DB only — never on production. After reset, re-seed with `npm run db:seed`.
+4. **For CI/production**, only `prisma migrate deploy` is used (via `vercel-build`). It applies migrations in order and never creates or deletes them.
+5. **Prefer non-breaking schema changes** (e.g. adding nullable columns, adding new tables) that don't require data migration. Save breaking changes (type conversions, column renames) for dedicated PRs with tested migration SQL.
+
+**Status:** Active rule. The `ConstraintEvent.entityType` column intentionally remains `String` (not an enum) to avoid requiring a migration for the code health sweep.

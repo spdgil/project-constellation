@@ -27,12 +27,9 @@ import type {
   LgaOpportunityHypothesis,
   OpportunityType,
   ConstraintEvent,
-  Constraint,
   SectorOpportunity,
-  SectorOpportunitySectionId,
   SectorDevelopmentStrategy,
   StrategyStatus,
-  StrategyDocument,
   StrategyComponentId,
   StrategyGrade,
   StrategyGradeMissingElement,
@@ -45,6 +42,7 @@ import { gradeLetterFromDb } from "./enum-maps";
 
 const DEAL_INCLUDE = {
   lgas: true,
+  opportunityType: true,
   evidence: true,
   notes: { orderBy: { createdAt: "desc" as const } },
   gateChecklist: true,

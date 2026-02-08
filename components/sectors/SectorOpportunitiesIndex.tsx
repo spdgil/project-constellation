@@ -48,7 +48,7 @@ export function SectorOpportunitiesIndex({
   sectorOpportunities,
   sectorStats,
   totalDeals,
-  totalStrategies,
+  totalStrategies: _totalStrategies,
 }: SectorOpportunitiesIndexProps) {
   const [query, setQuery] = useState("");
   const [tagFilter, setTagFilter] = useState("");

@@ -6,14 +6,17 @@ export default async function DealsListPage() {
     await loadPageDataWithDealPaging("deals list", { limit: 50, offset: 0 });
 
   return (
-    <DealsSearch
-      deals={deals}
-      opportunityTypes={opportunityTypes}
-      lgas={lgas}
-      sectorCount={sectorOpportunities.length}
-      dealTotal={dealTotal}
-      dealLimit={dealLimit}
-      dealOffset={dealOffset}
-    />
+    <div>
+      <h1 className="sr-only">Deals list</h1>
+      <DealsSearch
+        deals={deals}
+        opportunityTypes={opportunityTypes}
+        lgas={lgas}
+        sectorCount={sectorOpportunities.length}
+        dealTotal={dealTotal}
+        dealLimit={dealLimit}
+        dealOffset={dealOffset}
+      />
+    </div>
   );
 }

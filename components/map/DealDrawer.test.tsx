@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
-import { render, screen, within, fireEvent } from "@testing-library/react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { DealDrawer } from "./DealDrawer";
 import type { Deal, LGA, OpportunityType } from "@/lib/types";
 
@@ -206,7 +206,7 @@ describe("DealDrawer", () => {
       readinessState: "structurable-but-stalled" as const,
     };
 
-    const { rerender } = render(
+    const { unmount } = render(
       <DealDrawer
         deal={mockDeal}
         opportunityTypes={mockOpportunityTypes}
@@ -217,8 +217,9 @@ describe("DealDrawer", () => {
 
     expect(screen.getByText("Feasibility underway")).toBeInTheDocument();
 
-    // Simulate re-render with updated deal (as if parent re-fetched from DB)
-    rerender(
+    // Simulate remount with updated deal (as if parent re-mounted)
+    unmount();
+    render(
       <DealDrawer
         deal={updatedDeal}
         opportunityTypes={mockOpportunityTypes}

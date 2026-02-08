@@ -248,12 +248,7 @@ export async function POST(_request: Request, context: RouteContext) {
 
     logger.error("Strategy grading failed", { strategyId: id, error: String(error) });
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : "An unexpected error occurred.",
-      },
+      { error: "An unexpected error occurred." },
       { status: 500 },
     );
   }

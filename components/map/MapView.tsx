@@ -60,9 +60,20 @@ export function MapView({
   const selectedDeal = selectedDealId
     ? (deals.find((d) => d.id === selectedDealId) ?? null)
     : null;
+  const selectedLgaName = selectedLgaId
+    ? lgas.find((l) => l.id === selectedLgaId)?.name ?? null
+    : null;
+  const liveMessage = selectedDeal
+    ? `Selected deal: ${selectedDeal.name}`
+    : selectedLgaName
+      ? `Selected LGA: ${selectedLgaName}`
+      : "No selection";
 
   return (
     <div className="flex flex-col h-full min-h-0">
+      <div className="sr-only" aria-live="polite" aria-atomic="true">
+        {liveMessage}
+      </div>
       {boundaryError && (
         <p className="text-sm text-red-700 bg-red-50 border border-red-200 px-3 py-2 mb-2" role="alert">
           {boundaryError}
@@ -102,6 +113,7 @@ export function MapView({
         </div>
         {selectedDeal && (
           <DealDrawer
+            key={selectedDeal.id}
             deal={selectedDeal}
             opportunityTypes={opportunityTypes}
             lgas={lgas}

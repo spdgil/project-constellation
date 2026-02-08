@@ -5,10 +5,13 @@ export default async function DealsAnalysisPage() {
   const { lgas, deals, opportunityTypes } = await loadPageData("deals analysis");
 
   return (
-    <DealsAnalysis
-      deals={deals}
-      opportunityTypes={opportunityTypes}
-      lgas={lgas}
-    />
+    <div>
+      <h1 className="sr-only">Deals analysis</h1>
+      <DealsAnalysis
+        deals={deals}
+        opportunityTypes={opportunityTypes}
+        lgas={lgas}
+      />
+    </div>
   );
 }

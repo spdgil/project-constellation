@@ -7,7 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { PatchSectorSchema } from "@/lib/validations";
+import { IdParamSchema, PatchSectorSchema } from "@/lib/validations";
 import { logger } from "@/lib/logger";
 import {
   rateLimitOrResponse,
@@ -23,6 +23,17 @@ type Ctx = { params: Promise<{ id: string }> };
 export async function GET(_req: NextRequest, ctx: Ctx) {
   const { id } = await ctx.params;
   try {
+    const idError = validateIdParam(id, "sector id");
+    if (idError) return idError;
+
+    const rateLimitResponse = await rateLimitOrResponse(
+      _req,
+      "sector-read",
+      120,
+      60_000,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
+
     const row = await prisma.sectorOpportunity.findUnique({ where: { id } });
     if (!row) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
@@ -43,6 +54,9 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
 export async function PATCH(req: NextRequest, ctx: Ctx) {
   const { id } = await ctx.params;
   try {
+    const idError = validateIdParam(id, "sector id");
+    if (idError) return idError;
+
     const authResponse = await requireAuthOrResponse();
     if (authResponse) return authResponse;
 
@@ -102,4 +116,12 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
       { status: 500 },
     );
   }
+}
+
+function validateIdParam(value: string, label: string) {
+  const parsed = IdParamSchema.safeParse(value);
+  if (!parsed.success) {
+    return NextResponse.json({ error: `Invalid ${label}` }, { status: 400 });
+  }
+  return null;
 }

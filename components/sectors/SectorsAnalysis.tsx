@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import type { Deal, DealStage, LGA, OpportunityType, SectorOpportunity } from "@/lib/types";
+import type { Deal, DealStage, SectorOpportunity } from "@/lib/types";
 import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
 import { STAGE_LABELS, CONSTRAINT_LABELS } from "@/lib/labels";
 import { STAGE_COLOUR_CLASSES } from "@/lib/stage-colours";
@@ -15,9 +15,7 @@ import { PipelineSummaryBar } from "@/components/ui/PipelineSummaryBar";
 
 export interface SectorsAnalysisProps {
   deals: Deal[];
-  opportunityTypes: OpportunityType[];
   sectorOpportunities: SectorOpportunity[];
-  lgas: LGA[];
   sectorCount: number;
 }
 
@@ -127,9 +125,7 @@ const STAGE_BAR_COLOURS: Record<DealStage, string> = {
 
 export function SectorsAnalysis({
   deals: baseDeals,
-  opportunityTypes,
   sectorOpportunities,
-  lgas,
   sectorCount,
 }: SectorsAnalysisProps) {
   const deals = useDealsWithOverrides(baseDeals);

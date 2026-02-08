@@ -15,3 +15,20 @@ test("deals list renders", async ({ page }) => {
   await page.goto("/deals/list");
   await expect(page.getByTestId("deals-results-list")).toBeVisible();
 });
+
+test("deals list filters by query", async ({ page }) => {
+  await page.goto("/deals/list");
+  const input = page.getByTestId("deals-search-input");
+  await input.fill("RCOE");
+  await expect(page.getByTestId("deals-count")).toContainText("deal");
+});
+
+test("map page renders map canvas", async ({ page }) => {
+  await page.goto("/lga/map");
+  await expect(page.getByTestId("map-canvas")).toBeVisible();
+});
+
+test("deal detail page renders", async ({ page }) => {
+  await page.goto("/deals/demo-flexilab");
+  await expect(page.getByTestId("deal-pathway-stepper")).toBeVisible();
+});

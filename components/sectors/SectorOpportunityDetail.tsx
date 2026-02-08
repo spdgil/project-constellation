@@ -30,19 +30,6 @@ export interface SectorOpportunityDetailProps {
   linkedLgas: LGA[];
 }
 
-/** Section number → colour theme for subtle differentiation. */
-const SECTION_THEME: Record<string, ColourFamily> = {
-  "2": "emerald",  // Structural Drivers
-  "3": "blue",     // Economic Role
-  "4": "amber",    // Value Chain
-  "5": "violet",   // Capability Requirements
-  "6": "amber",    // Constraints
-  "7": "blue",     // Workforce
-  "8": "emerald",  // Enabling Conditions
-  "9": "violet",   // Maturity
-  "10": "emerald", // Strategic Implications
-};
-
 const SECTION_IDS: SectorOpportunitySectionId[] = [
   "1", "2", "3", "4", "5", "6", "7", "8", "9", "10",
 ];

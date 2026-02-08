@@ -8,11 +8,20 @@
 
 import { NextResponse } from "next/server";
 import { logger } from "@/lib/logger";
+import { rateLimitOrResponse } from "@/lib/api-guards";
 import type { GeoJSONFeatureCollection } from "@/lib/types";
 import boundaryData from "@/data/qld-lga-boundaries.json";
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const rateLimitResponse = await rateLimitOrResponse(
+      request,
+      "boundaries-read",
+      120,
+      60_000,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
+
     return NextResponse.json(boundaryData as GeoJSONFeatureCollection, {
       headers: {
         "Cache-Control": "public, max-age=3600, stale-while-revalidate=86400",

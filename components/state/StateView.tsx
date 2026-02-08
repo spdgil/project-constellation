@@ -7,11 +7,9 @@ import type { Deal, LGA, OpportunityType } from "@/lib/types";
 import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
 import {
   countByReadiness,
-  countByConstraint,
   topConstraints,
   constraintSummaryByLga,
 } from "@/lib/opportunities";
-import { READINESS_LABELS } from "@/lib/labels";
 import { AccordionSection } from "@/components/ui/AccordionSection";
 
 // Lazy-load MapView to avoid shipping Mapbox JS when the user is on the
@@ -29,11 +27,7 @@ const TAB_LABELS: Record<Tab, string> = {
   map: "Map",
 };
 
-const SECTION_IDS = [
-  "pipeline-by-ot",
-  "constraint-by-ot",
-  "constraint-by-lga",
-] as const;
+type SectionId = "pipeline-by-ot" | "constraint-by-ot" | "constraint-by-lga";
 
 export interface StateViewProps {
   opportunityTypes: OpportunityType[];
@@ -53,7 +47,7 @@ export function StateView({
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
 
-  const toggleSection = useCallback((id: (typeof SECTION_IDS)[number]) => {
+  const toggleSection = useCallback((id: SectionId) => {
     setOpenSections((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);

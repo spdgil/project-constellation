@@ -5,6 +5,13 @@ export default async function LgaMapPage() {
   const { lgas, deals, opportunityTypes } = await loadPageData("lga map");
 
   return (
-    <MapPageView lgas={lgas} deals={deals} opportunityTypes={opportunityTypes} />
+    <div>
+      <h1 className="sr-only">LGA map</h1>
+      <MapPageView
+        lgas={lgas}
+        deals={deals}
+        opportunityTypes={opportunityTypes}
+      />
+    </div>
   );
 }

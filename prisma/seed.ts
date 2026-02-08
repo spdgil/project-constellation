@@ -1,10 +1,17 @@
-// @ts-nocheck — Seed script uses dynamic JSON data with string-typed enum values
 /**
  * Seed script — populates the database from static JSON files.
  * Run with: npm run db:seed
  */
 
 import "dotenv/config";
+import type {
+  ArtefactStatus,
+  Constraint,
+  DealStage,
+  GateStatus,
+  GradeLetter,
+  ReadinessState,
+} from "../lib/generated/prisma/client";
 
 // Dynamic import of generated Prisma client (ESM)
 async function run() {
@@ -28,7 +35,7 @@ async function run() {
   // Value mappers: JSON kebab-case → Prisma enum underscore-case
   // ==========================================================================
 
-  const stageMap: Record<string, string> = {
+  const stageMap: Record<string, DealStage> = {
     definition: "definition",
     "pre-feasibility": "pre_feasibility",
     feasibility: "feasibility",
@@ -36,7 +43,7 @@ async function run() {
     "transaction-close": "transaction_close",
   };
 
-  const readinessMap: Record<string, string> = {
+  const readinessMap: Record<string, ReadinessState> = {
     "no-viable-projects": "no_viable_projects",
     "conceptual-interest": "conceptual_interest",
     "feasibility-underway": "feasibility_underway",
@@ -45,7 +52,7 @@ async function run() {
     "scaled-and-replicable": "scaled_and_replicable",
   };
 
-  const constraintMap: Record<string, string> = {
+  const constraintMap: Record<string, Constraint> = {
     "revenue-certainty": "revenue_certainty",
     "offtake-demand-aggregation": "offtake_demand_aggregation",
     "planning-and-approvals": "planning_and_approvals",
@@ -58,19 +65,19 @@ async function run() {
     "common-user-infrastructure-gap": "common_user_infrastructure_gap",
   };
 
-  const gateStatusMap: Record<string, string> = {
+  const gateStatusMap: Record<string, GateStatus> = {
     pending: "pending",
     satisfied: "satisfied",
     "not-applicable": "not_applicable",
   };
 
-  const artefactStatusMap: Record<string, string> = {
+  const artefactStatusMap: Record<string, ArtefactStatus> = {
     "not-started": "not_started",
     "in-progress": "in_progress",
     complete: "complete",
   };
 
-  const gradeLetterMap: Record<string, string> = {
+  const gradeLetterMap: Record<string, GradeLetter> = {
     A: "A",
     "A-": "A_minus",
     "A_minus": "A_minus",

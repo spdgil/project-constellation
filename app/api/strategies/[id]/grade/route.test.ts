@@ -20,7 +20,6 @@ vi.mock("openai", () => {
 });
 
 /* Mock Prisma */
-const mockFindUnique = vi.fn();
 const mockUpsert = vi.fn();
 vi.mock("@/lib/db/prisma", () => ({
   prisma: {

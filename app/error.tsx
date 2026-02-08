@@ -12,13 +12,18 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const message =
+    process.env.NODE_ENV === "development"
+      ? error.message || "An unexpected error occurred. Please try again."
+      : "An unexpected error occurred. Please try again.";
+
   return (
     <div className="max-w-lg mx-auto py-20 text-center" role="alert">
       <h1 className="font-heading text-2xl font-normal text-[#2C2C2C] mb-4">
         Something went wrong
       </h1>
       <p className="text-sm text-[#6B6B6B] leading-relaxed mb-6">
-        {error.message || "An unexpected error occurred. Please try again."}
+        {message}
       </p>
       <button
         type="button"

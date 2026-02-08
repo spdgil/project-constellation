@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type {
@@ -21,11 +21,7 @@ import {
   CONSTRAINT_LABELS,
   ARTEFACT_STATUS_LABELS,
 } from "@/lib/labels";
-import {
-  STAGE_COLOUR_CLASSES,
-  READINESS_COLOUR_CLASSES,
-  ARTEFACT_STATUS_COLOUR_CLASSES,
-} from "@/lib/stage-colours";
+import { ARTEFACT_STATUS_COLOUR_CLASSES } from "@/lib/stage-colours";
 import { getStageGateChecklist, getStageArtefacts } from "@/lib/deal-pathway-utils";
 import { PATHWAY_STAGES } from "@/lib/pathway-data";
 import { formatDate } from "@/lib/format";
@@ -59,6 +55,9 @@ const CONSTRAINT_OPTIONS: Constraint[] = [
   "common-user-infrastructure-gap",
 ];
 
+const FOCUSABLE =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 export interface DealDetailProps {
   /** Static deal from JSON data, or null for locally-created deals. */
   deal: Deal | null;
@@ -91,6 +90,43 @@ export function DealDetail({
   const [isSaving, setIsSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const deleteDialogRef = useRef<HTMLDivElement | null>(null);
+  const deleteTriggerRef = useRef<HTMLButtonElement | null>(null);
+
+  useEffect(() => {
+    if (!showDeleteConfirm) return;
+    const root = deleteDialogRef.current;
+    if (!root) return;
+    const trigger = deleteTriggerRef.current;
+    const focusable = Array.from(root.querySelectorAll<HTMLElement>(FOCUSABLE));
+    focusable[0]?.focus();
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        setShowDeleteConfirm(false);
+        return;
+      }
+      if (e.key !== "Tab") return;
+      if (focusable.length === 0) return;
+      const i = focusable.indexOf(document.activeElement as HTMLElement);
+      if (e.shiftKey) {
+        if (i <= 0) {
+          e.preventDefault();
+          focusable[focusable.length - 1]?.focus();
+        }
+      } else {
+        if (i === -1 || i >= focusable.length - 1) {
+          e.preventDefault();
+          focusable[0]?.focus();
+        }
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown, true);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown, true);
+      trigger?.focus();
+    };
+  }, [showDeleteConfirm]);
 
   /* ---------- Editing toggle ---------- */
 
@@ -319,7 +355,6 @@ export function DealDetail({
   const gateEntries = getStageGateChecklist(deal.gateChecklist ?? {}, deal.stage);
   const gateSatisfied = gateEntries.filter((e) => e.status === "satisfied").length;
   const gateTotal = gateEntries.length;
-  const allGatesSatisfied = gateSatisfied === gateTotal && gateTotal > 0;
 
   const artefactEntries = getStageArtefacts(deal.artefacts ?? {}, deal.stage);
   const artefactComplete = artefactEntries.filter((e) => e.status === "complete").length;
@@ -348,6 +383,7 @@ export function DealDetail({
                 type="button"
                 onClick={() => setShowDeleteConfirm(true)}
                 aria-label="Delete deal"
+                ref={deleteTriggerRef}
                 className="h-9 px-3 text-sm text-[#9A9A9A] hover:text-red-600 transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500 focus-visible:ring-offset-2 focus-visible:ring-offset-[#FAF9F7]"
               >
                 Delete
@@ -383,12 +419,19 @@ export function DealDetail({
           role="dialog"
           aria-modal="true"
           aria-label="Confirm delete"
+          aria-describedby="delete-deal-description"
         >
-          <div className="bg-white border border-[#E8E6E3] shadow-lg max-w-sm w-full mx-4 p-6 space-y-4">
+          <div
+            className="bg-white border border-[#E8E6E3] shadow-lg max-w-sm w-full mx-4 p-6 space-y-4"
+            ref={deleteDialogRef}
+          >
             <h3 className="font-heading text-base font-medium text-[#2C2C2C]">
               Delete deal?
             </h3>
-            <p className="text-sm text-[#6B6B6B] leading-relaxed">
+            <p
+              className="text-sm text-[#6B6B6B] leading-relaxed"
+              id="delete-deal-description"
+            >
               This will permanently remove{" "}
               <span className="font-medium text-[#2C2C2C]">{deal.name}</span>{" "}
               from your local deals. This action cannot be undone.

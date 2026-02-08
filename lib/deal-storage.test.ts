@@ -8,7 +8,7 @@ import {
   getConstraintEvents,
   appendConstraintEvent,
 } from "./deal-storage";
-import type { Deal, ConstraintEvent } from "./types";
+import type { Deal } from "./types";
 
 function createMockStorage(): Storage {
   const store: Record<string, string> = {};

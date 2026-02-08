@@ -67,11 +67,14 @@ export default async function SectorsListPage() {
   const sectorStats = buildSectorStats(deals, strategies);
 
   return (
-    <SectorOpportunitiesIndex
-      sectorOpportunities={sectorOpportunities}
-      sectorStats={sectorStats}
-      totalDeals={deals.length}
-      totalStrategies={strategies.length}
-    />
+    <div>
+      <h1 className="sr-only">Sector opportunities</h1>
+      <SectorOpportunitiesIndex
+        sectorOpportunities={sectorOpportunities}
+        sectorStats={sectorStats}
+        totalDeals={deals.length}
+        totalStrategies={strategies.length}
+      />
+    </div>
   );
 }

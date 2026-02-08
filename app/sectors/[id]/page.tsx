@@ -44,11 +44,14 @@ export default async function SectorPage({ params }: SectorPageProps) {
   const linkedLgas = lgas.filter((l) => lgaIdSet.has(l.id));
 
   return (
-    <SectorOpportunityDetail
-      sectorOpportunity={sectorOpportunity}
-      linkedStrategies={linkedStrategies}
-      linkedDeals={linkedDeals}
-      linkedLgas={linkedLgas}
-    />
+    <div>
+      <h1 className="sr-only">Sector opportunity details</h1>
+      <SectorOpportunityDetail
+        sectorOpportunity={sectorOpportunity}
+        linkedStrategies={linkedStrategies}
+        linkedDeals={linkedDeals}
+        linkedLgas={linkedLgas}
+      />
+    </div>
   );
 }

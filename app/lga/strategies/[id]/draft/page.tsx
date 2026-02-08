@@ -17,5 +17,10 @@ export default async function StrategyDraftPage({
     notFound();
   }
 
-  return <StrategyDraft strategy={strategy} />;
+  return (
+    <div>
+      <h1 className="sr-only">Strategy draft</h1>
+      <StrategyDraft strategy={strategy} />
+    </div>
+  );
 }

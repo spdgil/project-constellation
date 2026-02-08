@@ -134,7 +134,10 @@ describe("DealsSearch", () => {
     fireEvent.click(screen.getByRole("button", { name: /next/i }));
 
     await waitFor(() => {
-      expect(fetchMock).toHaveBeenCalledWith("/api/deals?limit=1&offset=1");
+      expect(fetchMock).toHaveBeenCalledWith(
+        "/api/deals?limit=1&offset=1",
+        expect.any(Object),
+      );
     });
   });
 

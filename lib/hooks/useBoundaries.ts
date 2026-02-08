@@ -32,7 +32,8 @@ export function useBoundaries(
 
   useEffect(() => {
     if (hasOverride) return;
-    fetch("/api/boundaries")
+    const controller = new AbortController();
+    fetch("/api/boundaries", { signal: controller.signal })
       .then((r) => {
         if (!r.ok) throw new Error(`HTTP ${r.status}`);
         return r.json();
@@ -41,6 +42,7 @@ export function useBoundaries(
         if (data?.features?.length) setFetched(data);
       })
       .catch((err: unknown) => {
+        if (err instanceof DOMException && err.name === "AbortError") return;
         logClientError(
           "Failed to fetch LGA boundaries",
           { error: String(err) },
@@ -50,6 +52,7 @@ export function useBoundaries(
           "Could not load LGA boundaries. The map may be incomplete.",
         );
       });
+    return () => controller.abort();
   }, [hasOverride]);
 
   return {

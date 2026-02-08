@@ -6,11 +6,25 @@
 import { NextResponse } from "next/server";
 import { loadSectorOpportunities } from "@/lib/db/queries";
 import { logger } from "@/lib/logger";
+import { rateLimitOrResponse } from "@/lib/api-guards";
 
-export async function GET() {
+/** List all sector opportunities for selectors. */
+export async function GET(request: Request) {
   try {
+    const rateLimitResponse = await rateLimitOrResponse(
+      request,
+      "sector-read",
+      120,
+      60_000,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
+
     const sectors = await loadSectorOpportunities();
-    return NextResponse.json(sectors);
+    return NextResponse.json(sectors, {
+      headers: {
+        "Cache-Control": "public, max-age=300, stale-while-revalidate=3600",
+      },
+    });
   } catch (error) {
     logger.error("GET /api/sectors failed", { error: String(error) });
     return NextResponse.json(

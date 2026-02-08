@@ -5,14 +5,6 @@ import type {
   StrategyGradeMissingElement,
 } from "@/lib/types";
 
-interface GradingLLMResponse {
-  grade_letter: string;
-  grade_rationale_short: string;
-  evidence_notes_by_component: Record<string, string>;
-  missing_elements: Array<{ component_id: string; reason: string }>;
-  scope_discipline_notes: string;
-}
-
 export function buildStrategyGradeSystemPrompt(): string {
   return `You are an expert evaluator of sector development strategies. Your task is to grade a strategy against the six-component blueprint for sector development.
 

@@ -21,6 +21,6 @@ export async function middleware(
 
 export const config = {
   matcher: [
-    "/((?!api/auth|api/health|api/log|about|_next|favicon\\.ico|images).*)",
+    "/((?!api/auth|api/health|about|_next|favicon\\.ico|images).*)",
   ],
 };

@@ -14,5 +14,10 @@ export default async function EditSectorPage({ params }: EditSectorPageProps) {
     notFound();
   }
 
-  return <SectorOpportunityEdit sectorOpportunity={sectorOpportunity} />;
+  return (
+    <div>
+      <h1 className="sr-only">Edit sector opportunity</h1>
+      <SectorOpportunityEdit sectorOpportunity={sectorOpportunity} />
+    </div>
+  );
 }

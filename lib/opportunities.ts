@@ -3,7 +3,7 @@
  * Computed from deals (with localStorage overrides applied upstream).
  */
 
-import type { Deal, OpportunityType, LGA, ReadinessState, Constraint } from "./types";
+import type { Deal, LGA, ReadinessState, Constraint } from "./types";
 import { READINESS_LABELS, CONSTRAINT_LABELS } from "./labels";
 
 export interface ReadinessCount {

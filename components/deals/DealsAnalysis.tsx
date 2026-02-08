@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 
-import type { Deal, DealStage, Constraint, ReadinessState, LGA, OpportunityType } from "@/lib/types";
+import type { Deal, DealStage, ReadinessState, LGA, OpportunityType } from "@/lib/types";
 import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
 import { STAGE_LABELS, READINESS_LABELS, CONSTRAINT_LABELS } from "@/lib/labels";
 import { STAGE_COLOUR_CLASSES, READINESS_COLOUR_CLASSES } from "@/lib/stage-colours";
@@ -162,17 +162,20 @@ export function DealsAnalysis({ deals: baseDeals, opportunityTypes, lgas }: Deal
     [stageDistribution],
   );
 
-  const readinessOrder: ReadinessState[] = [
-    "no-viable-projects",
-    "conceptual-interest",
-    "feasibility-underway",
-    "structurable-but-stalled",
-    "investable-with-minor-intervention",
-    "scaled-and-replicable",
-  ];
+  const readinessOrder = useMemo<ReadinessState[]>(
+    () => [
+      "no-viable-projects",
+      "conceptual-interest",
+      "feasibility-underway",
+      "structurable-but-stalled",
+      "investable-with-minor-intervention",
+      "scaled-and-replicable",
+    ],
+    [],
+  );
   const readinessDistribution = useMemo(
     () => countBy(deals, (d) => d.readinessState, READINESS_LABELS, readinessOrder),
-    [deals],
+    [deals, readinessOrder],
   );
   const maxReadinessCount = useMemo(
     () => Math.max(...readinessDistribution.map((s) => s.count), 1),

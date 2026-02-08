@@ -148,13 +148,13 @@ export function LgaBottomSheet({ lga, deals, onClose }: LgaBottomSheetProps) {
     >
       {/* ---- Drag handle ----------------------------------------- */}
       <div
-        role="separator"
+        role="slider"
+        tabIndex={0}
         aria-orientation="horizontal"
         aria-valuenow={Math.round((currentHeight / containerH) * 100)}
         aria-valuemin={Math.round(SNAP_FRACTIONS.peek * 100)}
         aria-valuemax={Math.round(SNAP_FRACTIONS.full * 100)}
         aria-label="Resize LGA detail panel"
-        tabIndex={0}
         className="flex items-center justify-center py-2 cursor-ns-resize shrink-0 select-none touch-none focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-inset"
         onPointerDown={onPointerDown}
         onPointerMove={onPointerMove}

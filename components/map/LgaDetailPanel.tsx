@@ -5,13 +5,12 @@ import type { LGA, Deal } from "@/lib/types";
 import { CONSTRAINT_LABELS } from "@/lib/labels";
 import { AccordionSection } from "@/components/ui/AccordionSection";
 
-const SECTION_IDS = [
-  "summary",
-  "opportunity-hypotheses",
-  "active-deals",
-  "repeated-constraints",
-  "evidence-notes",
-] as const;
+type SectionId =
+  | "summary"
+  | "opportunity-hypotheses"
+  | "active-deals"
+  | "repeated-constraints"
+  | "evidence-notes";
 
 export interface LgaDetailPanelProps {
   lga: LGA;
@@ -24,7 +23,7 @@ export function LgaDetailPanel({ lga, deals }: LgaDetailPanelProps) {
   const panelId = useId();
   const [openSections, setOpenSections] = useState<Set<string>>(new Set(["summary"]));
 
-  const toggleSection = useCallback((id: (typeof SECTION_IDS)[number]) => {
+  const toggleSection = useCallback((id: SectionId) => {
     setOpenSections((prev) => {
       const next = new Set(prev);
       if (next.has(id)) next.delete(id);

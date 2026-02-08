@@ -2,7 +2,6 @@
 
 import { useCallback, useRef, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 import type { Deal, LGA, OpportunityType } from "@/lib/types";
 import {
@@ -20,6 +19,8 @@ import {
 } from "@/lib/extract-text";
 import type { MemoAnalysisResult } from "@/lib/ai/types";
 import { logClientError, logClientWarn } from "@/lib/client-logger";
+import { InvestmentMemoUploadPanel } from "./InvestmentMemoUploadPanel";
+import { InvestmentMemoLocationSection } from "./InvestmentMemoLocationSection";
 
 // =============================================================================
 // Props
@@ -39,7 +40,6 @@ export function InvestmentMemo({
   opportunityTypes,
   lgas,
 }: InvestmentMemoProps) {
-  const router = useRouter();
 
   // File state
   const [file, setFile] = useState<File | null>(null);
@@ -177,7 +177,9 @@ export function InvestmentMemo({
   const lgaCatalogue = lgas.map((l) => ({ id: l.id, name: l.name }));
 
   /** Apply the AI's opportunity type suggestion to local state. */
-  const applyOtSuggestion = useCallback(
+  const applyOtSuggestion: (
+    suggestion: MemoAnalysisResult["suggestedOpportunityType"],
+  ) => void = useCallback(
     (suggestion: MemoAnalysisResult["suggestedOpportunityType"]) => {
       setIsOverridingOt(false);
       setIsCreatingNewOt(false);
@@ -255,7 +257,7 @@ export function InvestmentMemo({
         setProcessingStep(null);
       }
     },
-    []
+    [applyOtSuggestion, lgaCatalogue, otCatalogue, populateDraft]
   );
 
   // --- Process file: extract text then immediately analyse ---
@@ -318,7 +320,7 @@ export function InvestmentMemo({
         setProcessingStep(null);
       }
     },
-    []
+    [applyOtSuggestion, lgaCatalogue, otCatalogue, populateDraft]
   );
 
   // --- Retry analysis (skips extraction, reuses cached text) ---
@@ -451,6 +453,7 @@ export function InvestmentMemo({
         .filter(Boolean);
 
     // Create the deal via API
+    const memoRef = result.memoReference;
     const dealBody: Record<string, unknown> = {
       name,
       opportunityTypeId: otId,
@@ -479,12 +482,14 @@ export function InvestmentMemo({
       marketDrivers: draftMarketDrivers.trim() || result.marketDrivers,
       governmentPrograms: result.governmentPrograms,
       timeline: result.timeline,
-      evidence: [
-        {
-          label: result.memoReference.label,
-          pageRef: result.memoReference.pageRef,
-        },
-      ],
+      evidence: memoRef
+        ? [
+            {
+              label: memoRef.label,
+              pageRef: memoRef.pageRef,
+            },
+          ]
+        : [],
     };
 
     try {
@@ -506,7 +511,7 @@ export function InvestmentMemo({
         try {
           const formData = new FormData();
           formData.append("file", file);
-          formData.append("label", result.memoReference?.label || file.name);
+          formData.append("label", memoRef?.label || file.name);
           await fetch(`/api/deals/${newId}/documents`, {
             method: "POST",
             body: formData,
@@ -544,6 +549,7 @@ export function InvestmentMemo({
     if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
+  const lgaErrorId = "draft-lga-error";
 
   return (
     <div className="space-y-8">
@@ -554,131 +560,20 @@ export function InvestmentMemo({
 
       {/* Two-column layout */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
-        {/* ── Left: Upload ────────────────────────────── */}
-        <div className="space-y-5">
-          {/* File upload area */}
-          <div>
-            <p className="block text-[10px] uppercase tracking-wider text-[#6B6B6B] mb-1.5">
-              Document
-            </p>
-
-            {!file ? (
-              <div
-                data-testid="drop-zone"
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                onClick={() => fileInputRef.current?.click()}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    fileInputRef.current?.click();
-                  }
-                }}
-                role="button"
-                tabIndex={0}
-                aria-label="Upload document"
-                className={`
-                  w-full border-2 border-dashed px-4 py-10 text-center cursor-pointer
-                  transition-colors duration-200
-                  focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2
-                  ${
-                    isDragging
-                      ? "border-[#7A6B5A] bg-amber-50/40"
-                      : "border-[#E8E6E3] bg-[#FAF9F7] hover:border-[#C8C4BF] hover:bg-white"
-                  }
-                `}
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                  className="mx-auto h-8 w-8 text-[#C8C4BF] mb-3"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 16.5V9.75m0 0 3 3m-3-3-3 3M6.75 19.5a4.5 4.5 0 0 1-1.41-8.775 5.25 5.25 0 0 1 10.233-2.33 3 3 0 0 1 3.758 3.848A3.752 3.752 0 0 1 18 19.5H6.75Z"
-                  />
-                </svg>
-                <p className="text-sm text-[#6B6B6B]">
-                  <span className="text-[#7A6B5A] font-medium">
-                    Click to upload
-                  </span>{" "}
-                  or drag and drop
-                </p>
-                <p className="text-[10px] text-[#999] mt-1.5">
-                  PDF, TXT, MD, or CSV (max 20 MB)
-                </p>
-              </div>
-            ) : (
-              <div className="border border-[#E8E6E3] bg-white px-4 py-3 flex items-center gap-3">
-                <div className="shrink-0 h-10 w-10 bg-[#F5F3F0] border border-[#E8E6E3] flex items-center justify-center">
-                  <span className="text-[10px] font-medium uppercase text-[#6B6B6B]">
-                    {file.name.split(".").pop()}
-                  </span>
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p
-                    className="text-sm text-[#2C2C2C] truncate"
-                    data-testid="file-name"
-                  >
-                    {file.name}
-                  </p>
-                  <p className="text-[10px] text-[#999]">
-                    {formatBytes(file.size)}
-                  </p>
-                </div>
-                <button
-                  onClick={clearFile}
-                  aria-label="Remove file"
-                  className="shrink-0 text-[#999] hover:text-[#2C2C2C] transition-colors p-1"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                    fill="currentColor"
-                    className="h-4 w-4"
-                    aria-hidden="true"
-                  >
-                    <path d="M6.28 5.22a.75.75 0 0 0-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 1 0 1.06 1.06L10 11.06l3.72 3.72a.75.75 0 1 0 1.06-1.06L11.06 10l3.72-3.72a.75.75 0 0 0-1.06-1.06L10 8.94 6.28 5.22Z" />
-                  </svg>
-                </button>
-              </div>
-            )}
-
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept={ACCEPTED_EXTENSIONS}
-              onChange={handleFileChange}
-              className="sr-only"
-              data-testid="file-input"
-              aria-label="Upload document"
-            />
-          </div>
-
-          {/* Error with retry */}
-          {error && (
-            <div className="space-y-3">
-              <p
-                className="text-sm text-red-700 bg-red-50 border border-red-200 px-3 py-2"
-                role="alert"
-              >
-                {error}
-              </p>
-              <button
-                onClick={handleRetry}
-                className="w-full text-sm font-medium py-2.5 px-4 bg-[#2C2C2C] text-white hover:bg-[#444] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#7A6B5A] focus:ring-offset-2"
-              >
-                Try again
-              </button>
-            </div>
-          )}
-        </div>
+        <InvestmentMemoUploadPanel
+          file={file}
+          isDragging={isDragging}
+          error={error}
+          acceptedExtensions={ACCEPTED_EXTENSIONS}
+          fileInputRef={fileInputRef}
+          onDragOver={handleDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+          onFileChange={handleFileChange}
+          onRetry={handleRetry}
+          onClearFile={clearFile}
+          formatBytes={formatBytes}
+        />
 
         {/* ── Right: Processing / Results ──────────────── */}
         <div className="lg:sticky lg:top-20">
@@ -1025,6 +920,9 @@ export function InvestmentMemo({
                       }}
                       onFocus={() => setLgaDropdownOpen(true)}
                       placeholder="Search LGAs…"
+                      aria-required="true"
+                      aria-invalid={draftLgaIds.length === 0}
+                      aria-describedby={draftLgaIds.length === 0 ? lgaErrorId : undefined}
                       className="w-full text-sm text-[#2C2C2C] border border-[#E8E6E3] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7A6B5A] focus:ring-offset-1"
                     />
                     {lgaDropdownOpen && (
@@ -1064,58 +962,23 @@ export function InvestmentMemo({
                 )}
 
                 {draftLgaIds.length === 0 && (
-                  <p className="text-xs text-red-600">At least one LGA is required</p>
-                )}
-              </div>
-
-              {/* Location (geocoding) */}
-              <div className="p-5 space-y-2">
-                <label htmlFor="draft-location" className="text-[10px] uppercase tracking-wider text-[#6B6B6B]">
-                  Location
-                </label>
-                <div className="flex gap-2">
-                  <input
-                    id="draft-location"
-                    type="text"
-                    value={draftLocationText}
-                    onChange={(e) => setDraftLocationText(e.target.value)}
-                    disabled={applied}
-                    className="flex-1 text-sm text-[#2C2C2C] border border-[#E8E6E3] rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-[#7A6B5A] focus:ring-offset-1 disabled:opacity-70 disabled:cursor-not-allowed"
-                    placeholder="e.g. Paget Industrial Estate, Mackay, QLD"
-                  />
-                  {!applied && (
-                    <button
-                      type="button"
-                      disabled={isGeocoding || !draftLocationText.trim()}
-                      onClick={() => geocodeLocation(draftLocationText)}
-                      className="shrink-0 text-xs px-3 py-2 border border-[#E8E6E3] bg-[#FAF9F7] text-[#6B6B6B] hover:border-[#C8C4BF] hover:bg-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-                    >
-                      {isGeocoding ? "Geocoding…" : "Geocode"}
-                    </button>
-                  )}
-                </div>
-
-                {/* Status */}
-                {geocodeStatus === "pending" && (
-                  <p className="text-xs text-[#6B6B6B] flex items-center gap-1.5">
-                    <span className="inline-block h-3 w-3 border border-[#E8E6E3] border-t-[#2C2C2C] rounded-full animate-spin" />
-                    Geocoding location…
-                  </p>
-                )}
-                {geocodeStatus === "success" && draftLat !== null && draftLng !== null && (
-                  <p className="text-xs text-emerald-700">
-                    Geocoded to {draftLat.toFixed(4)}, {draftLng.toFixed(4)}
-                    {geocodeMatchedPlace && (
-                      <span className="text-[#6B6B6B]"> — {geocodeMatchedPlace}</span>
-                    )}
-                  </p>
-                )}
-                {geocodeStatus === "failed" && (
-                  <p className="text-xs text-amber-700">
-                    Could not geocode — the deal will use the LGA centroid as a fallback
+                  <p id={lgaErrorId} className="text-xs text-red-600">
+                    At least one LGA is required
                   </p>
                 )}
               </div>
+
+              <InvestmentMemoLocationSection
+                draftLocationText={draftLocationText}
+                applied={applied}
+                isGeocoding={isGeocoding}
+                geocodeStatus={geocodeStatus}
+                draftLat={draftLat}
+                draftLng={draftLng}
+                geocodeMatchedPlace={geocodeMatchedPlace}
+                onLocationChange={setDraftLocationText}
+                onGeocode={geocodeLocation}
+              />
 
               {/* Summary */}
               <div className="p-5 space-y-1.5">

@@ -10,8 +10,6 @@ import type {
   Constraint,
   GateStatus,
   ArtefactStatus,
-  DealGateEntry,
-  DealArtefact,
 } from "@/lib/types";
 // deal-storage is no longer needed — all mutations go through API routes
 import {
@@ -87,18 +85,6 @@ export function DealDrawer({
   const isEditing = isControlled ? editingProp : internalEditing;
 
   /* ---------- Deal loading (adjust-state-during-render) ---------- */
-
-  const prevInitialDealRef = useRef(initialDeal);
-  if (prevInitialDealRef.current !== initialDeal) {
-    prevInitialDealRef.current = initialDeal;
-    if (!initialDeal) {
-      setDeal(null);
-      setInternalEditing(false);
-    } else {
-      setDeal(initialDeal);
-      setInternalEditing(false);
-    }
-  }
 
   /* ---------- Focus management ---------- */
 

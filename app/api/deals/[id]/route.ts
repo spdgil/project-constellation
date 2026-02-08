@@ -16,7 +16,7 @@ import {
   artefactStatusToDb,
 } from "@/lib/db/enum-maps";
 import type { Deal } from "@/lib/types";
-import { PatchDealSchema } from "@/lib/validations";
+import { IdParamSchema, PatchDealSchema } from "@/lib/validations";
 import {
   rateLimitOrResponse,
   readJsonWithLimitOrResponse,
@@ -25,9 +25,20 @@ import {
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-export async function GET(_req: Request, context: RouteContext) {
+export async function GET(request: Request, context: RouteContext) {
   const { id } = await context.params;
   try {
+    const idError = validateIdParam(id, "deal id");
+    if (idError) return idError;
+
+    const rateLimitResponse = await rateLimitOrResponse(
+      request,
+      "deal-read",
+      120,
+      60_000,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
+
     const deal = await loadDealById(id);
     if (!deal) {
       return NextResponse.json({ error: "Deal not found" }, { status: 404 });
@@ -45,6 +56,9 @@ export async function GET(_req: Request, context: RouteContext) {
 export async function PATCH(request: Request, context: RouteContext) {
   const { id } = await context.params;
   try {
+    const idError = validateIdParam(id, "deal id");
+    if (idError) return idError;
+
     const authResponse = await requireAuthOrResponse();
     if (authResponse) return authResponse;
 
@@ -169,14 +183,17 @@ export async function PATCH(request: Request, context: RouteContext) {
   }
 }
 
-export async function DELETE(_req: Request, context: RouteContext) {
+export async function DELETE(request: Request, context: RouteContext) {
   const { id } = await context.params;
   try {
+    const idError = validateIdParam(id, "deal id");
+    if (idError) return idError;
+
     const authResponse = await requireAuthOrResponse();
     if (authResponse) return authResponse;
 
     const rateLimitResponse = await rateLimitOrResponse(
-      _req,
+      request,
       "deal-delete",
       20,
       60_000,
@@ -196,4 +213,12 @@ export async function DELETE(_req: Request, context: RouteContext) {
       { status: 500 }
     );
   }
+}
+
+function validateIdParam(value: string, label: string) {
+  const parsed = IdParamSchema.safeParse(value);
+  if (!parsed.success) {
+    return NextResponse.json({ error: `Invalid ${label}` }, { status: 400 });
+  }
+  return null;
 }

@@ -14,8 +14,17 @@ import {
   requireAuthOrResponse,
 } from "@/lib/api-guards";
 
-export async function GET() {
+/** List all sector development strategies. */
+export async function GET(request: Request) {
   try {
+    const rateLimitResponse = await rateLimitOrResponse(
+      request,
+      "strategy-read",
+      120,
+      60_000,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
+
     const strategies = await loadStrategies();
     return NextResponse.json(strategies);
   } catch (error) {
@@ -27,6 +36,7 @@ export async function GET() {
   }
 }
 
+/** Create a new draft strategy. */
 export async function POST(request: Request) {
   try {
     const authResponse = await requireAuthOrResponse();

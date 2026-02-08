@@ -5,16 +5,27 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
-import { validateUploadedFile } from "@/lib/validations";
+import { IdParamSchema, validateUploadedFile } from "@/lib/validations";
 import { uploadToBlob } from "@/lib/blob-storage";
 import { logger } from "@/lib/logger";
 import { rateLimitOrResponse, requireAuthOrResponse } from "@/lib/api-guards";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
-export async function GET(_req: Request, context: RouteContext) {
+export async function GET(req: Request, context: RouteContext) {
   const { id } = await context.params;
   try {
+    const idError = validateIdParam(id, "strategy id");
+    if (idError) return idError;
+
+    const rateLimitResponse = await rateLimitOrResponse(
+      req,
+      "strategy-document-read",
+      120,
+      60_000,
+    );
+    if (rateLimitResponse) return rateLimitResponse;
+
     const docs = await prisma.strategyDocument.findMany({
       where: { strategyId: id },
       select: {
@@ -52,6 +63,9 @@ export async function GET(_req: Request, context: RouteContext) {
 export async function POST(request: Request, context: RouteContext) {
   const { id } = await context.params;
   try {
+    const idError = validateIdParam(id, "strategy id");
+    if (idError) return idError;
+
     const authResponse = await requireAuthOrResponse();
     if (authResponse) return authResponse;
 
@@ -124,4 +138,12 @@ export async function POST(request: Request, context: RouteContext) {
       { status: 500 },
     );
   }
+}
+
+function validateIdParam(value: string, label: string) {
+  const parsed = IdParamSchema.safeParse(value);
+  if (!parsed.success) {
+    return NextResponse.json({ error: `Invalid ${label}` }, { status: 400 });
+  }
+  return null;
 }
