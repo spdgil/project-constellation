@@ -25,4 +25,13 @@ export const authConfig: NextAuthConfig = {
     signIn: "/auth/signin",
     error: "/auth/signin",
   },
+  callbacks: {
+    /**
+     * authorized — Edge-safe callback used by middleware to gate access.
+     * Returns true if the user has a valid session, false to redirect to sign-in.
+     */
+    authorized({ auth }) {
+      return !!auth?.user;
+    },
+  },
 };
