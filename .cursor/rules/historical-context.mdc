@@ -102,4 +102,4 @@ const onClose: () => void = vi.fn();
 2. Add a `prisma migrate resolve --rolled-back <migration_name>` step to `vercel-build` **before** `prisma migrate deploy`.
 3. Once the fix deploys successfully, remove the resolve command from `vercel-build` in a follow-up commit to keep it clean.
 
-**Status:** Active. The `vercel-build` currently includes a resolve for `20260207100000_split_investment_economic_fields`. Remove after successful deploy.
+**Status:** Resolved. The one-time resolve for `20260207100000_split_investment_economic_fields` has been removed from `vercel-build`.
