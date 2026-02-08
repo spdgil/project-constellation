@@ -8,6 +8,7 @@ import {
   ACCEPTED_EXTENSIONS,
 } from "@/lib/extract-text";
 import { logClientWarn } from "@/lib/client-logger";
+import { formatBytes } from "@/lib/format";
 
 // =============================================================================
 // Component
@@ -160,12 +161,6 @@ export function StrategyUpload() {
   // ==========================================================================
   // Helpers
   // ==========================================================================
-
-  const formatBytes = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
 
   const stepLabel = (() => {
     switch (processingStep) {

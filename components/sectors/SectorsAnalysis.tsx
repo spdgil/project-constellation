@@ -2,7 +2,6 @@
 
 import { useMemo } from "react";
 import type { Deal, DealStage, SectorOpportunity } from "@/lib/types";
-import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
 import { STAGE_LABELS, CONSTRAINT_LABELS } from "@/lib/labels";
 import { STAGE_COLOUR_CLASSES } from "@/lib/stage-colours";
 import { STAGE_ORDER } from "@/lib/deal-pathway-utils";
@@ -124,11 +123,10 @@ const STAGE_BAR_COLOURS: Record<DealStage, string> = {
 /* -------------------------------------------------------------------------- */
 
 export function SectorsAnalysis({
-  deals: baseDeals,
+  deals,
   sectorOpportunities,
   sectorCount,
 }: SectorsAnalysisProps) {
-  const deals = useDealsWithOverrides(baseDeals);
 
   /* Pipeline stats for summary bar */
   const pipelineStats = useMemo(() => {

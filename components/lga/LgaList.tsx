@@ -3,7 +3,6 @@
 import { useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 import type { Deal, LGA, OpportunityType } from "@/lib/types";
-import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
 import { formatAUD } from "@/lib/colour-system";
 import { PipelineSummaryBar } from "@/components/ui/PipelineSummaryBar";
 import { MiniStat } from "@/components/ui/MiniStat";
@@ -33,11 +32,10 @@ interface LgaStats {
 
 export function LgaList({
   lgas,
-  deals: baseDeals,
+  deals,
   opportunityTypes,
   sectorCount,
 }: LgaListProps) {
-  const deals = useDealsWithOverrides(baseDeals);
   const [query, setQuery] = useState("");
   const [page, setPage] = useState(1);
   const pageSize = 24;

@@ -26,7 +26,9 @@ export async function GET(request: Request) {
     if (rateLimitResponse) return rateLimitResponse;
 
     const strategies = await loadStrategies();
-    return NextResponse.json(strategies);
+    return NextResponse.json(strategies, {
+      headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=120" },
+    });
   } catch (error) {
     logger.error("GET /api/strategies failed", { error: String(error) });
     return NextResponse.json(

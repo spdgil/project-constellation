@@ -1,5 +1,5 @@
 import { notFound } from "next/navigation";
-import { loadLgaById, loadDeals, loadSectorOpportunities, loadStrategies } from "@/lib/db/queries";
+import { loadLgaById, loadDealsForList, loadSectorOpportunities, loadStrategies } from "@/lib/db/queries";
 import { LgaDetail } from "@/components/lga/LgaDetail";
 
 interface Props {
@@ -12,7 +12,7 @@ export default async function LgaDetailPage({ params }: Props) {
   const [lga, allDeals, sectorOpportunities, strategies] =
     await Promise.all([
       loadLgaById(id),
-      loadDeals(),
+      loadDealsForList(),
       loadSectorOpportunities(),
       loadStrategies(),
     ]);

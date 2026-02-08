@@ -5,7 +5,8 @@
 
 import {
   loadLgas,
-  loadDeals,
+  loadDealsForMap,
+  loadDealsForList,
   countDeals,
   loadOpportunityTypes,
   loadSectorOpportunities,
@@ -45,7 +46,7 @@ export async function loadPageData(pageName: string): Promise<PageData> {
   try {
     const [lgas, deals, opportunityTypes, sectorOpportunities] = await Promise.all([
       loadLgas(),
-      loadDeals(),
+      loadDealsForMap(),
       loadOpportunityTypes(),
       loadSectorOpportunities(),
     ]);
@@ -66,7 +67,7 @@ export async function loadPageDataWithDealPaging(
     const [lgas, deals, opportunityTypes, sectorOpportunities, dealTotal] =
       await Promise.all([
         loadLgas(),
-        loadDeals({ limit: options.limit, offset: options.offset }),
+        loadDealsForList({ limit: options.limit, offset: options.offset }),
         loadOpportunityTypes(),
         loadSectorOpportunities(),
         countDeals(),
@@ -95,7 +96,7 @@ export async function loadPageDataWithStrategies(
     const [lgas, deals, opportunityTypes, sectorOpportunities, strategies, strategyGrades] =
       await Promise.all([
         loadLgas(),
-        loadDeals(),
+        loadDealsForMap(),
         loadOpportunityTypes(),
         loadSectorOpportunities(),
         loadStrategies(),

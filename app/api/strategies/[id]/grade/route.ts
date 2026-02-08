@@ -9,7 +9,6 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
-import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { checkRateLimit, rateLimitKeyFromRequest } from "@/lib/rate-limit";
 import { prisma } from "@/lib/db/prisma";
@@ -22,6 +21,8 @@ import {
   parseStrategyGradeResponse,
 } from "@/lib/ai/strategy-grade";
 import type { GradeLetter, StrategyComponentId } from "@/lib/types";
+import { requireAuthOrResponse } from "@/lib/api-guards";
+import { getOpenAIClient } from "@/lib/ai/openai-client";
 
 // =============================================================================
 // Types
@@ -30,22 +31,6 @@ import type { GradeLetter, StrategyComponentId } from "@/lib/types";
 export type { StrategyGradeResult } from "@/lib/ai/types";
 
 const COMPONENT_IDS: StrategyComponentId[] = ["1", "2", "3", "4", "5", "6"];
-
-// =============================================================================
-// OpenAI client — lazy initialisation (same pattern as extract route)
-// =============================================================================
-
-let openaiClient: OpenAI | null = null;
-
-function getOpenAIClient(): OpenAI {
-  if (!env.OPENAI_API_KEY) {
-    throw new Error("OPENAI_API_KEY environment variable is not set");
-  }
-  if (!openaiClient) {
-    openaiClient = new OpenAI({ apiKey: env.OPENAI_API_KEY });
-  }
-  return openaiClient;
-}
 
 // =============================================================================
 // Prompts — aligned with prompts/sector_strategy_grading.md
@@ -101,6 +86,9 @@ function validateGradingResponse(
 type RouteContext = { params: Promise<{ id: string }> };
 
 export async function POST(_request: Request, context: RouteContext) {
+  const authResponse = await requireAuthOrResponse();
+  if (authResponse) return authResponse;
+
   // Rate limit: 10 requests per minute per IP
   const rlKey = rateLimitKeyFromRequest(_request);
   const rl = await checkRateLimit(`strategy-grade:${rlKey}`, 10, 60_000);
@@ -182,7 +170,7 @@ export async function POST(_request: Request, context: RouteContext) {
     const gradeRecord = await prisma.strategyGrade.upsert({
       where: { strategyId: id },
       update: {
-        gradeLetter: dbGradeLetter as never,
+        gradeLetter: dbGradeLetter,
         gradeRationaleShort: grading.grade_rationale_short,
         evidenceComp1: grading.evidence_notes_by_component["1"] ?? null,
         evidenceComp2: grading.evidence_notes_by_component["2"] ?? null,
@@ -195,7 +183,7 @@ export async function POST(_request: Request, context: RouteContext) {
       },
       create: {
         strategyId: id,
-        gradeLetter: dbGradeLetter as never,
+        gradeLetter: dbGradeLetter,
         gradeRationaleShort: grading.grade_rationale_short,
         evidenceComp1: grading.evidence_notes_by_component["1"] ?? null,
         evidenceComp2: grading.evidence_notes_by_component["2"] ?? null,

@@ -38,7 +38,9 @@ export async function GET(request: Request, context: RouteContext) {
         { status: 404 },
       );
     }
-    return NextResponse.json(strategy);
+    return NextResponse.json(strategy, {
+      headers: { "Cache-Control": "private, max-age=30, stale-while-revalidate=120" },
+    });
   } catch (error) {
     logger.error("GET /api/strategies/:id failed", { id, error: String(error) });
     return NextResponse.json(

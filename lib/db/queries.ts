@@ -157,6 +157,46 @@ function mapDeal(d: NonNullable<PrismaDealFull>): Deal {
   };
 }
 
+type PrismaDealLite = Awaited<
+  ReturnType<typeof prisma.deal.findFirst<{ include: { lgas: true; opportunityType: true } }>>
+>;
+
+function mapDealLite(d: NonNullable<PrismaDealLite>): Deal {
+  return {
+    id: d.id,
+    name: d.name,
+    opportunityTypeId: d.opportunityTypeId,
+    lgaIds: d.lgas.map((l) => l.lgaId),
+    lat: d.lat ?? undefined,
+    lng: d.lng ?? undefined,
+    stage: stageFromDb(d.stage),
+    readinessState: readinessFromDb(d.readinessState),
+    dominantConstraint: constraintFromDb(d.dominantConstraint),
+    summary: d.summary,
+    nextStep: d.nextStep,
+    evidence: [],
+    notes: [],
+    updatedAt: d.updatedAt.toISOString(),
+    gateChecklist: {},
+    artefacts: {},
+    description: d.description ?? undefined,
+    investmentValueAmount: d.investmentValueAmount,
+    investmentValueDescription: d.investmentValueDescription,
+    economicImpactAmount: d.economicImpactAmount,
+    economicImpactDescription: d.economicImpactDescription,
+    economicImpactJobs: d.economicImpactJobs ?? undefined,
+    keyStakeholders: d.keyStakeholders,
+    risks: d.risks,
+    strategicActions: d.strategicActions,
+    infrastructureNeeds: d.infrastructureNeeds,
+    skillsImplications: d.skillsImplications ?? undefined,
+    marketDrivers: d.marketDrivers ?? undefined,
+    governmentPrograms: [],
+    timeline: [],
+    documents: [],
+  };
+}
+
 function mapLga(
   l: Awaited<ReturnType<typeof prisma.lga.findFirst<{
     include: { evidence: true; opportunityHypotheses: true; deals: true };
@@ -219,6 +259,58 @@ export async function loadDeals(options: { limit?: number; offset?: number } = {
   return rows.map(mapDeal);
 }
 
+/** Lightweight deal list — core fields + LGA IDs only. */
+export async function loadDealsForList(
+  options: { limit?: number; offset?: number } = {},
+): Promise<Deal[]> {
+  const { limit, offset } = options;
+  const rows = await prisma.deal.findMany({
+    include: {
+      lgas: true,
+      opportunityType: true,
+    },
+    orderBy: { updatedAt: "desc" },
+    take: limit,
+    skip: offset,
+  });
+  return rows.map((d) => mapDealLite(d));
+}
+
+/** Map-optimised deal query — location + summary fields only. */
+export async function loadDealsForMap(): Promise<Deal[]> {
+  const rows = await prisma.deal.findMany({
+    include: {
+      lgas: true,
+      opportunityType: true,
+    },
+    orderBy: { updatedAt: "desc" },
+  });
+  return rows.map((d) => mapDealLite(d));
+}
+
+/** Aggregate deal metrics for summary displays. */
+export async function loadDealAggregate(): Promise<{
+  count: number;
+  totalInvestment: number;
+  totalEconomicImpact: number;
+  totalJobs: number;
+}> {
+  const agg = await prisma.deal.aggregate({
+    _count: true,
+    _sum: {
+      investmentValueAmount: true,
+      economicImpactAmount: true,
+      economicImpactJobs: true,
+    },
+  });
+  return {
+    count: agg._count,
+    totalInvestment: agg._sum.investmentValueAmount ?? 0,
+    totalEconomicImpact: agg._sum.economicImpactAmount ?? 0,
+    totalJobs: agg._sum.economicImpactJobs ?? 0,
+  };
+}
+
 /** Count total deals. */
 export async function countDeals(): Promise<number> {
   return prisma.deal.count();
@@ -257,6 +349,15 @@ export async function loadLgas(): Promise<LGA[]> {
     orderBy: { name: "asc" },
   });
   return rows.map(mapLga).filter((l): l is LGA => l !== null);
+}
+
+/** Lightweight LGA list for dropdowns — id + name only. */
+export async function loadLgasSummary(): Promise<Pick<LGA, "id" | "name" | "geometryRef">[]> {
+  const rows = await prisma.lga.findMany({
+    select: { id: true, name: true, geometryRef: true },
+    orderBy: { name: "asc" },
+  });
+  return rows;
 }
 
 /** Load all opportunity types. */

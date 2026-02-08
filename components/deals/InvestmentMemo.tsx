@@ -1,9 +1,9 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 
-import type { Deal, LGA, OpportunityType } from "@/lib/types";
+import type { LGA, OpportunityType } from "@/lib/types";
 import {
   STAGE_LABELS,
   READINESS_LABELS,
@@ -13,6 +13,7 @@ import {
   STAGE_COLOUR_CLASSES,
   READINESS_COLOUR_CLASSES,
 } from "@/lib/stage-colours";
+import { formatBytes } from "@/lib/format";
 import {
   extractTextFromFile,
   ACCEPTED_EXTENSIONS,
@@ -27,7 +28,6 @@ import { InvestmentMemoLocationSection } from "./InvestmentMemoLocationSection";
 // =============================================================================
 
 export interface InvestmentMemoProps {
-  deals: Deal[];
   opportunityTypes: OpportunityType[];
   lgas: LGA[];
 }
@@ -167,14 +167,16 @@ export function InvestmentMemo({
   const [allOpportunityTypes, setAllOpportunityTypes] = useState(opportunityTypes);
 
   /** Serialisable catalogue for the API request. */
-  const otCatalogue = allOpportunityTypes.map((ot) => ({
-    id: ot.id,
-    name: ot.name,
-    definition: ot.definition,
-  }));
+  const otCatalogue = useMemo(
+    () => allOpportunityTypes.map((ot) => ({ id: ot.id, name: ot.name, definition: ot.definition })),
+    [allOpportunityTypes],
+  );
 
   /** LGA catalogue for the API request. */
-  const lgaCatalogue = lgas.map((l) => ({ id: l.id, name: l.name }));
+  const lgaCatalogue = useMemo(
+    () => lgas.map((l) => ({ id: l.id, name: l.name })),
+    [lgas],
+  );
 
   /** Apply the AI's opportunity type suggestion to local state. */
   const applyOtSuggestion: (
@@ -544,11 +546,6 @@ export function InvestmentMemo({
   ]);
 
   // --- Helpers ---
-  const formatBytes = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
   const lgaErrorId = "draft-lga-error";
 
   return (

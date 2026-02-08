@@ -1,9 +1,8 @@
 "use client";
 
-import { useMemo, useState, useCallback, useEffect } from "react";
+import { memo, useMemo, useState, useCallback, useEffect } from "react";
 import Link from "next/link";
 import type { Deal, DealStage, LGA, OpportunityType } from "@/lib/types";
-import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
 import { filterDealsByQuery } from "@/lib/deals-search";
 import type { DealFilterParams } from "@/lib/deals-search";
 import { dealLgaNames } from "@/lib/opportunities";
@@ -65,7 +64,7 @@ export function DealsSearch({
 
   const hasActiveFilters = !!(stageFilter || otFilter || lgaFilter || query.trim());
 
-  const deals = useDealsWithOverrides(allDeals ?? serverDeals);
+  const deals = allDeals ?? serverDeals;
 
   const clearFilters = useCallback(() => {
     setQuery("");
@@ -356,7 +355,7 @@ export function DealsSearch({
 /* Sub-components                                                              */
 /* -------------------------------------------------------------------------- */
 
-function DealCard({
+const DealCard = memo(function DealCard({
   deal,
   opportunityTypeName,
   lgaNames,
@@ -436,6 +435,6 @@ function DealCard({
       </div>
     </Link>
   );
-}
+});
 
 // MiniStat is imported from shared component — see components/ui/MiniStat.tsx

@@ -9,7 +9,6 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
-import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { checkRateLimit, rateLimitKeyFromRequest } from "@/lib/rate-limit";
 import {
@@ -19,6 +18,8 @@ import {
   truncateStrategyText,
 } from "@/lib/ai/strategy-extract";
 import { readJsonWithLimit } from "@/lib/request-utils";
+import { requireAuthOrResponse } from "@/lib/api-guards";
+import { getOpenAIClient } from "@/lib/ai/openai-client";
 
 // =============================================================================
 // Types
@@ -32,26 +33,13 @@ export interface StrategyExtractionRequest {
 export type { StrategyExtractionResult } from "@/lib/ai/types";
 
 // =============================================================================
-// OpenAI client — lazy initialisation (same pattern as analyse-memo)
-// =============================================================================
-
-let openaiClient: OpenAI | null = null;
-
-function getOpenAIClient(): OpenAI {
-  if (!env.OPENAI_API_KEY) {
-    throw new Error("OPENAI_API_KEY environment variable is not set");
-  }
-  if (!openaiClient) {
-    openaiClient = new OpenAI({ apiKey: env.OPENAI_API_KEY });
-  }
-  return openaiClient;
-}
-
-// =============================================================================
 // Route handler
 // =============================================================================
 
 export async function POST(request: Request) {
+  const authResponse = await requireAuthOrResponse();
+  if (authResponse) return authResponse;
+
   // Rate limit: 10 requests per minute per IP
   const rlKey = rateLimitKeyFromRequest(request);
   const rl = await checkRateLimit(`strategy-extract:${rlKey}`, 10, 60_000);

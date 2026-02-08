@@ -3,7 +3,6 @@
 import { useMemo } from "react";
 
 import type { Deal, DealStage, ReadinessState, LGA, OpportunityType } from "@/lib/types";
-import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
 import { STAGE_LABELS, READINESS_LABELS, CONSTRAINT_LABELS } from "@/lib/labels";
 import { STAGE_COLOUR_CLASSES, READINESS_COLOUR_CLASSES } from "@/lib/stage-colours";
 import { STAGE_ORDER, getStageGateChecklist } from "@/lib/deal-pathway-utils";
@@ -146,8 +145,7 @@ const READINESS_BAR_COLOURS: Record<ReadinessState, string> = {
 // Component
 // ---------------------------------------------------------------------------
 
-export function DealsAnalysis({ deals: baseDeals, opportunityTypes, lgas }: DealsAnalysisProps) {
-  const deals = useDealsWithOverrides(baseDeals);
+export function DealsAnalysis({ deals, opportunityTypes, lgas }: DealsAnalysisProps) {
 
   // --- Summary stats ---
   const totalDeals = deals.length;

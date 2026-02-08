@@ -8,7 +8,6 @@
 import { NextResponse } from "next/server";
 import OpenAI from "openai";
 
-import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
 import { checkRateLimit, rateLimitKeyFromRequest } from "@/lib/rate-limit";
 import {
@@ -18,6 +17,13 @@ import {
   truncateMemoText,
 } from "@/lib/ai/memo-analysis";
 import { readJsonWithLimit } from "@/lib/request-utils";
+import { requireAuthOrResponse } from "@/lib/api-guards";
+import { getOpenAIClient } from "@/lib/ai/openai-client";
+import {
+  RATE_LIMITS,
+  RATE_LIMIT_WINDOW_MS,
+  MAX_BODY_BYTES,
+} from "@/lib/api-constants";
 
 // =============================================================================
 // Types
@@ -35,29 +41,16 @@ export interface MemoAnalysisRequest {
 export type { MemoAnalysisResult } from "@/lib/ai/types";
 
 // =============================================================================
-// OpenAI client — lazy initialisation (matching Relational Imperative pattern)
-// =============================================================================
-
-let openaiClient: OpenAI | null = null;
-
-function getOpenAIClient(): OpenAI {
-  if (!env.OPENAI_API_KEY) {
-    throw new Error("OPENAI_API_KEY environment variable is not set");
-  }
-  if (!openaiClient) {
-    openaiClient = new OpenAI({ apiKey: env.OPENAI_API_KEY });
-  }
-  return openaiClient;
-}
-
-// =============================================================================
 // Route handler
 // =============================================================================
 
 export async function POST(request: Request) {
+  const authResponse = await requireAuthOrResponse();
+  if (authResponse) return authResponse;
+
   // Rate limit: 10 requests per minute per IP
   const rlKey = rateLimitKeyFromRequest(request);
-  const rl = await checkRateLimit(`analyse-memo:${rlKey}`, 10, 60_000);
+  const rl = await checkRateLimit(`analyse-memo:${rlKey}`, RATE_LIMITS.ai, RATE_LIMIT_WINDOW_MS);
   if (!rl.allowed) {
     return NextResponse.json(
       { error: "Too many requests. Please try again later." },
@@ -69,7 +62,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const parsedBody = await readJsonWithLimit<MemoAnalysisRequest>(request, 1_000_000);
+    const parsedBody = await readJsonWithLimit<MemoAnalysisRequest>(request, MAX_BODY_BYTES.ai);
     if (!parsedBody.ok) {
       return NextResponse.json(
         { error: parsedBody.error },

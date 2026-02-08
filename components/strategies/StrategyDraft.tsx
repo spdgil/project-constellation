@@ -33,6 +33,10 @@ export interface StrategyDraftProps {
 
 const COMPONENT_IDS: StrategyComponentId[] = ["1", "2", "3", "4", "5", "6"];
 
+function parseLines(text: string): string[] {
+  return text.split("\n").map((l) => l.trim()).filter(Boolean);
+}
+
 const labelClass =
   "text-[10px] uppercase tracking-wider text-[#6B6B6B] font-medium";
 const bodyClass = "text-sm text-[#2C2C2C] leading-relaxed";
@@ -347,12 +351,6 @@ export function StrategyDraft({ strategy: initial }: StrategyDraftProps) {
     setIsSaving(true);
     setSaveError(null);
 
-    const parseLines = (s: string) =>
-      s
-        .split("\n")
-        .map((l) => l.trim())
-        .filter(Boolean);
-
     try {
       const res = await fetch(`/api/strategies/${initial.id}`, {
         method: "PATCH",
@@ -404,12 +402,6 @@ export function StrategyDraft({ strategy: initial }: StrategyDraftProps) {
   const handlePublish = useCallback(async () => {
     setIsPublishing(true);
     setSaveError(null);
-
-    const parseLines = (s: string) =>
-      s
-        .split("\n")
-        .map((l) => l.trim())
-        .filter(Boolean);
 
     try {
       const res = await fetch(`/api/strategies/${initial.id}`, {
@@ -465,12 +457,6 @@ export function StrategyDraft({ strategy: initial }: StrategyDraftProps) {
     // Save draft first so the API reads current content
     setIsGrading(true);
     setGradeError(null);
-
-    const parseLines = (s: string) =>
-      s
-        .split("\n")
-        .map((l) => l.trim())
-        .filter(Boolean);
 
     try {
       // Save current state first

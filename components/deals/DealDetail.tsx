@@ -11,8 +11,6 @@ import type {
   SectorOpportunity,
   ReadinessState,
   Constraint,
-  GateStatus,
-  ArtefactStatus,
 } from "@/lib/types";
 // deal-storage is no longer needed — all mutations go through API routes
 import {
@@ -24,36 +22,17 @@ import {
 import { ARTEFACT_STATUS_COLOUR_CLASSES } from "@/lib/stage-colours";
 import { getStageGateChecklist, getStageArtefacts } from "@/lib/deal-pathway-utils";
 import { PATHWAY_STAGES } from "@/lib/pathway-data";
-import { formatDate } from "@/lib/format";
+import { formatDate, formatBytes } from "@/lib/format";
 import { logClientError } from "@/lib/client-logger";
+import {
+  useDealEditor,
+  READINESS_OPTIONS,
+  CONSTRAINT_OPTIONS,
+} from "@/lib/hooks/useDealEditor";
 import { AccordionSection } from "@/components/ui/AccordionSection";
 import { DealHero } from "./DealHero";
 import { DealSidebar } from "./DealSidebar";
 import { DealPathwayStepper } from "./DealPathwayStepper";
-
-const ARTEFACT_STATUS_CYCLE: ArtefactStatus[] = ["not-started", "in-progress", "complete"];
-
-const READINESS_OPTIONS: ReadinessState[] = [
-  "no-viable-projects",
-  "conceptual-interest",
-  "feasibility-underway",
-  "structurable-but-stalled",
-  "investable-with-minor-intervention",
-  "scaled-and-replicable",
-];
-
-const CONSTRAINT_OPTIONS: Constraint[] = [
-  "revenue-certainty",
-  "offtake-demand-aggregation",
-  "planning-and-approvals",
-  "sponsor-capability",
-  "early-risk-capital",
-  "balance-sheet-constraints",
-  "technology-risk",
-  "coordination-failure",
-  "skills-and-workforce-constraint",
-  "common-user-infrastructure-gap",
-];
 
 const FOCUSABLE =
   'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -87,7 +66,6 @@ export function DealDetail({
 }: DealDetailProps) {
   const router = useRouter();
   const [deal, setDeal] = useState<Deal | null>(initialDeal);
-  const [isSaving, setIsSaving] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const deleteDialogRef = useRef<HTMLDivElement | null>(null);
@@ -134,11 +112,24 @@ export function DealDetail({
     setIsEditing((prev) => !prev);
   }, []);
 
+  /* ---------- Shared deal-editing hook ---------- */
+
+  const { saveDealField, toggleGate, cycleArtefactStatus, updateArtefactField } =
+    useDealEditor({
+      dealId,
+      deal: deal as Deal,
+      setDeal: setDeal as React.Dispatch<React.SetStateAction<Deal>>,
+    });
+
   /* ---------- Delete handler ---------- */
 
   const handleDelete = useCallback(async () => {
     try {
-      await fetch(`/api/deals/${dealId}`, { method: "DELETE" });
+      const res = await fetch(`/api/deals/${dealId}`, { method: "DELETE" });
+      if (!res.ok) {
+        logClientError("Failed to delete deal", { status: res.status }, "DealDetail");
+        return;
+      }
       router.push("/deals/list");
     } catch (error) {
       logClientError("Failed to delete deal", { error: String(error) }, "DealDetail");
@@ -227,37 +218,6 @@ export function DealDetail({
     [deal],
   );
 
-  const formatDocSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
-
-  /* ---------- API save helper ---------- */
-
-  const saveDealField = useCallback(
-    async (patch: Record<string, unknown>) => {
-      if (!deal) return;
-      setIsSaving(true);
-      try {
-        const res = await fetch(`/api/deals/${deal.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(patch),
-        });
-        if (res.ok) {
-          const updated = (await res.json()) as Deal;
-          setDeal(updated);
-        }
-      } catch (error) {
-        logClientError("Failed to save deal", { error: String(error) }, "DealDetail");
-      } finally {
-        setIsSaving(false);
-      }
-    },
-    [deal],
-  );
-
   /* ---------- Field handlers ---------- */
 
   const handleReadinessChange = useCallback(
@@ -266,75 +226,32 @@ export function DealDetail({
       const value = e.target.value as ReadinessState;
       // Optimistic update
       setDeal({ ...deal, readinessState: value, updatedAt: new Date().toISOString() });
-      saveDealField({ readinessState: value });
+      saveDealField("readinessState", value);
     },
     [deal, saveDealField],
   );
 
   const handleConstraintChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
+    async (e: React.ChangeEvent<HTMLSelectElement>) => {
       if (!deal) return;
       const value = e.target.value as Constraint;
       // Optimistic update
       setDeal({ ...deal, dominantConstraint: value, updatedAt: new Date().toISOString() });
-      saveDealField({ dominantConstraint: value, changeReason: "Edited in UI" });
+      // Multi-field PATCH: constraint + changeReason for audit
+      try {
+        const res = await fetch(`/api/deals/${dealId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ dominantConstraint: value, changeReason: "Edited in UI" }),
+        });
+        if (!res.ok) {
+          logClientError("Failed to save dominantConstraint", { status: res.status }, "DealDetail");
+        }
+      } catch (error) {
+        logClientError("Failed to save dominantConstraint", { error: String(error) }, "DealDetail");
+      }
     },
-    [deal, saveDealField],
-  );
-
-  const handleGateToggle = useCallback(
-    (questionIndex: number) => {
-      if (!deal) return;
-      const stage = deal.stage;
-      const entries = getStageGateChecklist(deal.gateChecklist ?? {}, stage);
-      const entry = entries[questionIndex];
-      if (!entry) return;
-      const newStatus: GateStatus = entry.status === "satisfied" ? "pending" : "satisfied";
-      const updatedEntries = entries.map((e, i) =>
-        i === questionIndex ? { ...e, status: newStatus } : e,
-      );
-      const newChecklist = { ...deal.gateChecklist, [stage]: updatedEntries };
-      // Optimistic update
-      setDeal({ ...deal, gateChecklist: newChecklist, updatedAt: new Date().toISOString() });
-      saveDealField({ gateChecklist: newChecklist });
-    },
-    [deal, saveDealField],
-  );
-
-  const handleArtefactStatusCycle = useCallback(
-    (artefactIndex: number) => {
-      if (!deal) return;
-      const stage = deal.stage;
-      const entries = getStageArtefacts(deal.artefacts ?? {}, stage);
-      const entry = entries[artefactIndex];
-      if (!entry) return;
-      const currentIdx = ARTEFACT_STATUS_CYCLE.indexOf(entry.status);
-      const nextStatus = ARTEFACT_STATUS_CYCLE[(currentIdx + 1) % ARTEFACT_STATUS_CYCLE.length];
-      const updatedEntries = entries.map((e, i) =>
-        i === artefactIndex ? { ...e, status: nextStatus } : e,
-      );
-      const newArtefacts = { ...deal.artefacts, [stage]: updatedEntries };
-      // Optimistic update
-      setDeal({ ...deal, artefacts: newArtefacts, updatedAt: new Date().toISOString() });
-      saveDealField({ artefacts: newArtefacts });
-    },
-    [deal, saveDealField],
-  );
-
-  const handleArtefactFieldChange = useCallback(
-    (artefactIndex: number, field: "summary" | "url", value: string) => {
-      if (!deal) return;
-      const stage = deal.stage;
-      const entries = getStageArtefacts(deal.artefacts ?? {}, stage);
-      const updatedEntries = entries.map((e, i) =>
-        i === artefactIndex ? { ...e, [field]: value || undefined } : e,
-      );
-      const newArtefacts = { ...deal.artefacts, [stage]: updatedEntries };
-      // Optimistic update
-      setDeal({ ...deal, artefacts: newArtefacts, updatedAt: new Date().toISOString() });
-      saveDealField({ artefacts: newArtefacts });
-    },
-    [deal, saveDealField],
+    [deal, dealId],
   );
 
   const selectClass =
@@ -373,12 +290,6 @@ export function DealDetail({
         <div className="flex items-center gap-2">
           {isEditing ? (
             <>
-              {isSaving && (
-                <span className="text-xs text-[#7A6B5A] flex items-center gap-1.5">
-                  <span className="inline-block h-3 w-3 border-[1.5px] border-[#E8E6E3] border-t-[#7A6B5A] rounded-full animate-spin" />
-                  Saving
-                </span>
-              )}
               <button
                 type="button"
                 onClick={() => setShowDeleteConfirm(true)}
@@ -470,7 +381,11 @@ export function DealDetail({
             opportunityTypes={opportunityTypes}
             lgas={lgas}
             isEditing={isEditing}
-            onSave={saveDealField}
+            onSave={(patch) => {
+              for (const [field, value] of Object.entries(patch)) {
+                saveDealField(field, value);
+              }
+            }}
             onOptimisticUpdate={(patch) =>
               setDeal((prev) =>
                 prev ? { ...prev, ...patch, updatedAt: new Date().toISOString() } : prev,
@@ -554,7 +469,7 @@ export function DealDetail({
                         <input
                           type="checkbox"
                           checked={entry.status === "satisfied"}
-                          onChange={() => handleGateToggle(idx)}
+                          onChange={() => toggleGate(deal.stage, idx)}
                           aria-label={`${entry.question}: ${entry.status}`}
                           className="mt-0.5 h-4 w-4 accent-emerald-600 cursor-pointer"
                           data-testid={`gate-checkbox-${idx}`}
@@ -622,7 +537,7 @@ export function DealDetail({
                       {isEditing ? (
                         <button
                           type="button"
-                          onClick={() => handleArtefactStatusCycle(idx)}
+                          onClick={() => cycleArtefactStatus(deal.stage, idx)}
                           aria-label={`${entry.name} status: ${ARTEFACT_STATUS_LABELS[entry.status]}. Click to change.`}
                           className={`shrink-0 text-[10px] uppercase tracking-wider px-1.5 py-0.5 cursor-pointer transition duration-300 ease-out hover:opacity-80 ${ARTEFACT_STATUS_COLOUR_CLASSES[entry.status]}`}
                           data-testid={`artefact-status-${idx}`}
@@ -651,7 +566,7 @@ export function DealDetail({
                             id={`artefact-summary-${idx}`}
                             value={entry.summary ?? ""}
                             onChange={(e) =>
-                              handleArtefactFieldChange(idx, "summary", e.target.value)
+                              updateArtefactField(deal.stage, idx, "summary", e.target.value)
                             }
                             placeholder="Describe the document..."
                             rows={2}
@@ -670,7 +585,7 @@ export function DealDetail({
                             id={`artefact-url-${idx}`}
                             value={entry.url ?? ""}
                             onChange={(e) =>
-                              handleArtefactFieldChange(idx, "url", e.target.value)
+                              updateArtefactField(deal.stage, idx, "url", e.target.value)
                             }
                             placeholder="https://..."
                             className="w-full h-8 px-2 border border-[#E8E6E3] bg-white text-[#2C2C2C] text-xs placeholder:text-[#9A9A9A] focus:border-[#7A6B5A] focus:ring-1 focus:ring-[#7A6B5A] focus:outline-none transition duration-300 ease-out"
@@ -872,7 +787,7 @@ export function DealDetail({
                             {doc.label || doc.fileName}
                           </p>
                           <p className="text-[10px] text-[#9A9A9A] mt-0.5">
-                            {formatDocSize(doc.sizeBytes)} &middot;{" "}
+                            {formatBytes(doc.sizeBytes)} &middot;{" "}
                             {formatDate(doc.addedAt)}
                           </p>
                         </div>
@@ -881,7 +796,7 @@ export function DealDetail({
                           <button
                             onClick={() => handleDownloadDocument(doc)}
                             className="text-[10px] text-[#7A6B5A] hover:text-[#2C2C2C] underline underline-offset-2 transition-colors"
-                            title="Download"
+                            aria-label="Download"
                           >
                             Download
                           </button>
@@ -889,7 +804,7 @@ export function DealDetail({
                             <button
                               onClick={() => handleRemoveDocument(doc.id)}
                               className="text-[10px] text-red-600 hover:text-red-800 underline underline-offset-2 transition-colors"
-                              title="Remove"
+                              aria-label="Remove"
                             >
                               Remove
                             </button>

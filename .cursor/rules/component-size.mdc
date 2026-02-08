@@ -57,9 +57,8 @@ function DealsSearch({ baseDeals }) {
   }, [baseDeals]);
 }
 
-// ✅ GOOD — Logic in custom hook
-function DealsSearch({ baseDeals }) {
-  const deals = useDealsWithOverrides(baseDeals);
+// ✅ GOOD — Props used directly, no wrapper hook needed
+function DealsSearch({ deals }) {
   // Clean rendering logic
 }
 ```

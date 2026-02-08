@@ -32,3 +32,18 @@ test("deal detail page renders", async ({ page }) => {
   await page.goto("/deals/demo-flexilab");
   await expect(page.getByTestId("deal-pathway-stepper")).toBeVisible();
 });
+
+test("sector list page renders", async ({ page }) => {
+  await page.goto("/sectors/list");
+  await expect(page.locator("h1")).toContainText(/sector/i);
+});
+
+test("strategy list page renders", async ({ page }) => {
+  await page.goto("/lga/strategies");
+  await expect(page.locator("h1")).toContainText(/strateg/i);
+});
+
+test("LGA list page renders", async ({ page }) => {
+  await page.goto("/lga/list");
+  await expect(page.locator("h1")).toContainText(/lga/i);
+});

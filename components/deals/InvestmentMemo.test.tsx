@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 import { InvestmentMemo } from "./InvestmentMemo";
-import type { Deal, LGA, OpportunityType } from "@/lib/types";
+import type { LGA, OpportunityType } from "@/lib/types";
 import type { MemoAnalysisResult } from "@/lib/ai/types";
 
 /* Mock next/navigation */
@@ -53,27 +53,6 @@ const mockOpportunityTypes: OpportunityType[] = [
     typicalRisks: "",
   },
 ];
-
-const mockDeal: Deal = {
-  id: "demo-flexilab",
-  name: "RCOE FlexiLab pilot",
-  opportunityTypeId: "critical-minerals",
-  lgaIds: ["mackay"],
-  stage: "pre-feasibility",
-  readinessState: "feasibility-underway",
-  dominantConstraint: "common-user-infrastructure-gap",
-  summary: "Pilot.",
-  nextStep: "Secure offtake.",
-  evidence: [],
-  notes: [],
-  updatedAt: "2026-02-06T00:00:00.000Z",
-  gateChecklist: {},
-  artefacts: {},
-  investmentValueAmount: 0,
-  investmentValueDescription: "",
-  economicImpactAmount: 0,
-  economicImpactDescription: "",
-};
 
 const mockResult: MemoAnalysisResult = {
   name: "GW3 Minerals Processing Hub",
@@ -128,7 +107,6 @@ describe("InvestmentMemo", () => {
   it("renders heading, drop zone, and empty state — no analyse button, no deal selector", () => {
     render(
       <InvestmentMemo
-        deals={[mockDeal]}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
       />
@@ -148,7 +126,6 @@ describe("InvestmentMemo", () => {
   it("shows empty state panel before upload", () => {
     const { container } = render(
       <InvestmentMemo
-        deals={[mockDeal]}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
       />
@@ -176,7 +153,6 @@ describe("InvestmentMemo", () => {
 
     render(
       <InvestmentMemo
-        deals={[mockDeal]}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
       />
@@ -225,7 +201,6 @@ describe("InvestmentMemo", () => {
 
     render(
       <InvestmentMemo
-        deals={[mockDeal]}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
       />
@@ -252,7 +227,6 @@ describe("InvestmentMemo", () => {
 
     render(
       <InvestmentMemo
-        deals={[mockDeal]}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
       />
@@ -284,7 +258,6 @@ describe("InvestmentMemo", () => {
 
     render(
       <InvestmentMemo
-        deals={[mockDeal]}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
       />
@@ -339,7 +312,6 @@ describe("InvestmentMemo", () => {
 
     render(
       <InvestmentMemo
-        deals={[mockDeal]}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
       />
@@ -375,7 +347,6 @@ describe("InvestmentMemo", () => {
 
     render(
       <InvestmentMemo
-        deals={[mockDeal]}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
       />
@@ -435,7 +406,6 @@ describe("InvestmentMemo", () => {
 
     render(
       <InvestmentMemo
-        deals={[mockDeal]}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
       />
@@ -502,7 +472,6 @@ describe("InvestmentMemo", () => {
   it("highlights drop zone on drag over", () => {
     render(
       <InvestmentMemo
-        deals={[mockDeal]}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
       />
@@ -528,7 +497,6 @@ describe("InvestmentMemo", () => {
 
     render(
       <InvestmentMemo
-        deals={[mockDeal]}
         opportunityTypes={mockOpportunityTypes}
         lgas={mockLgas}
       />

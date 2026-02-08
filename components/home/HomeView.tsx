@@ -6,7 +6,6 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Deal } from "@/lib/types";
 import type { DealGeoPosition } from "@/components/map/MapCanvas";
-import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
 import { useBoundaries } from "@/lib/hooks/useBoundaries";
 import { formatAUD } from "@/lib/colour-system";
 import { SummaryCard } from "@/components/ui/SummaryCard";
@@ -40,9 +39,8 @@ export interface HomeViewProps {
 /* Root component                                                         */
 /* ====================================================================== */
 
-export function HomeView({ deals: baseDeals }: HomeViewProps) {
+export function HomeView({ deals }: HomeViewProps) {
   const router = useRouter();
-  const deals = useDealsWithOverrides(baseDeals);
 
   /* ---- Computed metrics ---- */
   const totalInvestment = useMemo(

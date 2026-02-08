@@ -8,8 +8,6 @@ import type {
   OpportunityType,
   ReadinessState,
   Constraint,
-  GateStatus,
-  ArtefactStatus,
 } from "@/lib/types";
 // deal-storage is no longer needed — all mutations go through API routes
 import {
@@ -27,30 +25,11 @@ import { getStageGateChecklist, getStageArtefacts } from "@/lib/deal-pathway-uti
 import { PATHWAY_STAGES } from "@/lib/pathway-data";
 import { formatDate } from "@/lib/format";
 import { logClientError } from "@/lib/client-logger";
-
-const ARTEFACT_STATUS_CYCLE: ArtefactStatus[] = ["not-started", "in-progress", "complete"];
-
-const READINESS_OPTIONS: ReadinessState[] = [
-  "no-viable-projects",
-  "conceptual-interest",
-  "feasibility-underway",
-  "structurable-but-stalled",
-  "investable-with-minor-intervention",
-  "scaled-and-replicable",
-];
-
-const CONSTRAINT_OPTIONS: Constraint[] = [
-  "revenue-certainty",
-  "offtake-demand-aggregation",
-  "planning-and-approvals",
-  "sponsor-capability",
-  "early-risk-capital",
-  "balance-sheet-constraints",
-  "technology-risk",
-  "coordination-failure",
-  "skills-and-workforce-constraint",
-  "common-user-infrastructure-gap",
-];
+import {
+  useDealEditor,
+  READINESS_OPTIONS,
+  CONSTRAINT_OPTIONS,
+} from "@/lib/hooks/useDealEditor";
 
 export interface DealDrawerProps {
   deal: Deal | null;
@@ -127,27 +106,14 @@ export function DealDrawer({
     onEditingChange?.(next);
   }, [isEditing, onEditingChange]);
 
-  /* ---------- API save helper ---------- */
+  /* ---------- Shared deal-editing hook ---------- */
 
-  const saveDealField = useCallback(
-    async (patch: Record<string, unknown>) => {
-      if (!deal) return;
-      try {
-        const res = await fetch(`/api/deals/${deal.id}`, {
-          method: "PATCH",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(patch),
-        });
-        if (res.ok) {
-          const updated = (await res.json()) as Deal;
-          setDeal(updated);
-        }
-      } catch (error) {
-        logClientError("Failed to save deal", { error: String(error) }, "DealDrawer");
-      }
-    },
-    [deal],
-  );
+  const { saveDealField, toggleGate, cycleArtefactStatus, updateArtefactField } =
+    useDealEditor({
+      dealId: initialDeal?.id ?? "",
+      deal: deal as Deal,
+      setDeal: setDeal as React.Dispatch<React.SetStateAction<Deal>>,
+    });
 
   /* ---------- Field handlers ---------- */
 
@@ -156,71 +122,31 @@ export function DealDrawer({
       if (!deal) return;
       const value = e.target.value as ReadinessState;
       setDeal({ ...deal, readinessState: value, updatedAt: new Date().toISOString() });
-      saveDealField({ readinessState: value });
+      saveDealField("readinessState", value);
     },
     [deal, saveDealField],
   );
 
   const handleConstraintChange = useCallback(
-    (e: React.ChangeEvent<HTMLSelectElement>) => {
+    async (e: React.ChangeEvent<HTMLSelectElement>) => {
       if (!deal) return;
       const value = e.target.value as Constraint;
       setDeal({ ...deal, dominantConstraint: value, updatedAt: new Date().toISOString() });
-      saveDealField({ dominantConstraint: value, changeReason: "Edited in UI" });
+      // Multi-field PATCH: constraint + changeReason for audit
+      try {
+        const res = await fetch(`/api/deals/${deal.id}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ dominantConstraint: value, changeReason: "Edited in UI" }),
+        });
+        if (!res.ok) {
+          logClientError("Failed to save dominantConstraint", { status: res.status }, "DealDrawer");
+        }
+      } catch (error) {
+        logClientError("Failed to save dominantConstraint", { error: String(error) }, "DealDrawer");
+      }
     },
-    [deal, saveDealField],
-  );
-
-  const handleGateToggle = useCallback(
-    (questionIndex: number) => {
-      if (!deal) return;
-      const stage = deal.stage;
-      const entries = getStageGateChecklist(deal.gateChecklist ?? {}, stage);
-      const entry = entries[questionIndex];
-      if (!entry) return;
-      const newStatus: GateStatus = entry.status === "satisfied" ? "pending" : "satisfied";
-      const updatedEntries = entries.map((e, i) =>
-        i === questionIndex ? { ...e, status: newStatus } : e,
-      );
-      const newChecklist = { ...deal.gateChecklist, [stage]: updatedEntries };
-      setDeal({ ...deal, gateChecklist: newChecklist, updatedAt: new Date().toISOString() });
-      saveDealField({ gateChecklist: newChecklist });
-    },
-    [deal, saveDealField],
-  );
-
-  const handleArtefactStatusCycle = useCallback(
-    (artefactIndex: number) => {
-      if (!deal) return;
-      const stage = deal.stage;
-      const entries = getStageArtefacts(deal.artefacts ?? {}, stage);
-      const entry = entries[artefactIndex];
-      if (!entry) return;
-      const currentIdx = ARTEFACT_STATUS_CYCLE.indexOf(entry.status);
-      const nextStatus = ARTEFACT_STATUS_CYCLE[(currentIdx + 1) % ARTEFACT_STATUS_CYCLE.length];
-      const updatedEntries = entries.map((e, i) =>
-        i === artefactIndex ? { ...e, status: nextStatus } : e,
-      );
-      const newArtefacts = { ...deal.artefacts, [stage]: updatedEntries };
-      setDeal({ ...deal, artefacts: newArtefacts, updatedAt: new Date().toISOString() });
-      saveDealField({ artefacts: newArtefacts });
-    },
-    [deal, saveDealField],
-  );
-
-  const handleArtefactFieldChange = useCallback(
-    (artefactIndex: number, field: "summary" | "url", value: string) => {
-      if (!deal) return;
-      const stage = deal.stage;
-      const entries = getStageArtefacts(deal.artefacts ?? {}, stage);
-      const updatedEntries = entries.map((e, i) =>
-        i === artefactIndex ? { ...e, [field]: value || undefined } : e,
-      );
-      const newArtefacts = { ...deal.artefacts, [stage]: updatedEntries };
-      setDeal({ ...deal, artefacts: newArtefacts, updatedAt: new Date().toISOString() });
-      saveDealField({ artefacts: newArtefacts });
-    },
-    [deal, saveDealField],
+    [deal],
   );
 
   /* ---------- Escape: de-escalate editing → view → close ---------- */
@@ -369,7 +295,7 @@ export function DealDrawer({
                 <input
                   type="checkbox"
                   checked={entry.status === "satisfied"}
-                  onChange={() => handleGateToggle(idx)}
+                  onChange={() => toggleGate(deal.stage, idx)}
                   aria-label={`${entry.question}: ${entry.status}`}
                   className="mt-0.5 h-4 w-4 accent-emerald-600 cursor-pointer"
                   data-testid={`gate-checkbox-${idx}`}
@@ -438,7 +364,7 @@ export function DealDrawer({
               {isEditing ? (
                 <button
                   type="button"
-                  onClick={() => handleArtefactStatusCycle(idx)}
+                  onClick={() => cycleArtefactStatus(deal.stage, idx)}
                   aria-label={`${entry.name} status: ${ARTEFACT_STATUS_LABELS[entry.status]}. Click to change.`}
                   className={`shrink-0 text-[10px] uppercase tracking-wider px-1.5 py-0.5 cursor-pointer transition duration-300 ease-out hover:opacity-80 ${ARTEFACT_STATUS_COLOUR_CLASSES[entry.status]}`}
                   data-testid={`artefact-status-${idx}`}
@@ -467,7 +393,7 @@ export function DealDrawer({
                     id={`artefact-summary-${idx}`}
                     value={entry.summary ?? ""}
                     onChange={(e) =>
-                      handleArtefactFieldChange(idx, "summary", e.target.value)
+                      updateArtefactField(deal.stage, idx, "summary", e.target.value)
                     }
                     placeholder="Describe the document..."
                     rows={2}
@@ -487,7 +413,7 @@ export function DealDrawer({
                     id={`artefact-url-${idx}`}
                     value={entry.url ?? ""}
                     onChange={(e) =>
-                      handleArtefactFieldChange(idx, "url", e.target.value)
+                      updateArtefactField(deal.stage, idx, "url", e.target.value)
                     }
                     placeholder="https://..."
                     className="w-full h-8 px-2 border border-[#E8E6E3] bg-white text-[#2C2C2C] text-xs placeholder:text-[#9A9A9A] focus:border-[#7A6B5A] focus:ring-1 focus:ring-[#7A6B5A] focus:outline-none transition duration-300 ease-out"

@@ -100,6 +100,7 @@ model LgaEvidence {
 
   lga       Lga     @relation(fields: [lgaId], references: [id], onDelete: Cascade)
 
+  @@index([lgaId])
   @@map("lga_evidence")
 }
 
@@ -126,6 +127,7 @@ model DealLga {
   lga     Lga     @relation(fields: [lgaId], references: [id], onDelete: Cascade)
 
   @@id([dealId, lgaId])
+  @@index([lgaId])
   @@map("deal_lgas")
 }
 

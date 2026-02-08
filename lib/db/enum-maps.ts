@@ -1,6 +1,10 @@
 /**
  * Bidirectional maps between Prisma enum values (underscore_case)
  * and frontend string union values (kebab-case).
+ *
+ * The `toDb` functions return the **exact Prisma-generated enum types**
+ * so that route handlers can pass values directly into Prisma create/update
+ * calls without `as never` assertions.
  */
 
 import type {
@@ -9,11 +13,21 @@ import type {
   Constraint as FrontendConstraint,
   GateStatus as FrontendGateStatus,
   ArtefactStatus as FrontendArtefactStatus,
+  GradeLetter as FrontendGradeLetter,
 } from "@/lib/types";
+
+import type {
+  DealStage as PrismaDealStage,
+  ReadinessState as PrismaReadinessState,
+  Constraint as PrismaConstraint,
+  GateStatus as PrismaGateStatus,
+  ArtefactStatus as PrismaArtefactStatus,
+  GradeLetter as PrismaGradeLetter,
+} from "@/lib/generated/prisma/client";
 
 // --- Stage ---
 
-const STAGE_TO_DB: Record<string, string> = {
+const STAGE_TO_DB: Record<FrontendDealStage, PrismaDealStage> = {
   definition: "definition",
   "pre-feasibility": "pre_feasibility",
   feasibility: "feasibility",
@@ -29,8 +43,8 @@ const STAGE_FROM_DB: Record<string, FrontendDealStage> = {
   transaction_close: "transaction-close",
 };
 
-export function stageToDb(s: FrontendDealStage): string {
-  return STAGE_TO_DB[s] ?? s;
+export function stageToDb(s: FrontendDealStage): PrismaDealStage {
+  return STAGE_TO_DB[s];
 }
 
 export function stageFromDb(s: string): FrontendDealStage {
@@ -39,7 +53,7 @@ export function stageFromDb(s: string): FrontendDealStage {
 
 // --- ReadinessState ---
 
-const READINESS_TO_DB: Record<string, string> = {
+const READINESS_TO_DB: Record<FrontendReadinessState, PrismaReadinessState> = {
   "no-viable-projects": "no_viable_projects",
   "conceptual-interest": "conceptual_interest",
   "feasibility-underway": "feasibility_underway",
@@ -57,8 +71,8 @@ const READINESS_FROM_DB: Record<string, FrontendReadinessState> = {
   scaled_and_replicable: "scaled-and-replicable",
 };
 
-export function readinessToDb(r: FrontendReadinessState): string {
-  return READINESS_TO_DB[r] ?? r;
+export function readinessToDb(r: FrontendReadinessState): PrismaReadinessState {
+  return READINESS_TO_DB[r];
 }
 
 export function readinessFromDb(r: string): FrontendReadinessState {
@@ -67,7 +81,7 @@ export function readinessFromDb(r: string): FrontendReadinessState {
 
 // --- Constraint ---
 
-const CONSTRAINT_TO_DB: Record<string, string> = {
+const CONSTRAINT_TO_DB: Record<FrontendConstraint, PrismaConstraint> = {
   "revenue-certainty": "revenue_certainty",
   "offtake-demand-aggregation": "offtake_demand_aggregation",
   "planning-and-approvals": "planning_and_approvals",
@@ -93,8 +107,8 @@ const CONSTRAINT_FROM_DB: Record<string, FrontendConstraint> = {
   common_user_infrastructure_gap: "common-user-infrastructure-gap",
 };
 
-export function constraintToDb(c: FrontendConstraint): string {
-  return CONSTRAINT_TO_DB[c] ?? c;
+export function constraintToDb(c: FrontendConstraint): PrismaConstraint {
+  return CONSTRAINT_TO_DB[c];
 }
 
 export function constraintFromDb(c: string): FrontendConstraint {
@@ -107,6 +121,12 @@ export function constraintArrayFromDb(arr: string[]): FrontendConstraint[] {
 
 // --- GateStatus ---
 
+const GATE_TO_DB: Record<FrontendGateStatus, PrismaGateStatus> = {
+  pending: "pending",
+  satisfied: "satisfied",
+  "not-applicable": "not_applicable",
+};
+
 const GATE_FROM_DB: Record<string, FrontendGateStatus> = {
   pending: "pending",
   satisfied: "satisfied",
@@ -117,16 +137,17 @@ export function gateStatusFromDb(s: string): FrontendGateStatus {
   return GATE_FROM_DB[s] ?? (s as FrontendGateStatus);
 }
 
-export function gateStatusToDb(s: FrontendGateStatus): string {
-  const map: Record<string, string> = {
-    pending: "pending",
-    satisfied: "satisfied",
-    "not-applicable": "not_applicable",
-  };
-  return map[s] ?? s;
+export function gateStatusToDb(s: FrontendGateStatus): PrismaGateStatus {
+  return GATE_TO_DB[s];
 }
 
 // --- ArtefactStatus ---
+
+const ARTEFACT_TO_DB: Record<FrontendArtefactStatus, PrismaArtefactStatus> = {
+  "not-started": "not_started",
+  "in-progress": "in_progress",
+  complete: "complete",
+};
 
 const ARTEFACT_FROM_DB: Record<string, FrontendArtefactStatus> = {
   not_started: "not-started",
@@ -138,20 +159,13 @@ export function artefactStatusFromDb(s: string): FrontendArtefactStatus {
   return ARTEFACT_FROM_DB[s] ?? (s as FrontendArtefactStatus);
 }
 
-export function artefactStatusToDb(s: FrontendArtefactStatus): string {
-  const map: Record<string, string> = {
-    "not-started": "not_started",
-    "in-progress": "in_progress",
-    complete: "complete",
-  };
-  return map[s] ?? s;
+export function artefactStatusToDb(s: FrontendArtefactStatus): PrismaArtefactStatus {
+  return ARTEFACT_TO_DB[s];
 }
 
 // --- GradeLetter ---
 
-import type { GradeLetter as FrontendGradeLetter } from "@/lib/types";
-
-const GRADE_TO_DB: Record<string, string> = {
+const GRADE_TO_DB: Record<FrontendGradeLetter, PrismaGradeLetter> = {
   A: "A",
   "A-": "A_minus",
   B: "B",
@@ -171,8 +185,8 @@ const GRADE_FROM_DB: Record<string, FrontendGradeLetter> = {
   F: "F",
 };
 
-export function gradeLetterToDb(g: FrontendGradeLetter): string {
-  return GRADE_TO_DB[g] ?? g;
+export function gradeLetterToDb(g: FrontendGradeLetter): PrismaGradeLetter {
+  return GRADE_TO_DB[g];
 }
 
 export function gradeLetterFromDb(g: string): FrontendGradeLetter {

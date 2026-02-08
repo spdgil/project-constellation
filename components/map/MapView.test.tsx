@@ -44,6 +44,17 @@ vi.mock("react-map-gl/mapbox", () => {
 
 vi.mock("mapbox-gl/dist/mapbox-gl.css", () => ({}));
 
+/* Override next/dynamic to eagerly require the component.
+   Since MapCanvas imports react-map-gl/mapbox (already mocked above),
+   this resolves the full mock chain synchronously in tests. */
+vi.mock("next/dynamic", async () => {
+  const { MapCanvas } = await import("./MapCanvas");
+  return {
+    __esModule: true,
+    default: () => MapCanvas,
+  };
+});
+
 /* Ensure the token is set so MapCanvas renders the map, not the fallback */
 vi.stubEnv("NEXT_PUBLIC_MAPBOX_TOKEN", "pk.test_token");
 

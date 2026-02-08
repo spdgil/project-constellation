@@ -38,6 +38,28 @@ vi.mock("@/lib/db/queries", () => ({
         economicImpactJobs: 150,
       },
     ]),
+  loadDealsForMap: () =>
+    Promise.resolve([
+      {
+        id: "demo-flexilab",
+        name: "RCOE FlexiLab pilot",
+        opportunityTypeId: "critical-minerals",
+        lgaIds: ["mackay"],
+        stage: "pre-feasibility",
+        readinessState: "feasibility-underway",
+        dominantConstraint: "common-user-infrastructure-gap",
+        summary: "Pilot processing facility.",
+        nextStep: "Secure offtake.",
+        evidence: [],
+        notes: [],
+        updatedAt: "2026-02-06T00:00:00.000Z",
+        investmentValueAmount: 5_700_000,
+        investmentValueDescription: "AUD $5.7M initial",
+        economicImpactAmount: 10_000_000,
+        economicImpactDescription: "AUD $10M GDP",
+        economicImpactJobs: 150,
+      },
+    ]),
   loadOpportunityTypes: () =>
     Promise.resolve([
       {

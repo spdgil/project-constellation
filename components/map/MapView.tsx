@@ -1,14 +1,22 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
+import dynamic from "next/dynamic";
 import type { Deal, LGA, OpportunityType } from "@/lib/types";
 import type { GeoJSONFeatureCollection } from "@/lib/types";
 import { useBoundaries } from "@/lib/hooks/useBoundaries";
-import { MapCanvas } from "./MapCanvas";
 import type { DealGeoPosition } from "./MapCanvas";
 import { DealDrawer } from "./DealDrawer";
 import { LgaPanel } from "./LgaPanel";
 import { LgaBottomSheet } from "./LgaBottomSheet";
+
+const MapCanvas = dynamic(
+  () => import("./MapCanvas").then((m) => m.MapCanvas),
+  {
+    ssr: false,
+    loading: () => <div className="flex-1 bg-[#F5F1EB] animate-pulse" />,
+  },
+);
 
 export interface MapViewProps {
   lgas: LGA[];
@@ -57,6 +65,14 @@ export function MapView({
     return positions;
   }, [boundaries, deals]);
 
+  const selectedLga = useMemo(
+    () => (selectedLgaId ? lgas.find((l) => l.id === selectedLgaId) ?? null : null),
+    [selectedLgaId, lgas],
+  );
+
+  const handleCloseLga = useCallback(() => setSelectedLgaId(null), []);
+  const handleCloseDeal = useCallback(() => setSelectedDealId(null), []);
+
   const selectedDeal = selectedDealId
     ? (deals.find((d) => d.id === selectedDealId) ?? null)
     : null;
@@ -99,17 +115,13 @@ export function MapView({
               onSelectDeal={setSelectedDealId}
             />
           </div>
-          {selectedLgaId && (() => {
-            const lga = lgas.find((l) => l.id === selectedLgaId);
-            if (!lga) return null;
-            return (
-              <LgaBottomSheet
-                lga={lga}
-                deals={deals}
-                onClose={() => setSelectedLgaId(null)}
-              />
-            );
-          })()}
+          {selectedLga && (
+            <LgaBottomSheet
+              lga={selectedLga}
+              deals={deals}
+              onClose={handleCloseLga}
+            />
+          )}
         </div>
         {selectedDeal && (
           <DealDrawer
@@ -117,7 +129,7 @@ export function MapView({
             deal={selectedDeal}
             opportunityTypes={opportunityTypes}
             lgas={lgas}
-            onClose={() => setSelectedDealId(null)}
+            onClose={handleCloseDeal}
           />
         )}
       </div>

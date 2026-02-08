@@ -7,6 +7,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/db/prisma";
+import { loadSectorOpportunityById } from "@/lib/db/queries";
 import { IdParamSchema, PatchSectorSchema } from "@/lib/validations";
 import { logger } from "@/lib/logger";
 import {
@@ -34,11 +35,11 @@ export async function GET(_req: NextRequest, ctx: Ctx) {
     );
     if (rateLimitResponse) return rateLimitResponse;
 
-    const row = await prisma.sectorOpportunity.findUnique({ where: { id } });
-    if (!row) {
+    const sector = await loadSectorOpportunityById(id);
+    if (!sector) {
       return NextResponse.json({ error: "Not found" }, { status: 404 });
     }
-    return NextResponse.json(row);
+    return NextResponse.json(sector);
   } catch (error) {
     logger.error("GET /api/sectors/:id failed", { id, error: String(error) });
     return NextResponse.json(
@@ -103,12 +104,13 @@ export async function PATCH(req: NextRequest, ctx: Ctx) {
       }
     }
 
-    const updated = await prisma.sectorOpportunity.update({
+    await prisma.sectorOpportunity.update({
       where: { id },
       data,
     });
 
-    return NextResponse.json(updated);
+    const mapped = await loadSectorOpportunityById(id);
+    return NextResponse.json(mapped);
   } catch (error) {
     logger.error("PATCH /api/sectors/:id failed", { id, error: String(error) });
     return NextResponse.json(

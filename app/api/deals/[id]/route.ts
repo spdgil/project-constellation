@@ -22,6 +22,11 @@ import {
   readJsonWithLimitOrResponse,
   requireAuthOrResponse,
 } from "@/lib/api-guards";
+import {
+  RATE_LIMITS,
+  RATE_LIMIT_WINDOW_MS,
+  MAX_BODY_BYTES,
+} from "@/lib/api-constants";
 
 type RouteContext = { params: Promise<{ id: string }> };
 
@@ -34,8 +39,8 @@ export async function GET(request: Request, context: RouteContext) {
     const rateLimitResponse = await rateLimitOrResponse(
       request,
       "deal-read",
-      120,
-      60_000,
+      RATE_LIMITS.read,
+      RATE_LIMIT_WINDOW_MS,
     );
     if (rateLimitResponse) return rateLimitResponse;
 
@@ -43,7 +48,9 @@ export async function GET(request: Request, context: RouteContext) {
     if (!deal) {
       return NextResponse.json({ error: "Deal not found" }, { status: 404 });
     }
-    return NextResponse.json(deal);
+    return NextResponse.json(deal, {
+      headers: { "Cache-Control": "private, max-age=10, stale-while-revalidate=30" },
+    });
   } catch (error) {
     logger.error("GET /api/deals/:id failed", { id, error: String(error) });
     return NextResponse.json(
@@ -72,7 +79,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     const parsedBody = await readJsonWithLimitOrResponse<unknown>(
       request,
-      262_144,
+      MAX_BODY_BYTES.standard,
     );
     if ("response" in parsedBody) return parsedBody.response;
     const parsed = PatchDealSchema.safeParse(parsedBody.data);
@@ -118,7 +125,7 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     await prisma.deal.update({
       where: { id },
-      data: updateData as never,
+      data: updateData as Parameters<typeof prisma.deal.update>[0]["data"],
     });
 
     // Log constraint change if applicable
@@ -127,7 +134,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         data: {
           entityType: "deal",
           entityId: id,
-          dominantConstraint: constraintToDb(body.dominantConstraint as Deal["dominantConstraint"]) as never,
+          dominantConstraint: constraintToDb(body.dominantConstraint as Deal["dominantConstraint"]),
           changeReason: body.changeReason,
         },
       });
@@ -141,13 +148,13 @@ export async function PATCH(request: Request, context: RouteContext) {
         ([stage, items]) =>
           items.map((item) => ({
             dealId: id,
-            stage: stageToDb(stage as Deal["stage"]) as never,
+            stage: stageToDb(stage as Deal["stage"]),
             question: item.question,
-            status: gateStatusToDb(item.status as "pending" | "satisfied" | "not-applicable") as never,
+            status: gateStatusToDb(item.status as "pending" | "satisfied" | "not-applicable"),
           }))
       );
       if (entries.length > 0) {
-        await prisma.dealGateEntry.createMany({ data: entries as never });
+        await prisma.dealGateEntry.createMany({ data: entries });
       }
     }
 
@@ -159,15 +166,15 @@ export async function PATCH(request: Request, context: RouteContext) {
         ([stage, items]) =>
           items.map((item) => ({
             dealId: id,
-            stage: stageToDb(stage as Deal["stage"]) as never,
+            stage: stageToDb(stage as Deal["stage"]),
             name: item.name,
-            status: artefactStatusToDb(item.status as "not-started" | "in-progress" | "complete") as never,
+            status: artefactStatusToDb(item.status as "not-started" | "in-progress" | "complete"),
             summary: item.summary ?? null,
             url: item.url ?? null,
           }))
       );
       if (entries.length > 0) {
-        await prisma.dealArtefact.createMany({ data: entries as never });
+        await prisma.dealArtefact.createMany({ data: entries });
       }
     }
 

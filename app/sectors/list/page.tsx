@@ -1,6 +1,6 @@
 import {
   loadSectorOpportunities,
-  loadDeals,
+  loadDealsForList,
   loadStrategies,
 } from "@/lib/db/queries";
 import { SectorOpportunitiesIndex } from "@/components/sectors/SectorOpportunitiesIndex";
@@ -60,7 +60,7 @@ function buildSectorStats(
 export default async function SectorsListPage() {
   const [sectorOpportunities, deals, strategies] = await Promise.all([
     loadSectorOpportunities(),
-    loadDeals(),
+    loadDealsForList(),
     loadStrategies(),
   ]);
 

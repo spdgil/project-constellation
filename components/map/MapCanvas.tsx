@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef } from "react";
 import Map, {
   Source,
   Layer,
@@ -341,43 +341,75 @@ export function MapCanvas({
         {deals.map((deal) => {
           const pos = dealPositions[deal.id];
           if (!pos) return null;
-          const isSelected = selectedDealId === deal.id;
           return (
-            <Marker
+            <DealMarker
               key={deal.id}
-              longitude={pos.lng}
-              latitude={pos.lat}
-              anchor="center"
-            >
-              <button
-                type="button"
-                data-deal-marker={deal.id}
-                aria-label={`Deal: ${deal.name}. Select to view details.`}
-                aria-pressed={isSelected}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSelectDeal(selectedDealId === deal.id ? null : deal.id);
-                }}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" || e.key === " ") {
-                    e.preventDefault();
-                    onSelectDeal(selectedDealId === deal.id ? null : deal.id);
-                  }
-                }}
-                className={`w-4 h-4 border-2 transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 ${
-                  isSelected
-                    ? "border-[#7A6B5A] bg-[#F5F3F0]"
-                    : "border-[#2C2C2C] bg-[#FAF9F7] hover:border-[#7A6B5A] hover:bg-[#F5F3F0]"
-                }`}
-                data-pressed={isSelected || undefined}
-              />
-            </Marker>
+              deal={deal}
+              pos={pos}
+              isSelected={selectedDealId === deal.id}
+              onToggle={onSelectDeal}
+            />
           );
         })}
       </Map>
     </div>
   );
 }
+
+/* -------------------------------------------------------------------------- */
+/* DealMarker — memoised sub-component for individual deal markers            */
+/* -------------------------------------------------------------------------- */
+
+interface DealMarkerProps {
+  deal: Deal;
+  pos: DealGeoPosition;
+  isSelected: boolean;
+  onToggle: (id: string | null) => void;
+}
+
+const DealMarker = memo(function DealMarker({
+  deal,
+  pos,
+  isSelected,
+  onToggle,
+}: DealMarkerProps) {
+  const handleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      onToggle(isSelected ? null : deal.id);
+    },
+    [deal.id, isSelected, onToggle],
+  );
+
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent) => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        onToggle(isSelected ? null : deal.id);
+      }
+    },
+    [deal.id, isSelected, onToggle],
+  );
+
+  return (
+    <Marker longitude={pos.lng} latitude={pos.lat} anchor="center">
+      <button
+        type="button"
+        data-deal-marker={deal.id}
+        aria-label={`Deal: ${deal.name}. Select to view details.`}
+        aria-pressed={isSelected}
+        onClick={handleClick}
+        onKeyDown={handleKeyDown}
+        className={`w-4 h-4 border-2 transition duration-300 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-[#7A6B5A] focus-visible:ring-offset-2 ${
+          isSelected
+            ? "border-[#7A6B5A] bg-[#F5F3F0]"
+            : "border-[#2C2C2C] bg-[#FAF9F7] hover:border-[#7A6B5A] hover:bg-[#F5F3F0]"
+        }`}
+        data-pressed={isSelected || undefined}
+      />
+    </Marker>
+  );
+});
 
 /** Walk nested GeoJSON coordinate arrays (iterative to avoid stack overflow). */
 function walkCoords(

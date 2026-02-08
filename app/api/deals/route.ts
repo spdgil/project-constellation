@@ -21,6 +21,11 @@ import {
   readJsonWithLimitOrResponse,
   requireAuthOrResponse,
 } from "@/lib/api-guards";
+import {
+  RATE_LIMITS,
+  RATE_LIMIT_WINDOW_MS,
+  MAX_BODY_BYTES,
+} from "@/lib/api-constants";
 
 /** List deals with pagination and total count. */
 export async function GET(request: Request) {
@@ -28,8 +33,8 @@ export async function GET(request: Request) {
     const rateLimitResponse = await rateLimitOrResponse(
       request,
       "deal-read",
-      120,
-      60_000,
+      RATE_LIMITS.read,
+      RATE_LIMIT_WINDOW_MS,
     );
     if (rateLimitResponse) return rateLimitResponse;
 
@@ -51,12 +56,15 @@ export async function GET(request: Request) {
     const deals = await loadDeals({ limit, offset });
 
     const total = await prisma.deal.count();
-    return NextResponse.json({
-      items: deals,
-      total,
-      limit: limit ?? null,
-      offset: offset ?? 0,
-    });
+    return NextResponse.json(
+      {
+        items: deals,
+        total,
+        limit: limit ?? null,
+        offset: offset ?? 0,
+      },
+      { headers: { "Cache-Control": "private, max-age=10, stale-while-revalidate=30" } },
+    );
   } catch (error) {
     logger.error("GET /api/deals failed", { error: String(error) });
     return NextResponse.json(
@@ -82,7 +90,7 @@ export async function POST(request: Request) {
 
     const parsedBody = await readJsonWithLimitOrResponse<unknown>(
       request,
-      262_144,
+      MAX_BODY_BYTES.standard,
     );
     if ("response" in parsedBody) return parsedBody.response;
 
@@ -104,9 +112,9 @@ export async function POST(request: Request) {
         opportunityTypeId: body.opportunityTypeId,
         lat: body.lat ?? null,
         lng: body.lng ?? null,
-        stage: stageToDb(body.stage as Deal["stage"]) as never,
-        readinessState: readinessToDb(body.readinessState as Deal["readinessState"]) as never,
-        dominantConstraint: constraintToDb(body.dominantConstraint as Deal["dominantConstraint"]) as never,
+        stage: stageToDb(body.stage as Deal["stage"]),
+        readinessState: readinessToDb(body.readinessState as Deal["readinessState"]),
+        dominantConstraint: constraintToDb(body.dominantConstraint as Deal["dominantConstraint"]),
         summary: body.summary,
         nextStep: body.nextStep ?? "",
         description: body.description ?? null,
@@ -157,9 +165,9 @@ export async function POST(request: Request) {
                 body.gateChecklist as Record<string, { question: string; status: string }[]>,
               ).flatMap(([stage, entries]) =>
                 entries.map((e) => ({
-                  stage: stageToDb(stage as Deal["stage"]) as never,
+                  stage: stageToDb(stage as Deal["stage"]),
                   question: e.question,
-                  status: gateStatusToDb(e.status as "pending" | "satisfied" | "not-applicable") as never,
+                  status: gateStatusToDb(e.status as "pending" | "satisfied" | "not-applicable"),
                 }))
               ),
             }
@@ -170,9 +178,9 @@ export async function POST(request: Request) {
                 body.artefacts as Record<string, { name: string; status: string }[]>,
               ).flatMap(([stage, entries]) =>
                 entries.map((e) => ({
-                  stage: stageToDb(stage as Deal["stage"]) as never,
+                  stage: stageToDb(stage as Deal["stage"]),
                   name: e.name,
-                  status: artefactStatusToDb(e.status as "not-started" | "in-progress" | "complete") as never,
+                  status: artefactStatusToDb(e.status as "not-started" | "in-progress" | "complete"),
                 }))
               ),
             }

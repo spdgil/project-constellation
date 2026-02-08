@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import {
   loadSectorOpportunityById,
   loadStrategies,
-  loadDeals,
+  loadDealsForList,
   loadLgas,
 } from "@/lib/db/queries";
 import { SectorOpportunityDetail } from "@/components/sectors/SectorOpportunityDetail";
@@ -18,7 +18,7 @@ export default async function SectorPage({ params }: SectorPageProps) {
   const [sectorOpportunity, strategies, deals, lgas] = await Promise.all([
     loadSectorOpportunityById(id),
     loadStrategies(),
-    loadDeals(),
+    loadDealsForList(),
     loadLgas(),
   ]);
 

@@ -1,6 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from "vitest";
 import { POST } from "./route";
 
+/* Mock api-guards — auth always passes */
+vi.mock("@/lib/api-guards", () => ({
+  requireAuthOrResponse: vi.fn().mockResolvedValue(null),
+  rateLimitOrResponse: vi.fn().mockResolvedValue(null),
+}));
+
 /* Mock OpenAI — intercept the constructor and chat.completions.create */
 const mockCreate = vi.fn();
 vi.mock("openai", () => {
@@ -19,6 +25,11 @@ vi.mock("openai", () => {
   (MockOpenAI as unknown as Record<string, unknown>).APIError = APIError;
   return { default: MockOpenAI };
 });
+
+/* Mock shared OpenAI client to use our mockCreate */
+vi.mock("@/lib/ai/openai-client", () => ({
+  getOpenAIClient: () => ({ chat: { completions: { create: mockCreate } } }),
+}));
 
 function makeRequest(body: Record<string, unknown>) {
   return new Request("http://localhost/api/deals/analyse-memo", {

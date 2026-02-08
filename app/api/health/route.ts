@@ -16,12 +16,15 @@ export async function GET() {
     // Verify database connectivity with a lightweight query
     await prisma.$queryRaw`SELECT 1`;
 
-    return NextResponse.json({
-      status: "ok",
-      db: "connected",
-      latencyMs: Date.now() - start,
-      timestamp: new Date().toISOString(),
-    });
+    return NextResponse.json(
+      {
+        status: "ok",
+        db: "connected",
+        latencyMs: Date.now() - start,
+        timestamp: new Date().toISOString(),
+      },
+      { headers: { "Cache-Control": "no-store" } },
+    );
   } catch (error) {
     logger.error("Database check failed", { error: String(error) });
     return NextResponse.json(

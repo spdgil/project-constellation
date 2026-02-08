@@ -4,7 +4,6 @@ import { useMemo, useState, useCallback, useId } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import type { Deal, LGA, OpportunityType } from "@/lib/types";
-import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
 import {
   countByReadiness,
   topConstraints,
@@ -39,11 +38,10 @@ export interface StateViewProps {
 
 export function StateView({
   opportunityTypes,
-  deals: baseDeals,
+  deals,
   lgas,
   initialTab = "aggregation",
 }: StateViewProps) {
-  const deals = useDealsWithOverrides(baseDeals);
   const [activeTab, setActiveTab] = useState<Tab>(initialTab);
   const [openSections, setOpenSections] = useState<Set<string>>(new Set());
 

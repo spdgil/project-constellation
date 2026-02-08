@@ -10,7 +10,8 @@ import { NextResponse } from "next/server";
 import { z } from "zod";
 import { env } from "@/lib/env";
 import { logger } from "@/lib/logger";
-import { rateLimitOrResponse } from "@/lib/api-guards";
+import { rateLimitOrResponse, requireAuthOrResponse } from "@/lib/api-guards";
+import { readJsonWithLimit } from "@/lib/request-utils";
 
 // Queensland bounding box (covers all 77 LGAs)
 const QLD_BBOX = "138,-29,154,-10";
@@ -31,6 +32,9 @@ interface GeocodeResult {
 /** Forward-geocode a location string to lat/lng within QLD. */
 export async function POST(request: Request) {
   try {
+    const authResponse = await requireAuthOrResponse();
+    if (authResponse) return authResponse;
+
     const rateLimitResponse = await rateLimitOrResponse(
       request,
       "geocode",
@@ -39,7 +43,11 @@ export async function POST(request: Request) {
     );
     if (rateLimitResponse) return rateLimitResponse;
 
-    const body = await request.json();
+    const parsedBody = await readJsonWithLimit<{ query?: string }>(request, 4096);
+    if (!parsedBody.ok) {
+      return NextResponse.json({ error: parsedBody.error }, { status: parsedBody.status ?? 400 });
+    }
+    const body = parsedBody.data!;
     const parsed = GeocodeRequestSchema.safeParse(body);
     if (!parsed.success) {
       return NextResponse.json(
@@ -74,7 +82,7 @@ export async function POST(request: Request) {
     });
 
     const url = `https://api.mapbox.com/search/geocode/v6/forward?${params.toString()}`;
-    const res = await fetch(url);
+    const res = await fetch(url, { signal: AbortSignal.timeout(10_000) });
 
     if (!res.ok) {
       logger.error("Mapbox API error", { status: res.status });

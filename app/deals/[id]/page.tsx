@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation";
 import {
   loadDealById,
-  loadDeals,
+  loadDealsForList,
   loadLgas,
   loadOpportunityTypes,
   loadSectorOpportunities,
@@ -20,7 +20,7 @@ export default async function DealPage({ params }: DealPageProps) {
       loadDealById(id),
       loadOpportunityTypes(),
       loadLgas(),
-      loadDeals(),
+      loadDealsForList(),
       loadSectorOpportunities(),
     ]);
 

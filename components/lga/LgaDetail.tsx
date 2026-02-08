@@ -11,7 +11,6 @@ import type {
   SectorDevelopmentStrategy,
 } from "@/lib/types";
 import type { DealGeoPosition } from "@/components/map/MapCanvas";
-import { useDealsWithOverrides } from "@/lib/hooks/useDealsWithOverrides";
 import { useBoundaries } from "@/lib/hooks/useBoundaries";
 import { CONSTRAINT_LABELS } from "@/lib/labels";
 import { STAGE_COLOUR_CLASSES } from "@/lib/stage-colours";
@@ -57,12 +56,11 @@ const bodyClass = "text-sm text-[#2C2C2C] leading-relaxed";
 
 export function LgaDetail({
   lga,
-  linkedDeals: baseDeals,
+  linkedDeals: deals,
   sectorOpportunities,
   linkedStrategies,
 }: LgaDetailProps) {
   const router = useRouter();
-  const deals = useDealsWithOverrides(baseDeals);
 
   /* ---- Aggregated stats ---- */
   const totalInvestment = useMemo(

@@ -2,8 +2,17 @@ import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
 import { POST } from "./route";
 
 const mockRateLimit = vi.fn();
+const mockAuth = vi.fn();
 vi.mock("@/lib/api-guards", () => ({
   rateLimitOrResponse: (...args: unknown[]) => mockRateLimit(...args),
+  requireAuthOrResponse: (...args: unknown[]) => mockAuth(...args),
+}));
+
+vi.mock("@/lib/request-utils", () => ({
+  readJsonWithLimit: async (req: Request) => {
+    const data = await req.json();
+    return { ok: true, data };
+  },
 }));
 
 vi.mock("@/lib/env", () => ({
@@ -19,6 +28,7 @@ describe("POST /api/geocode", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    mockAuth.mockResolvedValue(null);
     mockRateLimit.mockResolvedValue(null);
   });
 
