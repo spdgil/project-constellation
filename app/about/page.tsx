@@ -23,23 +23,41 @@ const CORE_OBJECTS = [
   {
     label: "Places (LGAs)",
     borderColour: "border-l-violet-400",
-    summary:
-      "The organising unit for place-based context. An LGA view answers: what is true about this place, what capabilities exist, what constraints show up repeatedly, and what opportunity hypotheses are plausible.",
-    note: "LGAs are not ranked. They are contexts.",
+    intro: "LGAs are the organising unit for place-based context.",
+    heading: "An LGA view answers:",
+    answers: [
+      "What is true about this place",
+      "What capabilities and assets exist",
+      "Which constraints show up repeatedly",
+      "Which opportunity hypotheses are plausible here",
+    ],
+    note: "LGAs are not ranked. They are contexts for reasoning, not competitors.",
   },
   {
     label: "Opportunity types",
     borderColour: "border-l-blue-400",
-    summary:
-      "The mechanism for comparing like-with-like across places. An opportunity type view answers: what kind of opportunity is this, how does it typically become investable, where is it showing up across Queensland, and where does it stall and why.",
-    note: "Opportunity types allow replication and pattern learning.",
+    intro: "Opportunity types enable comparison across places.",
+    heading: "An opportunity type view answers:",
+    answers: [
+      "What kind of opportunity this is",
+      "How this type typically becomes investable",
+      "Where it appears across Queensland",
+      "Where it commonly stalls, and why",
+    ],
+    note: "Opportunity types support pattern recognition, replication, and system-level learning.",
   },
   {
     label: "Deals",
     borderColour: "border-l-amber-400",
-    summary:
-      "The concrete units of progress. A deal view answers: what is the project, what stage is it at, what is the single most binding constraint, and what is the next action that would move it one step forward.",
-    note: "Deals are evidence and work-in-progress, not endorsements.",
+    intro: "Deals are the concrete units of progress.",
+    heading: "A deal view answers:",
+    answers: [
+      "What the project is",
+      "What stage it is at",
+      "What the single most binding constraint is",
+      "What the next action would be to move it one step forward",
+    ],
+    note: "Deals are evidence and work in progress. They are not endorsements.",
   },
 ] as const;
 
@@ -95,9 +113,15 @@ export default function AboutPage() {
               About the Constellation Development Facility
             </h1>
             <p className="text-sm text-[#2C2C2C] leading-relaxed">
-              A place-and-project system that identifies where Queensland has
-              credible economic opportunities that are not yet investable, and
-              supports a project development facility to close that gap.
+              The Constellation Development Facility is a place and project
+              system designed to identify where Queensland has credible economic
+              opportunities that are not yet investable, and to support a project
+              development facility to close that gap.
+            </p>
+            <p className="text-sm text-[#2C2C2C] leading-relaxed">
+              It does not invest in operating assets. It deploys development
+              capital to support the maturation of projects where disciplined
+              effort is most likely to convert opportunity into investable form.
             </p>
 
             <div className="border-t border-[#E8E6E3]" />
@@ -107,12 +131,15 @@ export default function AboutPage() {
                 The organising idea
               </p>
               <p className="mt-1 text-sm text-[#2C2C2C] leading-relaxed">
-                Queensland&rsquo;s economy often has the ingredients for growth,
-                but projects stall before they become investable. The project
-                development facility exists to close that gap. This dashboard is
-                its instrument: it surfaces where capital is not flowing, which
-                constraints repeat, and which actions would most efficiently move
-                projects forward.
+                Queensland&rsquo;s economy contains the ingredients for growth,
+                but projects frequently stall before they become investable. The
+                constraint is rarely a lack of ideas or a lack of capital. More
+                often, it is a recurring set of structural, commercial,
+                regulatory, or delivery barriers that prevent projects from
+                reaching a form capital can engage with.
+              </p>
+              <p className="mt-2 text-sm text-[#2C2C2C] leading-relaxed">
+                The project development facility exists to close that gap.
               </p>
             </div>
           </section>
@@ -123,21 +150,33 @@ export default function AboutPage() {
             <AccordionBlock title="How to read the dashboard" defaultOpen>
               <p className="text-sm text-[#2C2C2C] leading-relaxed mb-4">
                 The dashboard is organised around three objects. You can enter
-                via the map (place-first), opportunity types
-                (opportunity-first), or deal search (deal-first).
+                from any of them, depending on how you prefer to think.
               </p>
               <div className="space-y-3">
                 {CORE_OBJECTS.map((obj) => (
                   <div
                     key={obj.label}
-                    className={`border border-[#E8E6E3] border-l-[3px] ${obj.borderColour} bg-[#FAF9F7] p-4 space-y-1`}
+                    className={`border border-[#E8E6E3] border-l-[3px] ${obj.borderColour} bg-[#FAF9F7] p-4 space-y-2`}
                   >
                     <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] font-medium">
                       {obj.label}
                     </p>
                     <p className="text-sm text-[#2C2C2C] leading-relaxed">
-                      {obj.summary}
+                      {obj.intro}
                     </p>
+                    <p className="text-sm text-[#2C2C2C] font-medium leading-relaxed">
+                      {obj.heading}
+                    </p>
+                    <ul className="list-disc pl-5 m-0 space-y-1">
+                      {obj.answers.map((answer) => (
+                        <li
+                          key={answer}
+                          className="text-sm text-[#2C2C2C] leading-relaxed"
+                        >
+                          {answer}
+                        </li>
+                      ))}
+                    </ul>
                     <p className="text-xs text-[#6B6B6B] leading-relaxed italic">
                       {obj.note}
                     </p>
@@ -149,37 +188,86 @@ export default function AboutPage() {
             {/* Method */}
             <AccordionBlock title="Method">
               <p className="text-sm text-[#2C2C2C] leading-relaxed mb-3">
-                Two diligence pathways underpin the content:
+                Two diligence pathways underpin the dashboard.
               </p>
-              <div className="space-y-3 mb-4">
-                <div className="border border-[#E8E6E3] border-l-[3px] border-l-emerald-400 bg-[#FAF9F7] p-4 space-y-1">
+              <div className="space-y-3">
+                <div className="border border-[#E8E6E3] border-l-[3px] border-l-emerald-400 bg-[#FAF9F7] p-4 space-y-2">
                   <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] font-medium">
                     LGA-level diligence
                   </p>
                   <p className="text-sm text-[#2C2C2C] leading-relaxed">
-                    Defines opportunity hypotheses grounded in place conditions:
-                    3&ndash;7 hypotheses per LGA, candidate deal exemplars, and
-                    repeated constraints observed locally.
+                    LGA-level diligence translates existing LGA strategies into
+                    structured opportunity hypotheses grounded in place
+                    conditions.
+                  </p>
+                  <p className="text-sm text-[#2C2C2C] leading-relaxed">
+                    This work is based on the published LGA strategy and
+                    referenced source material, rather than independent
+                    assessment or re-interpretation. The facility checks for
+                    completeness and internal coverage of the strategy, not the
+                    quality or ambition of the strategy itself.
+                  </p>
+                  <p className="text-sm text-[#2C2C2C] font-medium leading-relaxed">
+                    This includes:
+                  </p>
+                  <ul className="list-disc pl-5 m-0 space-y-1">
+                    <li className="text-sm text-[#2C2C2C] leading-relaxed">
+                      Three to seven opportunity hypotheses per LGA derived from
+                      the strategy
+                    </li>
+                    <li className="text-sm text-[#2C2C2C] leading-relaxed">
+                      Candidate deal exemplars consistent with stated priorities
+                      and assets
+                    </li>
+                    <li className="text-sm text-[#2C2C2C] leading-relaxed">
+                      Repeated constraints observed across strategy documents
+                      and local evidence
+                    </li>
+                  </ul>
+                  <p className="text-xs text-[#6B6B6B] leading-relaxed italic">
+                    This layer explains why certain kinds of projects are
+                    proposed in some places and not others, based on what is
+                    already articulated in local strategy.
                   </p>
                 </div>
-                <div className="border border-[#E8E6E3] border-l-[3px] border-l-blue-400 bg-[#FAF9F7] p-4 space-y-1">
+                <div className="border border-[#E8E6E3] border-l-[3px] border-l-blue-400 bg-[#FAF9F7] p-4 space-y-2">
                   <p className="text-[10px] uppercase tracking-wider text-[#6B6B6B] font-medium">
                     Deal-level diligence
                   </p>
                   <p className="text-sm text-[#2C2C2C] leading-relaxed">
-                    Matures specific deals through progressive diligence:
-                    readiness state on a shared ladder, one dominant constraint,
-                    a concrete next step, and an audit trail.
+                    Deal-level diligence advances individual projects through a
+                    structured, stage-based development process grounded in
+                    global best practice for project preparation and transaction
+                    development.
+                  </p>
+                  <p className="text-sm text-[#2C2C2C] font-medium leading-relaxed">
+                    Projects progress through five stages:
+                  </p>
+                  <ol className="list-decimal pl-5 m-0 space-y-1">
+                    <li className="text-sm text-[#2C2C2C] leading-relaxed">
+                      Mandate Fit and Project Definition
+                    </li>
+                    <li className="text-sm text-[#2C2C2C] leading-relaxed">
+                      Pre-feasibility and Prioritisation
+                    </li>
+                    <li className="text-sm text-[#2C2C2C] leading-relaxed">
+                      Detailed Feasibility and Investment Appraisal
+                    </li>
+                    <li className="text-sm text-[#2C2C2C] leading-relaxed">
+                      Project Structuring and Risk Allocation
+                    </li>
+                    <li className="text-sm text-[#2C2C2C] leading-relaxed">
+                      Transaction Implementation and Financial Close
+                    </li>
+                  </ol>
+                  <p className="text-xs text-[#6B6B6B] leading-relaxed italic">
+                    Each stage is designed to resolve a specific
+                    investment-critical uncertainty before additional development
+                    capital is deployed, ensuring disciplined progression toward
+                    investability.
                   </p>
                 </div>
               </div>
-              <p className="text-sm text-[#2C2C2C] leading-relaxed">
-                Deals and clusters are classified on a capital readiness ladder
-                (from no viable projects through to scaled and replicable).
-                Every deal has exactly one dominant constraint at any moment;
-                secondary issues belong in notes. The interface uses progressive
-                disclosure: detail is earned on interaction.
-              </p>
             </AccordionBlock>
 
             {/* Governance and data */}
