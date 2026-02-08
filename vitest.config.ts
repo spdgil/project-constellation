@@ -9,7 +9,7 @@ export default defineConfig({
     globals: true,
     setupFiles: ["./tests/setup.ts"],
     include: ["**/*.{test,spec}.{ts,tsx}"],
-    exclude: ["node_modules", ".next"],
+    exclude: ["node_modules", ".next", "e2e"],
     pool: "forks",
     teardownTimeout: 3000,
     env: {
